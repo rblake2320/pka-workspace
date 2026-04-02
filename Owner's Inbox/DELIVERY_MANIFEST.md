@@ -1,0 +1,27 @@
+# Delivery Manifest
+
+This file is the index of completed deliverables sent to Ron.
+One line per completed item. Newest entries go at the top.
+
+| Date | Task | Route | Verdict | Deliverable | Next Action |
+|------|------|------|------|------|------|
+| 2026-04-02 | PKA-v0.6.0 gap-close | AXIOM,FORGE,CRUCIBLE,SENTINEL | GO | Owner's Inbox/SENTINEL-pka-v060-verdict.md | v0.6.0 complete — curl restored, reopen command live, 13 agent definitions standardized, 7 Self-Models populated, MemoryWeb wired, agent leaderboard added, guardrails deployed |
+| 2026-04-02 | TASK-20260402-012 | CRUCIBLE | GO | Owner's Inbox/CRUCIBLE-pka-v060-test-sweep.md | SENTINEL review |
+| 2026-04-02 | TASK-20260402-008 | AXIOM,FORGE,SENTINEL | GO | scripts/pka_resilience_test.py (stub self-cleanup — stubs deleted after each run) | None — resilience test now self-cleans; process audit pass confirmed |
+| 2026-04-02 | TASK-20260402-010 | AXIOM,HELM,FORGE | GO | Owner's Inbox/HELM-council-agentforge-integration-plan.md | Review integration plan; FORGE to implement Council+AgentForge ledger bridge |
+| 2026-04-02 | TASK-20260402-011 | AXIOM,LEGAL | GO (conditional) | Owner's Inbox/LEGAL-pka-audit-trail-patent-assessment.md | Review filing recommendation; decide on provisional application before 2026-05-02 deadline |
+| 2026-04-02 | TASK-20260402-009 | AXIOM,VENTURE | GO | Owner's Inbox/VENTURE-verified-agent-ops-oss-scope.md | Review OSS scaffold scope; approve or iterate before public release |
+| 2026-04-02 | TASK-20260402-007 | AXIOM,CRUCIBLE,SENTINEL | GO | Owner's Inbox/SENTINEL-pka-v050-verdict.md | v0.5.0 cleared. Follow-up: fix pka_resilience_test.py self-cleanup (FORGE); file provisional patent (LEGAL); OSS scaffold scope (VENTURE); Council+AgentForge integration (HELM) |
+| 2026-04-02 | TASK-20260402-006 | AXIOM,RADAR | GO | Owner's Inbox/RADAR-pka-v050-opportunity-scan.md | Route Obs 1 to LEGAL; route Obs 2 to VENTURE; route Obs 3 to HELM for Council+AgentForge integration |
+| 2026-04-02 | TASK-20260402-003 | AXIOM,NOVA | GO | Owner's Inbox/NOVA-agent-ops-competitive-landscape.md | Lead positioning on SENTINEL GO/NO-GO gate as differentiator; watch MS Agent Framework Q2 2026 GA |
+| 2026-04-02 | TASK-20260402-004 | AXIOM,CRUCIBLE | PARTIAL PASS | Owner's Inbox/CRUCIBLE-pka-v050-test-sweep.md | Fix DEFECT-001 (stubs in ledger) + verify DEFECT-002 resolved, then SENTINEL issues v0.5.0 verdict |
+| 2026-04-02 | TASK-20260402-005 | AXIOM,SPARK | GO | Owner's Inbox/SPARK-verified-agent-ops-readme-draft.md | Review and publish to rblake2320/verified-agent-ops repo — verify Python floor (3.8 vs 3.10) before publishing |
+| 2026-04-01 | TASK-20260401-008 | AXIOM,FORGE,SENTINEL | GO | aihangout-app/frontend/dist/ (0 .map files, commit 5ddd094) + pro-designs-system/dist/ (0 .map files) | None - build hardening complete and GitHub Actions build gate added |
+| 2026-04-01 | TASK-20260401-006 | AXIOM,FORGE,SENTINEL | GO | scripts/pka_scorecard.py rebuilt by Codex; circular scoring eliminated; manifest lookup fixed by Claude Code post-delivery | None — scorecard now reflects real operational history only |
+| 2026-04-01 | TASK-20260401-005 | AXIOM,FORGE,SENTINEL | GO | scripts/ai_army_chat.py — SSH-based group chat client; used in live Codex coordination session to completion | None — use for future cross-agent coordination sessions |
+| 2026-03-31 | TASK-20260401-004 | AXIOM,FORGE,SENTINEL | GO | ~/hermes-agent/scripts/health_check.sh on Spark-1 + Hermes cron job service-health-watchdog (4h interval) + Telegram delivery confirmed | None — watchdog runs indefinitely via hermes-gateway.service Restart=always |
+| 2026-04-01 | TASK-20260401-003 | AXIOM,FORGE,SENTINEL | GO | pro-designs-system builds clean: OrderForm.tsx Size cast fixed, AdminDashboard.tsx dead code removed, CleanHomePage.tsx unused state removed, UltraMotion.tsx @ts-ignore on Framer Motion type mismatch, SoundReactiveVisuals.tsx ArrayBuffer type fixed, CustomDesignMatcher.tsx null|undefined coercion fixed | None — build is green, zero .map files, ready to deploy |
+| 2026-04-01 | TASK-20260401-002 | AXIOM,FORGE,SENTINEL | GO | aihangout-app/frontend/vite.config.ts sourcemap:false; pro-designs-system/vite.config.ts sourcemap:false; both dist/ directories rebuilt with zero .map files | Push aihangout-app/frontend/dist to git to purge stale .map files from Cloudflare Pages CDN |
+| 2026-04-01 | E2E Process Validation Task | AXIOM -> FORGE -> CRUCIBLE -> SENTINEL -> AXIOM | delivered | E2E validation record and verified process controls | Use this path as the baseline for consequential tasks |
+| 2026-03-31 | Process hardening control layer | AXIOM -> FORGE | delivered | `Team/OPERATING_MODEL.md`, `Team/TASK_BRIEF_TEMPLATE.md`, `Team/tasks/`, `scripts/pka_process_audit.py` | Use the task ledger and run the process audit at session end |
+| [YYYY-MM-DD] | [task name] | [AXIOM -> ...] | [GO / HOLD / NO-GO / delivered] | [file in Owner's Inbox] | [what Ron should do next] |

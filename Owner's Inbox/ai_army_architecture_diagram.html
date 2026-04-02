@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Army Architecture — Multi-Agent Mesh</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #0f1117;
+    --bg2:        #161820;
+    --bg3:        #1e2028;
+    --border:     #2a2d3a;
+    --text:       #e8eaf0;
+    --muted:      #8891a8;
+    --blue:       #3b82f6;
+    --blue-glow:  #3b82f640;
+    --green:      #22c55e;
+    --green-glow: #22c55e40;
+    --purple:     #a855f7;
+    --purple-glow:#a855f740;
+    --orange:     #f97316;
+    --orange-glow:#f9731640;
+    --gold:       #f5c842;
+    --gold-glow:  #f5c84240;
+    --white:      #ffffff;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--gold) 0%, #fff 60%, var(--blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  /* ── TOP SECTION: Single-Agent Loop ── */
+  .single-agent-section {
+    max-width: 1200px;
+    margin: 0 auto 36px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  /* Single-agent horizontal loop */
+  .sa-loop {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .sa-node {
+    flex-shrink: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 90px;
+  }
+  .sa-node .node-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .sa-node .node-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .sa-node .node-sub {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .sa-arrow {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .sa-loop-back {
+    margin-top: 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sa-loop-back .loop-line {
+    height: 1px;
+    flex: 1;
+    max-width: 200px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+  .sa-loop-back .loop-label {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── MAIN CONTENT: Two-column layout ── */
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── MULTI-AGENT DIAGRAM ── */
+  .multi-agent-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+  }
+
+  /* Agent grid: 2 columns of agent cards + center shared dir */
+  .mesh-diagram {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 24px 0;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  /* Left column agents */
+  .agents-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-right: 12px;
+  }
+  /* Right column agents */
+  .agents-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-left: 12px;
+  }
+
+  /* ── AGENT CARD ── */
+  .agent-card {
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .agent-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    opacity: 0.08;
+  }
+  .agent-card.blue   { border-color: var(--blue);   background: #0a1628; }
+  .agent-card.green  { border-color: var(--green);  background: #091a0f; }
+  .agent-card.purple { border-color: var(--purple); background: #130a1e; }
+  .agent-card.orange { border-color: var(--orange); background: #1a0e05; }
+  .agent-card.blue::before   { background: var(--blue); }
+  .agent-card.green::before  { background: var(--green); }
+  .agent-card.purple::before { background: var(--purple); }
+  .agent-card.orange::before { background: var(--orange); }
+
+  .agent-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .agent-card.blue   .agent-name { color: var(--blue); }
+  .agent-card.green  .agent-name { color: var(--green); }
+  .agent-card.purple .agent-name { color: var(--purple); }
+  .agent-card.orange .agent-name { color: var(--orange); }
+
+  .agent-hw {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .agent-llm {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .agent-loop {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .loop-badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: #ffffff12;
+    color: var(--text);
+    border: 1px solid #ffffff18;
+  }
+
+  /* ── ARROWS COLUMN ── */
+  .arrows-col {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  .arrow-pair {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: center;
+  }
+
+  /* Animated arrows */
+  @keyframes flow-right {
+    0%   { stroke-dashoffset: 24; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes flow-left {
+    0%   { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 24; }
+  }
+  .arrow-write svg line,
+  .arrow-read svg line {
+    stroke-dasharray: 6 4;
+  }
+  .arrow-write svg { animation: flow-right 0.8s linear infinite; }
+  .arrow-read  svg { animation: flow-left  0.8s linear infinite; }
+
+  .arrow-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── SHARED DIRECTORY ── */
+  .shared-dir {
+    background: #0f0f00;
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 40px var(--gold-glow), 0 0 80px #f5c84210;
+    position: relative;
+    z-index: 2;
+    min-width: 220px;
+    max-width: 240px;
+  }
+  .shared-dir-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .shared-dir-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  .shared-dir-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #d4a91780;
+    margin-bottom: 12px;
+    word-break: break-all;
+  }
+  .shared-dir-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+  .stat-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #1a1500;
+    border: 1px solid #f5c84220;
+    border-radius: 6px;
+    padding: 6px 8px;
+  }
+  .stat-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+  .stat-text {
+    font-size: 10px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .stat-text strong {
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* ── PULSE / GLOW on shared dir ── */
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 30px var(--gold-glow), 0 0 60px #f5c84210; }
+    50%       { box-shadow: 0 0 50px #f5c84270, 0 0 100px #f5c84225; }
+  }
+  .shared-dir { animation: pulse-border 3s ease-in-out infinite; }
+
+  /* ── WHAT'S NOVEL SIDEBAR ── */
+  .novel-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: sticky;
+    top: 24px;
+  }
+  .novel-section h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .novel-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .novel-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .novel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .novel-dot.gold   { background: var(--gold); box-shadow: 0 0 8px var(--gold-glow); }
+  .novel-dot.blue   { background: var(--blue); box-shadow: 0 0 8px var(--blue-glow); }
+  .novel-dot.green  { background: var(--green); box-shadow: 0 0 8px var(--green-glow); }
+  .novel-dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple-glow); }
+  .novel-dot.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange-glow); }
+  .novel-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .novel-text strong { color: var(--white); font-weight: 700; }
+  .novel-text em     { color: var(--muted); font-style: normal; font-size: 11px; }
+
+  /* ── LOOP DETAIL ── */
+  .loop-detail {
+    max-width: 1200px;
+    margin: 20px auto 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 28px;
+  }
+  .loop-steps {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    margin-top: 16px;
+  }
+  .loop-step {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+    position: relative;
+  }
+  .loop-step .step-num {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  .loop-step .step-name {
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .loop-step .step-desc {
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .loop-step.perception .step-name { color: #60a5fa; }
+  .loop-step.context    .step-name { color: #34d399; }
+  .loop-step.reason     .step-name { color: #a78bfa; }
+  .loop-step.decide     .step-name { color: #fb923c; }
+  .loop-step.act        .step-name { color: var(--gold); }
+  .loop-step.monitor    .step-name { color: #f472b6; }
+  .loop-step.state      .step-name { color: #38bdf8; }
+  .loop-step.repeat     .step-name { color: var(--muted); }
+
+  .step-arrow-row {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .step-arrow-cell {
+    text-align: center;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  /* ── BOTTOM STRIP ── */
+  .patent-strip {
+    max-width: 1200px;
+    margin: 20px auto 0;
+    background: linear-gradient(135deg, #1a1500, #0f1117, #1a1500);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .patent-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .patent-icon { font-size: 20px; }
+  .patent-text {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .patent-sub {
+    font-size: 11px;
+    color: #d4a91780;
+    margin-top: 2px;
+  }
+  .patent-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .pstat {
+    text-align: center;
+  }
+  .pstat-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+  .pstat-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── ANIMATED FLOW ARROWS (SVG inline) ── */
+  .flow-arrow-h {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin: 4px 0;
+  }
+  .flow-arrow-h svg {
+    overflow: visible;
+  }
+
+  /* ── CONNECTOR ARROWS BETWEEN AGENTS AND SHARED DIR ── */
+  .connectors {
+    grid-column: 1 / -1;
+    display: none; /* handled via CSS arrows in arrow-col */
+  }
+
+  /* Left-side arrows: write goes right, read goes left */
+  .left-arrows {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    gap: 8px;
+    padding: 8px 0;
+  }
+  .right-arrows {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .arr-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .arr-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  /* ── Animated SVG lines ── */
+  @keyframes dash-right {
+    to { stroke-dashoffset: -20; }
+  }
+  @keyframes dash-left {
+    to { stroke-dashoffset: 20; }
+  }
+
+  .arr-write line {
+    stroke-dasharray: 5 4;
+    animation: dash-right 0.6s linear infinite;
+  }
+  .arr-read line {
+    stroke-dasharray: 5 4;
+    animation: dash-left 0.6s linear infinite;
+  }
+
+  /* Mesh layout adjustment */
+  .mesh-diagram {
+    grid-template-areas:
+      "left  center-l center-r right"
+      ".     bottom-l bottom-r .";
+    grid-template-columns: 1fr 80px 80px 1fr;
+  }
+  .agents-left  { grid-area: left; }
+  .left-arrows  { grid-area: center-l; }
+  .right-arrows { grid-area: center-r; }
+  .agents-right { grid-area: right; }
+
+  /* Fix layout — use CSS Grid properly */
+  .mesh-outer {
+    display: grid;
+    grid-template-columns: 1fr 70px 200px 70px 1fr;
+    gap: 0;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .col-agents-left  { display: flex; flex-direction: column; gap: 20px; }
+  .col-arrows-left  { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; height: 100%; }
+  .col-center       { display: flex; align-items: center; justify-content: center; }
+  .col-arrows-right { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; height: 100%; }
+  .col-agents-right { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Per-agent arrow pairs aligned to each card */
+  .col-arrows-left, .col-arrows-right {
+    padding: 10px 0;
+  }
+
+  .arrow-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+    gap: 4px;
+    min-height: 90px;
+    gap: 2px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .main-content { grid-template-columns: 1fr; }
+    .novel-section { position: static; }
+    .mesh-outer { grid-template-columns: 1fr 50px 160px 50px 1fr; }
+    .loop-steps { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .mesh-outer { display: flex; flex-direction: column; align-items: center; }
+    .loop-steps { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  PAGE HEADER                                                       -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <h1>AI Army Architecture — Multi-Agent Mesh System</h1>
+  <p>How the system actually runs right now, mapped to standard agent architecture patterns</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 1 — Standard Single-Agent Loop (reference)               -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="single-agent-section">
+  <div class="section-label">Reference Architecture</div>
+  <div class="section-title">Standard Single-Agent Loop</div>
+  <div class="sa-loop">
+    <div class="sa-node">
+      <div class="node-icon">🎯</div>
+      <div class="node-label">Goal</div>
+      <div class="node-sub">objective set</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">👁️</div>
+      <div class="node-label">Perception</div>
+      <div class="node-sub">observe state</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">📚</div>
+      <div class="node-label">Context</div>
+      <div class="node-sub">build memory</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">🧠</div>
+      <div class="node-label">Reason</div>
+      <div class="node-sub">LLM inference</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">⚡</div>
+      <div class="node-label">Act</div>
+      <div class="node-sub">tool call / write</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">🌍</div>
+      <div class="node-label">Environment</div>
+      <div class="node-sub">state changed</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">🔁</div>
+      <div class="node-label">Feedback</div>
+      <div class="node-sub">observe result</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">💾</div>
+      <div class="node-label">State Update</div>
+      <div class="node-sub">update memory</div>
+    </div>
+  </div>
+  <div class="sa-loop-back">
+    <div class="loop-line"></div>
+    <div class="loop-label">↩ loop repeats indefinitely</div>
+    <div class="loop-line"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  MAIN CONTENT (diagram + sidebar)                                  -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- ── LEFT: Multi-Agent Mesh Diagram ── -->
+  <div class="multi-agent-section">
+    <div class="section-label">Live System</div>
+    <div class="section-title">Our AI Army — Multi-Agent Mesh</div>
+
+    <div class="mesh-outer">
+
+      <!-- LEFT AGENTS -->
+      <div class="col-agents-left">
+
+        <!-- windows-claude -->
+        <div class="agent-card blue">
+          <div class="agent-name">windows-claude</div>
+          <div class="agent-hw">Windows PC · RTX 5090 32GB</div>
+          <div class="agent-llm">LLM: Claude Sonnet (API)</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#3b82f680;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            192.168.12.198 · paramiko SSH writes
+          </div>
+        </div>
+
+        <!-- CC-Spark2 -->
+        <div class="agent-card purple">
+          <div class="agent-name">CC-Spark2</div>
+          <div class="agent-hw">Spark-2 · GB10 119GB · 10.0.0.2</div>
+          <div class="agent-llm">LLM: Ollama (local)</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#a855f780;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            chat_watcher_v3.py · sleep(5–11s)
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LEFT ARROWS -->
+      <div class="col-arrows-left">
+
+        <div class="arrow-unit">
+          <div class="arr-label">WRITE</div>
+          <svg class="arr-write" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhL1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#3b82f6"/>
+              </marker>
+            </defs>
+            <line x1="2" y1="7" x2="62" y2="7" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrhL1)"/>
+          </svg>
+          <div class="arr-label">READ</div>
+          <svg class="arr-read" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhL2" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                <path d="M6,0 L0,3 L6,6 Z" fill="#3b82f680"/>
+              </marker>
+            </defs>
+            <line x1="62" y1="7" x2="2" y2="7" stroke="#3b82f680" stroke-width="1.5" marker-end="url(#arrhL2)"/>
+          </svg>
+        </div>
+
+        <div class="arrow-unit">
+          <div class="arr-label">WRITE</div>
+          <svg class="arr-write" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhL3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#a855f7"/>
+              </marker>
+            </defs>
+            <line x1="2" y1="7" x2="62" y2="7" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrhL3)"/>
+          </svg>
+          <div class="arr-label">READ</div>
+          <svg class="arr-read" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhL4" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                <path d="M6,0 L0,3 L6,6 Z" fill="#a855f780"/>
+              </marker>
+            </defs>
+            <line x1="62" y1="7" x2="2" y2="7" stroke="#a855f780" stroke-width="1.5" marker-end="url(#arrhL4)"/>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- CENTER: SHARED DIRECTORY -->
+      <div class="col-center">
+        <div class="shared-dir">
+          <div class="shared-dir-icon">📂</div>
+          <div class="shared-dir-title">Shared Chat Directory</div>
+          <div class="shared-dir-path">~/ai-business/shared/chat/</div>
+          <div class="shared-dir-stat">
+            <div class="stat-row">
+              <div class="stat-icon">📄</div>
+              <div class="stat-text"><strong>170,000+</strong> message files accumulated since Dec 28 2025</div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-icon">🔖</div>
+              <div class="stat-text">Format: <strong>[FROM: agent]</strong><br><strong>[TO: agent | All]</strong></div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-icon">⏱️</div>
+              <div class="stat-text">Naming: <strong>{timestamp}_{agent}.md</strong><br>or RE_{subject} pattern</div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-icon">3-in-1</div>
+              <div class="stat-text"><strong>Environment</strong> + <strong>Memory</strong> + <strong>Audit Log</strong> simultaneously</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT ARROWS -->
+      <div class="col-arrows-right">
+
+        <div class="arrow-unit">
+          <div class="arr-label">READ</div>
+          <svg class="arr-read" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhR1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#22c55e80"/>
+              </marker>
+            </defs>
+            <line x1="2" y1="7" x2="62" y2="7" stroke="#22c55e80" stroke-width="1.5" marker-end="url(#arrhR1)"/>
+          </svg>
+          <div class="arr-label">WRITE</div>
+          <svg class="arr-write" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhR2" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                <path d="M6,0 L0,3 L6,6 Z" fill="#22c55e"/>
+              </marker>
+            </defs>
+            <line x1="62" y1="7" x2="2" y2="7" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrhR2)"/>
+          </svg>
+        </div>
+
+        <div class="arrow-unit">
+          <div class="arr-label">READ</div>
+          <svg class="arr-read" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhR3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#f9731680"/>
+              </marker>
+            </defs>
+            <line x1="2" y1="7" x2="62" y2="7" stroke="#f9731680" stroke-width="1.5" marker-end="url(#arrhR3)"/>
+          </svg>
+          <div class="arr-label">WRITE</div>
+          <svg class="arr-write" width="70" height="14" viewBox="0 0 70 14">
+            <defs>
+              <marker id="arrhR4" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                <path d="M6,0 L0,3 L6,6 Z" fill="#f97316"/>
+              </marker>
+            </defs>
+            <line x1="62" y1="7" x2="2" y2="7" stroke="#f97316" stroke-width="1.5" marker-end="url(#arrhR4)"/>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- RIGHT AGENTS -->
+      <div class="col-agents-right">
+
+        <!-- CC-Spark1 -->
+        <div class="agent-card green">
+          <div class="agent-name">CC-Spark1</div>
+          <div class="agent-hw">Spark-1 · GB10 119GB · 192.168.12.132</div>
+          <div class="agent-llm">LLM: Ollama qwen2.5:7b (local)</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#22c55e80;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            chat_watcher_v3.py · sleep(5–11s)
+          </div>
+        </div>
+
+        <!-- AI-Army-Responder -->
+        <div class="agent-card orange">
+          <div class="agent-name">AI-Army-Responder</div>
+          <div class="agent-hw">Spark-1 · GB10 119GB · co-located</div>
+          <div class="agent-llm">LLM: AWS Bedrock / Kimi API</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#f9731680;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            watcher instance · distinct persona
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /.mesh-outer -->
+  </div><!-- /.multi-agent-section -->
+
+  <!-- ── RIGHT: What Makes This Novel ── -->
+  <div class="novel-section">
+    <h3>What Makes This Novel</h3>
+
+    <div class="novel-item">
+      <div class="novel-dot gold"></div>
+      <div class="novel-text">
+        <strong>No central controller</strong><br>
+        <em>Each agent runs a fully independent reasoning loop. Coordination is emergent — not orchestrated.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot blue"></div>
+      <div class="novel-text">
+        <strong>Hardware-heterogeneous</strong><br>
+        <em>x86 Windows + ARM GB10 + cloud APIs — unified via one file protocol.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot green"></div>
+      <div class="novel-text">
+        <strong>File protocol = universal interface</strong><br>
+        <em>Any agent on any OS with filesystem access can participate. Zero API contracts needed.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot purple"></div>
+      <div class="novel-text">
+        <strong>Shared dir = 3 roles at once</strong><br>
+        <em>It is the Environment agents act on, the Memory they recall from, and the Audit Log simultaneously.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot orange"></div>
+      <div class="novel-text">
+        <strong>One agent's ACT = another's PERCEPTION</strong><br>
+        <em>Output files become input for all other loops on next poll cycle — no explicit routing.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot gold"></div>
+      <div class="novel-text">
+        <strong>170K+ messages = training corpus</strong><br>
+        <em>The audit log is also a multi-agent dialogue dataset, patent evidence, and replayable test suite.</em>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px;background:#0f0f00;border:1px solid #f5c84230;border-radius:8px;">
+      <div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:6px;letter-spacing:1px;">VS. PRIOR ART</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+        LangGraph, AutoGen, CrewAI all require<br>
+        a central orchestrator process.<br><br>
+        This system has <span style="color:var(--white);font-weight:700;">no central process</span>.<br>
+        Agents independently converge.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.main-content -->
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 3 — Agent Loop Detail                                     -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="loop-detail">
+  <div class="section-label">Implementation Detail</div>
+  <div class="section-title">chat_watcher_v3.py — Each Agent's Reasoning Loop (runs on CC-Spark1, CC-Spark2, AI-Army-Responder)</div>
+
+  <div class="loop-steps">
+    <div class="loop-step perception">
+      <div class="step-num">01</div>
+      <div class="step-name">PERCEPTION</div>
+      <div class="step-desc">Poll chat dir for new .md files since last check timestamp</div>
+    </div>
+    <div class="loop-step context">
+      <div class="step-num">02</div>
+      <div class="step-name">CONTEXT</div>
+      <div class="step-desc">Load recent messages + GPU temp + disk usage + service port health</div>
+    </div>
+    <div class="loop-step reason">
+      <div class="step-num">03</div>
+      <div class="step-name">REASON</div>
+      <div class="step-desc">Call LLM (Ollama local or Bedrock/Kimi) with full context window</div>
+    </div>
+    <div class="loop-step decide">
+      <div class="step-num">04</div>
+      <div class="step-name">DECIDE</div>
+      <div class="step-desc">Relevance check — does this message require a response from this agent?</div>
+    </div>
+    <div class="loop-step act">
+      <div class="step-num">05</div>
+      <div class="step-name">ACT</div>
+      <div class="step-desc">Write response .md file to shared chat dir with [FROM:][TO:] header</div>
+    </div>
+    <div class="loop-step monitor">
+      <div class="step-num">06</div>
+      <div class="step-name">MONITOR</div>
+      <div class="step-desc">Check GPU temp + disk thresholds — write ALERT files if breached</div>
+    </div>
+    <div class="loop-step state">
+      <div class="step-num">07</div>
+      <div class="step-name">STATE</div>
+      <div class="step-desc">Update processed count, last_response_time, thermal state in memory</div>
+    </div>
+    <div class="loop-step repeat">
+      <div class="step-num">08</div>
+      <div class="step-name">REPEAT</div>
+      <div class="step-desc">sleep(5–11s) jitter then loop back to PERCEPTION</div>
+    </div>
+  </div>
+
+  <div class="step-arrow-row">
+    <div class="step-arrow-cell">↓</div>
+    <div class="step-arrow-cell">↓</div>
+    <div class="step-arrow-cell">↓</div>
+    <div class="step-arrow-cell">↓</div>
+    <div class="step-arrow-cell" style="color:var(--gold);">↓ writes to shared dir</div>
+    <div class="step-arrow-cell">↓</div>
+    <div class="step-arrow-cell">↓</div>
+    <div class="step-arrow-cell" style="color:var(--muted);">↩ back to 01</div>
+  </div>
+
+  <div style="margin-top:16px;padding:12px 0;border-top:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap;">
+    <div style="font-size:11px;color:var(--muted);">
+      <span style="color:var(--blue);font-weight:700;">windows-claude</span> uses paramiko SSH to write files remotely —
+      same shared dir, same protocol, different OS and hardware.
+    </div>
+    <div style="font-size:11px;color:var(--muted);">
+      Multiple instances run <span style="color:var(--white);">simultaneously</span> on separate hardware —
+      each loop is fully independent, no locks, no coordinator.
+    </div>
+    <div style="font-size:11px;color:var(--muted);">
+      The jitter <span style="color:var(--white);">sleep(5–11s)</span> reduces message collision probability
+      without requiring coordination primitives.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  PATENT STRIP                                                       -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="patent-strip">
+  <div class="patent-badge">
+    <div class="patent-icon">⚖️</div>
+    <div>
+      <div class="patent-text">Patent Priority Date: December 28, 2025</div>
+      <div class="patent-sub">AI-to-AI Communication System via Shared Filesystem Protocol — Multi-Agent Mesh without Central Controller</div>
+    </div>
+  </div>
+  <div class="patent-stats">
+    <div class="pstat">
+      <div class="pstat-num">170K+</div>
+      <div class="pstat-label">message files</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">4</div>
+      <div class="pstat-label">independent agents</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">3</div>
+      <div class="pstat-label">hardware platforms</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">0</div>
+      <div class="pstat-label">central controllers</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">Dec 28</div>
+      <div class="pstat-label">2025 first run</div>
+    </div>
+  </div>
+</div>
+
+<!-- small bottom margin -->
+<div style="height:32px;"></div>
+
+</body>
+</html>

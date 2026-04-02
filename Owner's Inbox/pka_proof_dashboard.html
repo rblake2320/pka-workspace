@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verified Agent Ops — Proof Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --border: #1e2330;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --go: #10b981;
+    --warn: #f59e0b;
+    --fail: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 0 0 60px;
+  }
+
+  /* header */
+  .header {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 40px 24px;
+  }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .logo {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: white;
+  }
+  .product-name { font-size: 22px; font-weight: 700; color: var(--text); }
+  .product-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .updated { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 12px; }
+
+  /* layout */
+  .main { max-width: 1200px; margin: 0 auto; padding: 32px 40px 0; }
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* stat cards */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+  }
+  .stat-value { font-size: 36px; font-weight: 800; color: var(--text); font-family: var(--mono); line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .stat-card.green .stat-value { color: var(--go); }
+  .stat-card.green::before { background: var(--go); }
+
+  /* score ring */
+  .score-ring-wrap { display: flex; align-items: center; gap: 24px; }
+  .ring-container { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+  .ring-svg { width: 80px; height: 80px; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fg { fill: none; stroke: var(--go); stroke-width: 8; stroke-linecap: round;
+              stroke-dasharray: 220; stroke-dashoffset: 0; transition: stroke-dashoffset 1s; }
+  .ring-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 16px; font-weight: 800; color: var(--go); font-family: var(--mono);
+  }
+
+  /* badges */
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+    font-family: var(--mono);
+  }
+  .badge.go { background: rgba(16,185,129,0.15); color: var(--go); border: 1px solid rgba(16,185,129,0.3); }
+  .badge.nogo { background: rgba(239,68,68,0.15); color: var(--fail); border: 1px solid rgba(239,68,68,0.3); }
+  .badge.hold { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+  .badge.delivered { background: rgba(0,212,255,0.12); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); }
+  .badge.in-progress { background: rgba(245,158,11,0.12); color: var(--warn); border: 1px solid rgba(245,158,11,0.25); }
+  .badge.pending { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid rgba(100,116,139,0.3); }
+
+  /* checks */
+  .checks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  .check {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .check.pass { border-left: 3px solid var(--go); }
+  .check.fail { border-left: 3px solid var(--fail); }
+  .check-name { color: var(--text); }
+  .check-result.PASS { color: var(--go); font-weight: 700; }
+  .check-result.FAIL { color: var(--fail); font-weight: 700; }
+
+  /* trailing bars */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 60px; }
+  .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar {
+    width: 100%; border-radius: 4px 4px 0 0; min-height: 4px;
+    transition: height 0.5s;
+  }
+  .bar.full { background: var(--go); }
+  .bar.high { background: #34d399; }
+  .bar.mid { background: var(--warn); }
+  .bar.low { background: var(--fail); }
+  .bar-label { font-size: 10px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+
+  /* tables */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 12px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  code { font-family: var(--mono); font-size: 11px; color: var(--accent); background: rgba(0,212,255,0.08); padding: 1px 5px; border-radius: 3px; }
+  .deliverable { max-width: 360px; font-size: 12px; color: var(--muted); word-break: break-word; }
+  .route { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  /* agents */
+  .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .agent-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .agent-card.active { border-color: rgba(0,212,255,0.3); }
+  .agent-card.active .agent-name { color: var(--accent); }
+  .agent-name { font-size: 12px; font-weight: 700; font-family: var(--mono); color: var(--muted); }
+  .agent-tasks { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .agent-card.active .agent-tasks { color: var(--text); }
+
+  /* obs panel */
+  .obs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 640px) { .obs-grid { grid-template-columns: 1fr; } }
+  .obs-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .obs-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .obs-value { font-size: 28px; font-weight: 800; font-family: var(--mono); color: var(--text); }
+  .obs-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* footer */
+  .footer {
+    text-align: center; padding: 32px;
+    font-size: 11px; color: var(--muted); font-family: var(--mono);
+    border-top: 1px solid var(--border); margin-top: 48px;
+  }
+  .proof-stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 12px; color: var(--go); font-weight: 600;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">V</div>
+    <div>
+      <div class="product-name">Verified Agent Ops Platform</div>
+      <div class="product-sub">Every task receipted. Every verdict auditable.</div>
+    </div>
+  </div>
+  <div class="updated">Last validated: 2026-04-02T18:04:48Z &nbsp;·&nbsp; 100/100 checks passing</div>
+</div>
+
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="section">
+    <div class="section-title">Live Metrics</div>
+    <div class="stats">
+      <div class="stat-card green">
+        <div class="score-ring-wrap">
+          <div class="ring-container">
+            <svg class="ring-svg" viewBox="0 0 80 80">
+              <circle class="ring-bg" cx="40" cy="40" r="35"/>
+              <circle class="ring-fg" cx="40" cy="40" r="35"/>
+            </svg>
+            <div class="ring-text">100</div>
+          </div>
+          <div>
+            <div class="stat-value" style="font-size:24px">100/100</div>
+            <div class="stat-label">Validation score</div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">26</div>
+        <div class="stat-label">Validation runs recorded</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">13/26</div>
+        <div class="stat-label">Perfect runs</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value">16</div>
+        <div class="stat-label">Tasks delivered</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value">12</div>
+        <div class="stat-label">GO verdicts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">221</div>
+        <div class="stat-label">Tool calls audited</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit trail -->
+  <div class="section">
+    <div class="section-title">Audit Trail — Tool Call Log</div>
+    <div class="obs-grid">
+      <div class="obs-panel">
+        <div class="obs-label">Tool calls by type</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-family:var(--mono);font-size:11px;width:90px;flex-shrink:0;color:var(--text)">Generated</div><div style="flex:1;background:var(--border);border-radius:3px;height:8px"><div style="width:90%;background:var(--accent);height:8px;border-radius:3px"></div></div><div style="font-size:11px;color:var(--muted);font-family:var(--mono);width:36px;text-align:right">2026</div></div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-family:var(--mono);font-size:11px;width:90px;flex-shrink:0;color:var(--text)">Bash</div><div style="flex:1;background:var(--border);border-radius:3px;height:8px"><div style="width:7%;background:var(--accent);height:8px;border-radius:3px"></div></div><div style="font-size:11px;color:var(--muted);font-family:var(--mono);width:36px;text-align:right">173</div></div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-family:var(--mono);font-size:11px;width:90px;flex-shrink:0;color:var(--text)">Edit</div><div style="flex:1;background:var(--border);border-radius:3px;height:8px"><div style="width:0%;background:var(--accent);height:8px;border-radius:3px"></div></div><div style="font-size:11px;color:var(--muted);font-family:var(--mono);width:36px;text-align:right">21</div></div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-family:var(--mono);font-size:11px;width:90px;flex-shrink:0;color:var(--text)">Task</div><div style="flex:1;background:var(--border);border-radius:3px;height:8px"><div style="width:0%;background:var(--accent);height:8px;border-radius:3px"></div></div><div style="font-size:11px;color:var(--muted);font-family:var(--mono);width:36px;text-align:right">14</div></div>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-family:var(--mono);font-size:11px;width:90px;flex-shrink:0;color:var(--text)">Write</div><div style="flex:1;background:var(--border);border-radius:3px;height:8px"><div style="width:0%;background:var(--accent);height:8px;border-radius:3px"></div></div><div style="font-size:11px;color:var(--muted);font-family:var(--mono);width:36px;text-align:right">13</div></div>
+      </div>
+      <div class="obs-panel">
+        <div class="obs-label">Session coverage</div>
+        <div class="obs-value">221</div>
+        <div class="obs-sub">Calls logged across 2 session(s), 1 day(s)</div>
+        <div style="margin-top:16px;font-size:11px;color:var(--go)">&#10003; PostToolUse hook active on Bash · Write · Edit · Task</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Validation checks -->
+  <div class="section">
+    <div class="section-title">Validation Checks — Latest Run</div>
+    <div class="checks-grid">
+      <div class="check pass"><span class="check-name">baseline_audit</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">session_start</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">e2e_run_1</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">e2e_run_2</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">e2e_run_3</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">resilience_suite</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">post_resilience_audit</span><span class="check-result">PASS</span></div>
+<div class="check pass"><span class="check-name">session_end</span><span class="check-result">PASS</span></div>
+    </div>
+  </div>
+
+  <!-- Observability -->
+  <div class="section">
+    <div class="section-title">Observability</div>
+    <div class="obs-grid">
+      <div class="obs-panel">
+        <div class="obs-label">Trailing 5 pass counts</div>
+        <div class="bar-chart">
+          <div class="bar-wrap" title="8/8"><div class="bar full" style="height:100%"></div><div class="bar-label">8/8</div></div>
+<div class="bar-wrap" title="7/8"><div class="bar high" style="height:87%"></div><div class="bar-label">7/8</div></div>
+<div class="bar-wrap" title="8/8"><div class="bar full" style="height:100%"></div><div class="bar-label">8/8</div></div>
+<div class="bar-wrap" title="8/8"><div class="bar full" style="height:100%"></div><div class="bar-label">8/8</div></div>
+<div class="bar-wrap" title="8/8"><div class="bar full" style="height:100%"></div><div class="bar-label">8/8</div></div>
+        </div>
+      </div>
+      <div class="obs-panel">
+        <div class="obs-label">Score stability</div>
+        <div class="obs-value">12/100</div>
+        <div class="obs-sub">Score range across all runs — lower is more stable</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delivery manifest -->
+  <div class="section">
+    <div class="section-title">Delivery Manifest — Completed Tasks</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Task</th>
+            <th>Verdict</th>
+            <th>Deliverable</th>
+            <th>Route</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-04-02</td><td><code>TASK-20260402-010</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>Owner's Inbox/HELM-council-agentforge-integration-plan.md</td><td class='route'>AXIOM,HELM,FORGE</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-011</code></td><td><span class="badge delivered">GO (conditional)</span></td><td class='deliverable'>Owner's Inbox/LEGAL-pka-audit-trail-patent-assessment.md</td><td class='route'>AXIOM,LEGAL</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-009</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>Owner's Inbox/VENTURE-verified-agent-ops-oss-scope.md</td><td class='route'>AXIOM,VENTURE</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-007</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>Owner's Inbox/SENTINEL-pka-v050-verdict.md</td><td class='route'>AXIOM,CRUCIBLE,SENTINEL</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-006</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>Owner's Inbox/RADAR-pka-v050-opportunity-scan.md</td><td class='route'>AXIOM,RADAR</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-003</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>Owner's Inbox/NOVA-agent-ops-competitive-landscape.md</td><td class='route'>AXIOM,NOVA</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-004</code></td><td><span class="badge delivered">PARTIAL PASS</span></td><td class='deliverable'>Owner's Inbox/CRUCIBLE-pka-v050-test-sweep.md</td><td class='route'>AXIOM,CRUCIBLE</td></tr>
+<tr><td>2026-04-02</td><td><code>TASK-20260402-005</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>Owner's Inbox/SPARK-verified-agent-ops-readme-draft.md</td><td class='route'>AXIOM,SPARK</td></tr>
+<tr><td>2026-04-01</td><td><code>TASK-20260401-008</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>aihangout-app/frontend/dist/ (0 .map files, commit 5ddd094) + pro-designs-system/dist/ (0 .map files)</td><td class='route'>AXIOM,FORGE,SENTINEL</td></tr>
+<tr><td>2026-04-01</td><td><code>TASK-20260401-006</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>scripts/pka_scorecard.py rebuilt by Codex; circular scoring eliminated; manifest lookup fixed by Claude Code post-delivery</td><td class='route'>AXIOM,FORGE,SENTINEL</td></tr>
+<tr><td>2026-04-01</td><td><code>TASK-20260401-005</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>scripts/ai_army_chat.py — SSH-based group chat client; used in live Codex coordination session to completion</td><td class='route'>AXIOM,FORGE,SENTINEL</td></tr>
+<tr><td>2026-03-31</td><td><code>TASK-20260401-004</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>~/hermes-agent/scripts/health_check.sh on Spark-1 + Hermes cron job service-health-watchdog (4h interval) + Telegram delivery confirmed</td><td class='route'>AXIOM,FORGE,SENTINEL</td></tr>
+<tr><td>2026-04-01</td><td><code>TASK-20260401-003</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>pro-designs-system builds clean: OrderForm.tsx Size cast fixed, AdminDashboard.tsx dead code removed, CleanHomePage.tsx unused state removed, UltraMotion.tsx @ts-ignore on Framer Motion type mismatch, SoundReactiveVisuals.tsx ArrayBuffer type fixed, CustomDesignMatcher.tsx null</td><td class='route'>AXIOM,FORGE,SENTINEL</td></tr>
+<tr><td>2026-04-01</td><td><code>TASK-20260401-002</code></td><td><span class="badge go">GO</span></td><td class='deliverable'>aihangout-app/frontend/vite.config.ts sourcemap:false; pro-designs-system/vite.config.ts sourcemap:false; both dist/ directories rebuilt with zero .map files</td><td class='route'>AXIOM,FORGE,SENTINEL</td></tr>
+<tr><td>2026-04-01</td><td><code>E2E Process Validation Task</code></td><td><span class="badge delivered">delivered</span></td><td class='deliverable'>E2E validation record and verified process controls</td><td class='route'>AXIOM -> FORGE -> CRUCIBLE -> SENTINEL -> AXIOM</td></tr>
+<tr><td>2026-03-31</td><td><code>Process hardening control layer</code></td><td><span class="badge delivered">delivered</span></td><td class='deliverable'>`Team/OPERATING_MODEL.md`, `Team/TASK_BRIEF_TEMPLATE.md`, `Team/tasks/`, `scripts/pka_process_audit.py`</td><td class='route'>AXIOM -> FORGE</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Task ledger -->
+  <div class="section">
+    <div class="section-title">Task Ledger</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Task ID</th>
+            <th>Title</th>
+            <th>State</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>TASK-20260331-001</code></td><td>Process hardening control layer</td><td><span class="badge delivered">delivered</span></td><td>AXIOM</td></tr>
+<tr><td><code>TASK-20260401-008</code></td><td>Audit and harden source map exposure across all production builds</td><td><span class="badge delivered">delivered</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260401-005</code></td><td>Build AI Army group chat client script</td><td><span class="badge delivered">delivered</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260401-004</code></td><td>Deploy Hermes service health watchdog on Spark-1</td><td><span class="badge delivered">delivered</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260401-001</code></td><td>E2E Process Validation Task</td><td><span class="badge delivered">delivered</span></td><td>AXIOM</td></tr>
+<tr><td><code>TASK-20260401-002</code></td><td>Fix source map exposure in aihangout.ai and pro-designs-system</td><td><span class="badge delivered">delivered</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260401-003</code></td><td>Fix TypeScript build errors in pro-designs-system</td><td><span class="badge delivered">delivered</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260401-006</code></td><td>Rebuild PKA scorecard with real task history metrics</td><td><span class="badge delivered">delivered</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260402-004</code></td><td>CRUCIBLE: PKA v0.5.0 Full Script Test Sweep</td><td><span class="badge delivered">delivered</span></td><td>CRUCIBLE</td></tr>
+<tr><td><code>TASK-20260402-008</code></td><td>FORGE: Fix pka_resilience_test.py stub self-cleanup</td><td><span class="badge in-progress">in_progress</span></td><td>FORGE</td></tr>
+<tr><td><code>TASK-20260402-010</code></td><td>HELM: Council + AgentForge PKA ledger integration</td><td><span class="badge delivered">delivered</span></td><td>HELM</td></tr>
+<tr><td><code>TASK-20260402-011</code></td><td>LEGAL: PKA audit trail patent provisional filing</td><td><span class="badge delivered">delivered</span></td><td>LEGAL</td></tr>
+<tr><td><code>TASK-20260402-003</code></td><td>NOVA: Agent Ops Competitive Landscape</td><td><span class="badge delivered">delivered</span></td><td>NOVA</td></tr>
+<tr><td><code>TASK-20260402-006</code></td><td>RADAR: PKA v0.5.0 Opportunity Scan</td><td><span class="badge delivered">delivered</span></td><td>RADAR</td></tr>
+<tr><td><code>TASK-20260402-007</code></td><td>SENTINEL: PKA v0.5.0 GO/NO-GO Verdict</td><td><span class="badge delivered">delivered</span></td><td>SENTINEL</td></tr>
+<tr><td><code>TASK-20260402-005</code></td><td>SPARK: verified-agent-ops README Draft</td><td><span class="badge delivered">delivered</span></td><td>SPARK</td></tr>
+<tr><td><code>TASK-20260402-009</code></td><td>VENTURE: verified-agent-ops OSS scaffold scope</td><td><span class="badge delivered">delivered</span></td><td>VENTURE</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Agent roster -->
+  <div class="section">
+    <div class="section-title">Agent Roster — 13 Active Agents</div>
+    <div class="agent-grid">
+      <div class="agent-card active"><div class="agent-name">AXIOM</div><div class="agent-tasks">2 tasks</div></div>
+<div class="agent-card active"><div class="agent-name">FORGE</div><div class="agent-tasks">7 tasks</div></div>
+<div class="agent-card active"><div class="agent-name">SENTINEL</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card active"><div class="agent-name">HELM</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card active"><div class="agent-name">NOVA</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card active"><div class="agent-name">VENTURE</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card active"><div class="agent-name">SPARK</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card active"><div class="agent-name">LEGAL</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card idle"><div class="agent-name">SCRIBE</div><div class="agent-tasks">0 tasks</div></div>
+<div class="agent-card idle"><div class="agent-name">GRID</div><div class="agent-tasks">0 tasks</div></div>
+<div class="agent-card active"><div class="agent-name">RADAR</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card active"><div class="agent-name">CRUCIBLE</div><div class="agent-tasks">1 task</div></div>
+<div class="agent-card idle"><div class="agent-name">DEBUGGER</div><div class="agent-tasks">0 tasks</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="proof-stamp">&#10003; Verified Agent Ops Platform</div><br>
+  Generated from live workspace data &nbsp;·&nbsp; pka_proof_dashboard.py &nbsp;·&nbsp; 2026-04-02T18:04:48Z
+</div>
+
+</body>
+</html>

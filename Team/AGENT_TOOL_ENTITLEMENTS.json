@@ -1,0 +1,219 @@
+{
+  "AXIOM": {
+    "risk_tier": "orchestrator",
+    "allowed_actions": [
+      "read_inbox",
+      "read_owner_context",
+      "classify_tasks",
+      "update_task_ledger",
+      "update_status_and_handoff",
+      "update_delivery_manifest",
+      "send_structured_messages"
+    ],
+    "blocked_actions": [
+      "implement_consequential_code",
+      "self_validate_consequential_work",
+      "ship_without_manifest"
+    ],
+    "escalation_required": [
+      "destructive_git",
+      "external_deploy",
+      "production_mutation"
+    ]
+  },
+  "NOVA": {
+    "risk_tier": "research",
+    "allowed_actions": [
+      "browse_primary_sources",
+      "produce_research_deliverables",
+      "summarize_evidence",
+      "draft_recommendations"
+    ],
+    "blocked_actions": [
+      "final_release_gate",
+      "ship_unreviewed_security_claims"
+    ],
+    "escalation_required": [
+      "medical_guidance",
+      "legal_guidance",
+      "financial_guidance"
+    ]
+  },
+  "FORGE": {
+    "risk_tier": "builder",
+    "allowed_actions": [
+      "edit_files",
+      "run_builds",
+      "run_local_tests",
+      "prepare_deliverables"
+    ],
+    "blocked_actions": [
+      "self_issue_final_go_decision",
+      "skip_crucible_on_technical_work"
+    ],
+    "escalation_required": [
+      "destructive_changes",
+      "external_deploy",
+      "production_data_mutation"
+    ]
+  },
+  "SENTINEL": {
+    "risk_tier": "audit",
+    "allowed_actions": [
+      "audit_evidence",
+      "issue_go_hold_no_go",
+      "record_risk_findings",
+      "verify_claims"
+    ],
+    "blocked_actions": [
+      "author_primary_implementation",
+      "waive_missing_test_evidence"
+    ],
+    "escalation_required": [
+      "security_incident",
+      "data_isolation_breach"
+    ]
+  },
+  "HELM": {
+    "risk_tier": "coordination",
+    "allowed_actions": [
+      "plan_workflows",
+      "assign_agents",
+      "track_dependencies",
+      "normalize_execution_contracts"
+    ],
+    "blocked_actions": [
+      "replace_validation_chain",
+      "ship_without_owner_surface_update"
+    ],
+    "escalation_required": [
+      "conflicting_priorities",
+      "cross_project_dependency_blocker"
+    ]
+  },
+  "VENTURE": {
+    "risk_tier": "product",
+    "allowed_actions": [
+      "product_strategy",
+      "market_analysis",
+      "scope_recommendations",
+      "business_modeling"
+    ],
+    "blocked_actions": [
+      "unsupported_revenue_claims"
+    ],
+    "escalation_required": [
+      "binding_commercial_commitments"
+    ]
+  },
+  "SPARK": {
+    "risk_tier": "content",
+    "allowed_actions": [
+      "write_copy",
+      "draft_positioning",
+      "create_communication_assets"
+    ],
+    "blocked_actions": [
+      "invent_unverified_capabilities"
+    ],
+    "escalation_required": [
+      "public_security_claims",
+      "regulated_marketing_claims"
+    ]
+  },
+  "LEGAL": {
+    "risk_tier": "legal",
+    "allowed_actions": [
+      "ip_analysis",
+      "patent_assessment",
+      "compliance_risk_review",
+      "legal_issue_spotting"
+    ],
+    "blocked_actions": [
+      "fabricate_legal_certainty"
+    ],
+    "escalation_required": [
+      "binding_legal_advice",
+      "external_filing_submission"
+    ]
+  },
+  "SCRIBE": {
+    "risk_tier": "documentation",
+    "allowed_actions": [
+      "write_docs",
+      "maintain_memory_artifacts",
+      "author_skills",
+      "normalize_templates"
+    ],
+    "blocked_actions": [
+      "overwrite_canonical_state_without_evidence"
+    ],
+    "escalation_required": [
+      "bulk_doc_migration"
+    ]
+  },
+  "GRID": {
+    "risk_tier": "architecture",
+    "allowed_actions": [
+      "scale_review",
+      "reliability_review",
+      "topology_analysis",
+      "capacity_recommendations"
+    ],
+    "blocked_actions": [
+      "approve_prod_changes_without_validation"
+    ],
+    "escalation_required": [
+      "infra_single_point_of_failure",
+      "capacity_exhaustion"
+    ]
+  },
+  "RADAR": {
+    "risk_tier": "opportunity",
+    "allowed_actions": [
+      "landscape_scan",
+      "timing_signal_analysis",
+      "use_case_identification"
+    ],
+    "blocked_actions": [
+      "unsupported_threat_claims"
+    ],
+    "escalation_required": [
+      "high-confidence_ip_signal",
+      "material_market_shift"
+    ]
+  },
+  "CRUCIBLE": {
+    "risk_tier": "test",
+    "allowed_actions": [
+      "functional_testing",
+      "integration_testing",
+      "adversarial_testing",
+      "security_testing"
+    ],
+    "blocked_actions": [
+      "ship_without_results",
+      "convert_partial_pass_into_go_without_fix"
+    ],
+    "escalation_required": [
+      "critical_defect",
+      "security_failure"
+    ]
+  },
+  "DEBUGGER": {
+    "risk_tier": "debug",
+    "allowed_actions": [
+      "root_cause_analysis",
+      "reproduction",
+      "failure_isolation",
+      "repair_recommendation"
+    ],
+    "blocked_actions": [
+      "claim_fix_without_repro"
+    ],
+    "escalation_required": [
+      "non_deterministic_failure",
+      "data_loss_risk"
+    ]
+  }
+}

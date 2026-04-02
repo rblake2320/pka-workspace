@@ -1,0 +1,139 @@
+# =============================================================================
+# .npmignore — Standard template for AI Army projects
+#
+# Copy this file to the root of any project that may be published to npm.
+# Even private packages should have this as defense-in-depth.
+#
+# Background: Anthropic's Claude Code source map incident (2026-03-31)
+# demonstrated that a single missing exclude rule can ship 59.8MB of
+# proprietary source code to the world permanently. This template prevents
+# the most common categories of accidental disclosure.
+#
+# Usage:
+#   cp /path/to/.npmignore-template /path/to/project/.npmignore
+#   Review the file for project-specific additions before committing.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Source maps — the root cause of the Anthropic incident
+# Never ship .map files — they expose your full TypeScript source
+# ---------------------------------------------------------------------------
+*.map
+**/*.map
+
+# ---------------------------------------------------------------------------
+# TypeScript source files
+# Ship compiled output (dist/) not source (src/)
+# Exception: keep types/ if you ship public type definitions
+# ---------------------------------------------------------------------------
+src/
+*.ts
+*.tsx
+!types/**/*.d.ts
+!dist/**/*.d.ts
+
+# ---------------------------------------------------------------------------
+# Test files and directories
+# Tests are for development, not for package consumers
+# ---------------------------------------------------------------------------
+__tests__/
+*.test.ts
+*.test.tsx
+*.test.js
+*.spec.ts
+*.spec.tsx
+*.spec.js
+tests/
+test/
+coverage/
+.nyc_output/
+
+# ---------------------------------------------------------------------------
+# Environment and secrets
+# These must NEVER ship — they contain credentials
+# ---------------------------------------------------------------------------
+.env
+.env.*
+.env.local
+.env.production
+.env.development
+.env.staging
+*.env
+secrets/
+.secrets/
+
+# ---------------------------------------------------------------------------
+# Build tool configs
+# Expose internal tooling choices and sometimes credentials
+# ---------------------------------------------------------------------------
+vite.config.ts
+vite.config.js
+vite.config.mts
+webpack.config.ts
+webpack.config.js
+rollup.config.ts
+rollup.config.js
+esbuild.config.ts
+esbuild.config.js
+bunfig.toml
+tsconfig.json
+tsconfig.*.json
+.babelrc
+babel.config.js
+babel.config.ts
+jest.config.ts
+jest.config.js
+vitest.config.ts
+vitest.config.js
+.eslintrc*
+eslint.config.*
+.prettierrc*
+prettier.config.*
+postcss.config.*
+tailwind.config.*
+
+# ---------------------------------------------------------------------------
+# CI/CD and DevOps
+# ---------------------------------------------------------------------------
+.github/
+.gitlab-ci.yml
+.circleci/
+Dockerfile
+docker-compose*.yml
+.dockerignore
+kubernetes/
+k8s/
+helm/
+Makefile
+*.sh
+
+# ---------------------------------------------------------------------------
+# Documentation source
+# (Ship a README.md to npm, but not full doc tooling)
+# ---------------------------------------------------------------------------
+docs/
+*.mdx
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+
+# ---------------------------------------------------------------------------
+# Development artifacts
+# ---------------------------------------------------------------------------
+node_modules/
+.cache/
+.turbo/
+.parcel-cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------------------------------
+# Playwright / Selenium test output
+# ---------------------------------------------------------------------------
+playwright-report/
+test-results/
+screenshots/

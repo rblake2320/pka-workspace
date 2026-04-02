@@ -1,0 +1,57 @@
+{
+  "env": {
+    "WORKSPACE": "PKA Testing",
+    "OWNER_INBOX": "Owner's Inbox",
+    "TEAM_INBOX": "Team Inbox"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Python312/python.exe \"C:/Users/techai/PKA testing/scripts/pka_post_tool_hook.py\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "mcp__playwright-server__browser_navigate",
+      "mcp__playwright-server__browser_network_requests",
+      "mcp__playwright-server__browser_evaluate",
+      "mcp__playwright-server__browser_snapshot",
+      "mcp__playwright-server__browser_wait_for",
+      "mcp__claude_ai_bindings_cloudflare__accounts_list",
+      "mcp__claude_ai_bindings_cloudflare__d1_databases_list",
+      "mcp__claude_ai_bindings_cloudflare__d1_database_query",
+      "mcp__claude_ai_bindings_cloudflare__kv_namespaces_list",
+      "mcp__claude_ai_bindings_cloudflare__set_active_account",
+      "mcp__skills-bridge__healthcheck",
+      "mcp__skills-bridge__skill_stats",
+      "mcp__skills-bridge__list_skills",
+      "mcp__skills-bridge__rescan_skills",
+      "mcp__skills-bridge__get_pending_approvals",
+      "Skill(playwright-cli)",
+      "mcp__memoryweb__add_memory",
+      "mcp__memoryweb__search_memories",
+      "mcp__memoryweb__get_memories_by_tag",
+      "mcp__memoryweb__get_recent_memories",
+      "mcp__memoryweb__get_memory_stats"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(rmdir:*)"
+    ]
+  }
+}

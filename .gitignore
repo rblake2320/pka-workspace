@@ -1,0 +1,50 @@
+# Secrets
+keys.txt
+*.env
+.env.*
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+
+# Logs
+logs/
+*.log
+
+# Temp and generated artifacts
+tmp_extract/
+tmp_*.png
+tmp_*.py
+problems_*.png
+flowboard_test.png
+
+# Playwright / browser state
+.playwright-mcp/
+.playwright-cli/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Inbox archive and local runtime noise
+Team Inbox/processed/
+Team/messages/archive/*.json
+
+# Lock files created by local process tooling
+Team/tasks/*.lock
+Owner's Inbox/*.lock
+*.lock
+
+# Machine-generated session resumption manifest — rebuilt on every start/end
+Team/tasks/RESUME.json
+
+# Claude Code agent worktrees — ephemeral, not part of repo history
+.claude/worktrees/
+
+# Keep intentional tracked files
+!package.json

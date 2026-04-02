@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Army Architecture v2 — Environment-Mediated Multi-Agent Coordination</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #0f1117;
+    --bg2:         #161820;
+    --bg3:         #1e2028;
+    --border:      #2a2d3a;
+    --text:        #e8eaf0;
+    --muted:       #8891a8;
+    --blue:        #3b82f6;
+    --blue-glow:   #3b82f640;
+    --green:       #22c55e;
+    --green-glow:  #22c55e40;
+    --purple:      #a855f7;
+    --purple-glow: #a855f740;
+    --orange:      #f97316;
+    --orange-glow: #f9731640;
+    --gold:        #f5c842;
+    --gold-glow:   #f5c84240;
+    --red:         #ef4444;
+    --red-glow:    #ef444440;
+    --teal:        #14b8a6;
+    --teal-glow:   #14b8a640;
+    --white:       #ffffff;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── V2 BADGE ── */
+  .v2-badge {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #1a1030, #0a1628);
+    border: 1px solid var(--purple);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 1px;
+    font-family: 'JetBrains Mono', monospace;
+    z-index: 1000;
+    box-shadow: 0 0 16px var(--purple-glow);
+  }
+  .v2-badge span { color: var(--muted); font-weight: 400; }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-right: 120px; /* clear the fixed badge */
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--gold) 0%, #fff 60%, var(--blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .page-header p {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  /* ── TOP SECTION: Single-Agent Loop ── */
+  .single-agent-section {
+    max-width: 1300px;
+    margin: 0 auto 36px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .sa-loop {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .sa-node {
+    flex-shrink: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 90px;
+  }
+  .sa-node .node-icon { font-size: 18px; margin-bottom: 4px; }
+  .sa-node .node-label { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .sa-node .node-sub { font-size: 9px; color: var(--muted); margin-top: 2px; white-space: nowrap; }
+  .sa-arrow { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; color: var(--muted); font-size: 14px; }
+  .sa-loop-back {
+    margin-top: 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sa-loop-back .loop-line { height: 1px; flex: 1; max-width: 200px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+  .sa-loop-back .loop-label { background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 10px; color: var(--muted); }
+
+  /* ── MAIN CONTENT: Three-column layout (diagram | governance center | sidebar) ── */
+  .main-wrapper {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  /* The outer row: agents+arrows + governance bus + sidebar */
+  .main-row {
+    display: grid;
+    grid-template-columns: 1fr 340px 280px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── MULTI-AGENT SECTION ── */
+  .multi-agent-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 20px;
+  }
+
+  .mesh-outer {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .col-agents-left  { display: flex; flex-direction: column; gap: 20px; }
+  .col-arrows-mid   { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; height: 100%; }
+  .col-agents-right { display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── AGENT CARD ── */
+  .agent-card {
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .agent-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    opacity: 0.08;
+  }
+  .agent-card.blue   { border-color: var(--blue);   background: #0a1628; }
+  .agent-card.green  { border-color: var(--green);  background: #091a0f; }
+  .agent-card.purple { border-color: var(--purple); background: #130a1e; }
+  .agent-card.orange { border-color: var(--orange); background: #1a0e05; }
+  .agent-card.blue::before   { background: var(--blue); }
+  .agent-card.green::before  { background: var(--green); }
+  .agent-card.purple::before { background: var(--purple); }
+  .agent-card.orange::before { background: var(--orange); }
+
+  .agent-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+  .agent-card.blue   .agent-name { color: var(--blue); }
+  .agent-card.green  .agent-name { color: var(--green); }
+  .agent-card.purple .agent-name { color: var(--purple); }
+  .agent-card.orange .agent-name { color: var(--orange); }
+
+  .agent-hw  { font-size: 10px; color: var(--muted); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+  .agent-llm { font-size: 10px; color: var(--muted); margin-bottom: 8px; font-style: italic; }
+  .agent-loop { display: flex; gap: 4px; flex-wrap: wrap; }
+  .loop-badge {
+    font-size: 9px; font-weight: 600; padding: 3px 7px; border-radius: 4px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    background: #ffffff12; color: var(--text); border: 1px solid #ffffff18;
+  }
+
+  /* ── ARROW UNITS ── */
+  .arrow-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+    gap: 2px;
+    min-height: 90px;
+  }
+  .arr-label { font-size: 9px; color: var(--muted); letter-spacing: 0.5px; white-space: nowrap; }
+
+  @keyframes dash-right { to { stroke-dashoffset: -20; } }
+  @keyframes dash-left  { to { stroke-dashoffset:  20; } }
+
+  .arr-write line { stroke-dasharray: 5 4; animation: dash-right 0.6s linear infinite; }
+  .arr-read  line { stroke-dasharray: 5 4; animation: dash-left  0.6s linear infinite; }
+
+  /* ── GOVERNANCE + BUS CENTER COLUMN ── */
+  .governance-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Governance layer container */
+  .governance-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 16px;
+  }
+
+  .gov-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  /* The governance ring around the bus */
+  .governance-ring {
+    border: 2px dashed var(--teal);
+    border-radius: 20px;
+    padding: 14px;
+    background: #00131330;
+    position: relative;
+  }
+  .governance-ring-label {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f1117;
+    padding: 2px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    border: 1px solid var(--teal);
+    border-radius: 10px;
+  }
+
+  /* Write path (top of governance ring) */
+  .gov-path {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .gov-path-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .gov-step {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--text);
+    text-align: center;
+    width: 100%;
+    line-height: 1.3;
+  }
+  .gov-step strong { font-weight: 700; }
+  .gov-step.write-step { border-color: var(--teal); color: var(--teal); }
+  .gov-step.schema-step { border-color: #2a5a5a; }
+  .gov-step.auth-step   { border-color: #2a5a5a; }
+  .gov-step.read-step   { border-color: var(--blue); color: var(--blue); }
+  .gov-step.obs-step    { border-color: #1a3060; }
+  .gov-step.risk-step   { border-color: #1a3060; }
+  .gov-step.act-step    { border-color: #22c55e50; color: #22c55e; }
+
+  .gov-micro-arrow {
+    color: var(--teal);
+    font-size: 12px;
+    line-height: 1;
+  }
+  .gov-micro-arrow.read-color { color: var(--blue); }
+  .gov-step-note {
+    font-size: 9px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* The bus itself (inside the ring) */
+  .shared-dir {
+    background: #0f0f00;
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: center;
+    box-shadow: 0 0 30px var(--gold-glow), 0 0 60px #f5c84210;
+    margin: 10px 0;
+  }
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 25px var(--gold-glow), 0 0 50px #f5c84210; }
+    50%       { box-shadow: 0 0 45px #f5c84270, 0 0 90px #f5c84225; }
+  }
+  .shared-dir { animation: pulse-border 3s ease-in-out infinite; }
+
+  .shared-dir-icon  { font-size: 24px; margin-bottom: 6px; }
+  .shared-dir-title { font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 3px; letter-spacing: 0.3px; line-height: 1.3; }
+  .shared-dir-path  { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #d4a91780; margin-bottom: 10px; }
+  .shared-dir-stat  { display: flex; flex-direction: column; gap: 5px; text-align: left; }
+
+  .stat-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    background: #1a1500;
+    border: 1px solid #f5c84220;
+    border-radius: 5px;
+    padding: 5px 7px;
+  }
+  .stat-icon { font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+  .stat-text { font-size: 9px; color: var(--text); line-height: 1.4; }
+  .stat-text strong { color: var(--gold); font-weight: 700; }
+
+  /* 3-role box */
+  .three-roles {
+    border: 1px solid #f5c84230;
+    border-radius: 8px;
+    padding: 8px;
+    background: #0f0d00;
+    margin-top: 8px;
+  }
+  .three-roles-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  .three-roles-divider { height: 1px; background: #f5c84220; margin: 4px 0; }
+  .role-row {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 3px 0;
+  }
+  .role-num {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+    width: 14px;
+  }
+  .role-content { font-size: 9px; color: var(--text); line-height: 1.4; }
+  .role-content strong { color: var(--gold); }
+  .role-content em { color: var(--muted); font-style: normal; }
+
+  /* ── RIGHT SIDEBAR: Differentiation ── */
+  .diff-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: sticky;
+    top: 24px;
+  }
+  .diff-section h3 { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .novel-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .novel-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .novel-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .novel-dot.gold   { background: var(--gold);   box-shadow: 0 0 8px var(--gold-glow); }
+  .novel-dot.blue   { background: var(--blue);   box-shadow: 0 0 8px var(--blue-glow); }
+  .novel-dot.green  { background: var(--green);  box-shadow: 0 0 8px var(--green-glow); }
+  .novel-dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple-glow); }
+  .novel-dot.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange-glow); }
+  .novel-dot.teal   { background: var(--teal);   box-shadow: 0 0 8px var(--teal-glow); }
+  .novel-text { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .novel-text strong { color: var(--white); font-weight: 700; }
+  .novel-text em     { color: var(--muted); font-style: normal; font-size: 11px; }
+
+  /* ── HUMAN ESCALATION LANE ── */
+  .escalation-wrap {
+    max-width: 1300px;
+    margin: 20px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .loop-detail {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 28px;
+  }
+
+  .escalation-lane {
+    background: var(--bg2);
+    border: 2px solid var(--red);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 0 20px var(--red-glow);
+  }
+  .escalation-lane h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .esc-step {
+    background: var(--bg3);
+    border: 1px solid #2a2d3a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .esc-step.trigger { border-color: #ef444450; background: #200a0a; }
+  .esc-step code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: #ffffff12;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--red);
+  }
+  .esc-arrow {
+    text-align: center;
+    color: var(--red);
+    font-size: 12px;
+    margin: 3px 0;
+    line-height: 1;
+  }
+  .esc-step.path  { border-color: #f9731650; }
+  .esc-step.path code { color: var(--orange); }
+  .esc-step.inbox { border-color: var(--gold); background: #0f0d00; }
+  .esc-step.inbox strong { color: var(--gold); }
+  .esc-note {
+    margin-top: 12px;
+    padding: 8px;
+    background: #1a0808;
+    border: 1px solid #ef444420;
+    border-radius: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .esc-note strong { color: var(--red); }
+
+  /* ── LOOP STEPS ── */
+  .loop-steps {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    margin-top: 16px;
+  }
+  .loop-step {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .loop-step .step-num  { font-size: 9px; font-weight: 700; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.5px; }
+  .loop-step .step-name { font-size: 10px; font-weight: 700; margin-bottom: 3px; }
+  .loop-step .step-desc { font-size: 9px; color: var(--muted); line-height: 1.3; }
+
+  .loop-step.perception .step-name { color: #60a5fa; }
+  .loop-step.context    .step-name { color: #34d399; }
+  .loop-step.reason     .step-name { color: #a78bfa; }
+  .loop-step.decide     .step-name { color: #fb923c; }
+  .loop-step.act        .step-name { color: var(--gold); }
+  .loop-step.monitor    .step-name { color: #f472b6; }
+  .loop-step.state      .step-name { color: #38bdf8; }
+  .loop-step.repeat     .step-name { color: var(--muted); }
+
+  .step-arrow-row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 4px; }
+  .step-arrow-cell { text-align: center; color: var(--muted); font-size: 10px; line-height: 1; }
+
+  /* ── PATENT STRIP ── */
+  .patent-strip {
+    max-width: 1300px;
+    margin: 20px auto 0;
+    background: linear-gradient(135deg, #1a1500, #0f1117, #1a1500);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .patent-badge   { display: flex; align-items: center; gap: 10px; }
+  .patent-icon    { font-size: 20px; }
+  .patent-text    { font-size: 12px; color: var(--gold); font-weight: 700; letter-spacing: 0.5px; }
+  .patent-sub     { font-size: 11px; color: #d4a91780; margin-top: 2px; }
+  .patent-stats   { display: flex; gap: 24px; flex-wrap: wrap; }
+  .pstat          { text-align: center; }
+  .pstat-num      { font-size: 20px; font-weight: 800; color: var(--gold); font-family: 'JetBrains Mono', monospace; line-height: 1; }
+  .pstat-label    { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .main-row { grid-template-columns: 1fr 300px; }
+    .main-row .diff-section { display: none; }
+  }
+  @media (max-width: 900px) {
+    .main-row { grid-template-columns: 1fr; }
+    .mesh-outer { grid-template-columns: 1fr 50px 1fr; }
+    .loop-steps { grid-template-columns: repeat(4, 1fr); }
+    .escalation-wrap { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .mesh-outer { display: flex; flex-direction: column; align-items: center; }
+    .loop-steps { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- v2 badge -->
+<div class="v2-badge">v2 <span>— adversarially reviewed</span></div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  PAGE HEADER                                                       -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <h1>Environment-Mediated Multi-Agent Coordination System<br>Durable, Decentralized, Cross-Platform</h1>
+  <p>Differentiated implementation mapped to standard agent architecture patterns — patent priority December 28, 2025</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 1 — Standard Single-Agent Loop (reference)               -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="single-agent-section">
+  <div class="section-label">Reference Architecture</div>
+  <div class="section-title">Standard Single-Agent Loop</div>
+  <div class="sa-loop">
+    <div class="sa-node">
+      <div class="node-icon">🎯</div>
+      <div class="node-label">Goal</div>
+      <div class="node-sub">objective set</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">👁️</div>
+      <div class="node-label">Perception</div>
+      <div class="node-sub">observe state</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">📚</div>
+      <div class="node-label">Context</div>
+      <div class="node-sub">build memory</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">🧠</div>
+      <div class="node-label">Reason</div>
+      <div class="node-sub">LLM inference</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">⚡</div>
+      <div class="node-label">Act</div>
+      <div class="node-sub">tool call / write</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">🌍</div>
+      <div class="node-label">Environment</div>
+      <div class="node-sub">state changed</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">🔁</div>
+      <div class="node-label">Feedback</div>
+      <div class="node-sub">observe result</div>
+    </div>
+    <div class="sa-arrow">→</div>
+    <div class="sa-node">
+      <div class="node-icon">💾</div>
+      <div class="node-label">State Update</div>
+      <div class="node-sub">update memory</div>
+    </div>
+  </div>
+  <div class="sa-loop-back">
+    <div class="loop-line"></div>
+    <div class="loop-label">↩ loop repeats indefinitely</div>
+    <div class="loop-line"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 2 — Main Diagram Row                                      -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="main-wrapper">
+<div class="main-row">
+
+  <!-- ── LEFT: Four Agent Cards with Arrows ── -->
+  <div class="multi-agent-section">
+    <div class="section-label">Live System</div>
+    <div class="section-title">AI Army — Four Independent Agent Loops</div>
+
+    <div class="mesh-outer">
+
+      <!-- LEFT AGENTS -->
+      <div class="col-agents-left">
+
+        <div class="agent-card blue">
+          <div class="agent-name">windows-claude</div>
+          <div class="agent-hw">Windows PC · RTX 5090 32GB</div>
+          <div class="agent-llm">LLM: Claude Sonnet (API)</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#3b82f680;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            192.168.12.198 · paramiko SSH writes
+          </div>
+        </div>
+
+        <div class="agent-card purple">
+          <div class="agent-name">CC-Spark2</div>
+          <div class="agent-hw">Spark-2 · GB10 119GB · 10.0.0.2</div>
+          <div class="agent-llm">LLM: Ollama (local)</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#a855f780;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            chat_watcher_v3.py · sleep(5–11s)
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ARROWS MID COLUMN -->
+      <div class="col-arrows-mid">
+
+        <div class="arrow-unit">
+          <div class="arr-label">WRITE</div>
+          <svg class="arr-write" width="58" height="14" viewBox="0 0 58 14">
+            <defs>
+              <marker id="aL1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#3b82f6"/>
+              </marker>
+            </defs>
+            <line x1="2" y1="7" x2="50" y2="7" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#aL1)"/>
+          </svg>
+          <div class="arr-label">READ</div>
+          <svg class="arr-read" width="58" height="14" viewBox="0 0 58 14">
+            <defs>
+              <marker id="aL2" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                <path d="M6,0 L0,3 L6,6 Z" fill="#3b82f680"/>
+              </marker>
+            </defs>
+            <line x1="50" y1="7" x2="2" y2="7" stroke="#3b82f680" stroke-width="1.5" marker-end="url(#aL2)"/>
+          </svg>
+        </div>
+
+        <div class="arrow-unit">
+          <div class="arr-label">WRITE</div>
+          <svg class="arr-write" width="58" height="14" viewBox="0 0 58 14">
+            <defs>
+              <marker id="aL3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#a855f7"/>
+              </marker>
+            </defs>
+            <line x1="2" y1="7" x2="50" y2="7" stroke="#a855f7" stroke-width="1.5" marker-end="url(#aL3)"/>
+          </svg>
+          <div class="arr-label">READ</div>
+          <svg class="arr-read" width="58" height="14" viewBox="0 0 58 14">
+            <defs>
+              <marker id="aL4" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                <path d="M6,0 L0,3 L6,6 Z" fill="#a855f780"/>
+              </marker>
+            </defs>
+            <line x1="50" y1="7" x2="2" y2="7" stroke="#a855f780" stroke-width="1.5" marker-end="url(#aL4)"/>
+          </svg>
+        </div>
+
+      </div>
+
+      <!-- RIGHT AGENTS -->
+      <div class="col-agents-right">
+
+        <div class="agent-card green">
+          <div class="agent-name">CC-Spark1</div>
+          <div class="agent-hw">Spark-1 · GB10 119GB · 192.168.12.132</div>
+          <div class="agent-llm">LLM: Ollama qwen2.5:7b (local)</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#22c55e80;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            chat_watcher_v3.py · sleep(5–11s)
+          </div>
+        </div>
+
+        <div class="agent-card orange">
+          <div class="agent-name">AI-Army-Responder</div>
+          <div class="agent-hw">Spark-1 · GB10 119GB · co-located</div>
+          <div class="agent-llm">LLM: AWS Bedrock / Kimi API</div>
+          <div class="agent-loop">
+            <span class="loop-badge">Perception</span>
+            <span class="loop-badge">Reason</span>
+            <span class="loop-badge">Act</span>
+          </div>
+          <div style="font-size:9px;color:#f9731680;margin-top:8px;font-family:'JetBrains Mono',monospace;">
+            watcher instance · distinct persona
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /.mesh-outer -->
+
+    <div style="margin-top:14px;padding:10px 0;border-top:1px solid var(--border);display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:var(--muted);">
+        <span style="color:var(--blue);font-weight:700;">windows-claude</span> uses paramiko SSH to write files remotely — same bus, same protocol, different OS and hardware.
+      </div>
+      <div style="font-size:11px;color:var(--muted);">
+        Filesystem-mediated protocol enables <span style="color:var(--white);">cross-platform participation</span> with minimal integration overhead.
+      </div>
+    </div>
+
+  </div><!-- /.multi-agent-section -->
+
+  <!-- ── CENTER: Governance Layer + Coordination Bus ── -->
+  <div class="governance-col">
+
+    <div class="governance-wrap">
+      <div class="gov-section-label">Governance Layer</div>
+
+      <div class="governance-ring">
+        <div class="governance-ring-label">GOVERNANCE LAYER</div>
+
+        <!-- WRITE PATH -->
+        <div class="gov-path">
+          <div class="gov-path-label">Write Path — Agent → Bus</div>
+          <div class="gov-step write-step">Agent WRITE</div>
+          <div class="gov-micro-arrow">↓</div>
+          <div class="gov-step schema-step">
+            <strong>[Message Schema Validation]</strong>
+            <div class="gov-step-note">checks [FROM:][TO:] format, timestamp</div>
+          </div>
+          <div class="gov-micro-arrow">↓</div>
+          <div class="gov-step auth-step">
+            <strong>[Authorization / Policy Check]</strong>
+            <div class="gov-step-note">is this action permitted?</div>
+          </div>
+          <div class="gov-micro-arrow">↓</div>
+        </div>
+
+        <!-- THE BUS (inside the ring) -->
+        <div class="shared-dir">
+          <div class="shared-dir-icon">📂</div>
+          <div class="shared-dir-title">Durable Agent Coordination Bus</div>
+          <div class="shared-dir-path">~/ai-business/shared/chat/</div>
+
+          <div class="three-roles">
+            <div class="three-roles-title">3 Roles — Simultaneously</div>
+            <div class="three-roles-divider"></div>
+            <div class="role-row">
+              <div class="role-num">R1</div>
+              <div class="role-content"><strong>Coordination Environment</strong><br><em>agents act on it</em></div>
+            </div>
+            <div class="three-roles-divider"></div>
+            <div class="role-row">
+              <div class="role-num">R2</div>
+              <div class="role-content"><strong>Persistent State Store</strong><br><em>durable history</em></div>
+            </div>
+            <div class="three-roles-divider"></div>
+            <div class="role-row">
+              <div class="role-num">R3</div>
+              <div class="role-content"><strong>Immutable Audit Log</strong><br><em>tamper-evident record</em></div>
+            </div>
+          </div>
+
+          <div class="shared-dir-stat" style="margin-top:8px;">
+            <div class="stat-row">
+              <div class="stat-icon">📄</div>
+              <div class="stat-text"><strong>170,000+</strong> message files — replayable execution history and evaluation evidence</div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-icon">🔖</div>
+              <div class="stat-text">Format: <strong>[FROM: agent]</strong> / <strong>[TO: agent | All]</strong></div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-icon">⏱️</div>
+              <div class="stat-text">Naming: <strong>{timestamp}_{agent}.md</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- READ PATH -->
+        <div class="gov-path" style="margin-bottom:0;margin-top:10px;">
+          <div class="gov-micro-arrow read-color">↓</div>
+          <div class="gov-step obs-step">
+            <strong>[Observation Classification]</strong>
+            <div class="gov-step-note">relevance, sender trust</div>
+          </div>
+          <div class="gov-micro-arrow read-color">↓</div>
+          <div class="gov-step risk-step">
+            <strong>[Risk / Confidence Check]</strong>
+            <div class="gov-step-note">thermal alert? plausible? known agent?</div>
+          </div>
+          <div class="gov-micro-arrow read-color">↓</div>
+          <div class="gov-step act-step">Agent ACT or ESCALATE</div>
+          <div class="gov-path-label" style="margin-top:4px;">Read Path — Bus → Agent</div>
+        </div>
+
+      </div><!-- /.governance-ring -->
+    </div><!-- /.governance-wrap -->
+
+  </div><!-- /.governance-col -->
+
+  <!-- ── RIGHT SIDEBAR: Differentiation ── -->
+  <div class="diff-section">
+    <h3>What Differentiates This Implementation</h3>
+
+    <div class="novel-item">
+      <div class="novel-dot gold"></div>
+      <div class="novel-text">
+        <strong>No required central orchestrator</strong><br>
+        <em>Each agent runs a fully independent reasoning loop. Coordination is emergent — not orchestrated.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot blue"></div>
+      <div class="novel-text">
+        <strong>Hardware-heterogeneous</strong><br>
+        <em>x86 Windows + ARM GB10 + cloud APIs — unified via one filesystem protocol.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot green"></div>
+      <div class="novel-text">
+        <strong>Filesystem-mediated protocol enables cross-platform participation with minimal integration overhead</strong><br>
+        <em>Any agent on any OS with filesystem access can participate. Zero API contracts needed.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot purple"></div>
+      <div class="novel-text">
+        <strong>Bus serves 3 roles simultaneously</strong><br>
+        <em>Coordination Environment + Persistent State Store + Immutable Audit Log — in one structure.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot orange"></div>
+      <div class="novel-text">
+        <strong>One agent's ACT = another's PERCEPTION</strong><br>
+        <em>Output files become input for all other loops on next poll cycle — no explicit routing.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot gold"></div>
+      <div class="novel-text">
+        <strong>170K+ messages = replayable execution history and evaluation evidence</strong><br>
+        <em>The audit log is also a multi-agent dialogue dataset, patent evidence, and replayable test suite.</em>
+      </div>
+    </div>
+
+    <div class="novel-item">
+      <div class="novel-dot teal"></div>
+      <div class="novel-text">
+        <strong>Governance layer on every message path</strong><br>
+        <em>Schema validation and authorization on writes. Observation classification and risk check on reads. Human escalation available at any step.</em>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px;background:#0f0f00;border:1px solid #f5c84230;border-radius:8px;">
+      <div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:6px;letter-spacing:1px;">VS. PRIOR ART</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+        Common deployments of LangGraph, AutoGen, CrewAI use an explicit orchestrator runtime or graph coordinator.<br><br>
+        Our system achieves coordination through <span style="color:var(--white);font-weight:700;">environment state</span>, with <span style="color:var(--white);font-weight:700;">no required central control process</span>.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.main-row -->
+</div><!-- /.main-wrapper -->
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 3 — Loop Detail + Human Escalation Lane                   -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="escalation-wrap">
+
+  <!-- Agent Loop Detail -->
+  <div class="loop-detail">
+    <div class="section-label">Implementation Detail</div>
+    <div class="section-title">chat_watcher_v3.py — Each Agent's Reasoning Loop (runs on CC-Spark1, CC-Spark2, AI-Army-Responder)</div>
+
+    <div class="loop-steps">
+      <div class="loop-step perception">
+        <div class="step-num">01</div>
+        <div class="step-name">PERCEPTION</div>
+        <div class="step-desc">Poll chat dir for new .md files since last check timestamp</div>
+      </div>
+      <div class="loop-step context">
+        <div class="step-num">02</div>
+        <div class="step-name">CONTEXT</div>
+        <div class="step-desc">Load recent messages + GPU temp + disk usage + service port health</div>
+      </div>
+      <div class="loop-step reason">
+        <div class="step-num">03</div>
+        <div class="step-name">REASON</div>
+        <div class="step-desc">Call LLM (Ollama local or Bedrock/Kimi) with full context window</div>
+      </div>
+      <div class="loop-step decide">
+        <div class="step-num">04</div>
+        <div class="step-name">DECIDE</div>
+        <div class="step-desc">Relevance check — does this message require a response from this agent?</div>
+      </div>
+      <div class="loop-step act">
+        <div class="step-num">05</div>
+        <div class="step-name">ACT</div>
+        <div class="step-desc">Write response .md file to bus with [FROM:][TO:] header</div>
+      </div>
+      <div class="loop-step monitor">
+        <div class="step-num">06</div>
+        <div class="step-name">MONITOR</div>
+        <div class="step-desc">Check GPU temp + disk thresholds — write ALERT files if breached</div>
+      </div>
+      <div class="loop-step state">
+        <div class="step-num">07</div>
+        <div class="step-name">STATE</div>
+        <div class="step-desc">Update processed count, last_response_time, thermal state in memory</div>
+      </div>
+      <div class="loop-step repeat">
+        <div class="step-num">08</div>
+        <div class="step-name">REPEAT</div>
+        <div class="step-desc">sleep(5–11s) jitter then loop back to PERCEPTION</div>
+      </div>
+    </div>
+
+    <div class="step-arrow-row">
+      <div class="step-arrow-cell">↓</div>
+      <div class="step-arrow-cell">↓</div>
+      <div class="step-arrow-cell">↓</div>
+      <div class="step-arrow-cell">↓</div>
+      <div class="step-arrow-cell" style="color:var(--gold);">↓ writes to bus</div>
+      <div class="step-arrow-cell">↓</div>
+      <div class="step-arrow-cell">↓</div>
+      <div class="step-arrow-cell" style="color:var(--muted);">↩ back to 01</div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px 0;border-top:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:var(--muted);">
+        <span style="color:var(--blue);font-weight:700;">windows-claude</span> uses paramiko SSH to write files remotely — same bus, same protocol, different OS and hardware.
+      </div>
+      <div style="font-size:11px;color:var(--muted);">
+        Multiple instances run <span style="color:var(--white);">simultaneously</span> on separate hardware — each loop is fully independent, no locks, no coordinator.
+      </div>
+      <div style="font-size:11px;color:var(--muted);">
+        The jitter <span style="color:var(--white);">sleep(5–11s)</span> reduces message collision probability without requiring coordination primitives.
+      </div>
+    </div>
+  </div>
+
+  <!-- Human Escalation Lane -->
+  <div class="escalation-lane">
+    <h3>Human Oversight Lane</h3>
+
+    <div class="esc-step trigger">
+      Any agent writes<br>
+      <code>[ESCALATE: Ron]</code> tag in message
+    </div>
+    <div class="esc-arrow">↓</div>
+    <div class="esc-step" style="border-color:#f9731640;font-size:10px;color:var(--muted);">
+      Governance layer routes to separate escalations directory<br>
+      (Authorization / Policy Check passes escalation tag through)
+    </div>
+    <div class="esc-arrow">↓</div>
+    <div class="esc-step path">
+      Written to:<br>
+      <code>~/ai-business/shared/escalations/</code>
+    </div>
+    <div class="esc-arrow">↓</div>
+    <div class="esc-step" style="border-color:#f5c84240;font-size:10px;color:var(--muted);">
+      Sync'd to Owner's Inbox on Windows PC<br>
+      (same paramiko SSH transport as normal bus writes)
+    </div>
+    <div class="esc-arrow">↓</div>
+    <div class="esc-step inbox">
+      <strong>Ron reviews in Owner's Inbox</strong><br>
+      <span style="font-size:10px;color:var(--muted);">PKA Testing / Owner's Inbox /</span>
+    </div>
+    <div class="esc-arrow">↓</div>
+    <div class="esc-step" style="border-color:#22c55e40;font-size:10px;color:#22c55e;">
+      Human decision → response written back to bus<br>
+      or action taken directly
+    </div>
+
+    <div class="esc-note">
+      <strong>Design invariant:</strong> No agent autonomously resolves a flagged escalation. Every <code>[ESCALATE: Ron]</code> message waits for human input before the agent proceeds on that decision branch.
+    </div>
+
+    <div style="margin-top:12px;padding:8px;background:#0f1117;border:1px solid var(--border);border-radius:6px;">
+      <div style="font-size:10px;color:var(--teal);font-weight:700;margin-bottom:4px;letter-spacing:1px;">GOVERNANCE INTEGRATION</div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.5;">
+        Escalation is handled by the same schema validation and authorization checks as normal writes — it is not a bypass path. The escalation tag is a message attribute, not a special protocol.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.escalation-wrap -->
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--  PATENT STRIP                                                       -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="patent-strip">
+  <div class="patent-badge">
+    <div class="patent-icon">⚖️</div>
+    <div>
+      <div class="patent-text">Patent Priority Date: December 28, 2025</div>
+      <div class="patent-sub">AI-to-AI Communication System via Durable Filesystem Coordination Bus — Decentralized, Cross-Platform, Governance-Mediated</div>
+    </div>
+  </div>
+  <div class="patent-stats">
+    <div class="pstat">
+      <div class="pstat-num">170K+</div>
+      <div class="pstat-label">message files</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">4</div>
+      <div class="pstat-label">independent agents</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">3</div>
+      <div class="pstat-label">hardware platforms</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">0</div>
+      <div class="pstat-label">required controllers</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-num">Dec 28</div>
+      <div class="pstat-label">2025 first run</div>
+    </div>
+  </div>
+</div>
+
+<div style="height:32px;"></div>
+
+</body>
+</html>

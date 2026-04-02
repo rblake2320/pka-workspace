@@ -1,0 +1,16 @@
+[Unit]
+Description=AI Army Telegram Bridge - bidirectional chat relay
+After=network-online.target hermes-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/ai-army-telegram-bridge
+ExecStart=%h/ai-army-telegram-bridge/venv/bin/python %h/ai-army-telegram-bridge/bridge.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

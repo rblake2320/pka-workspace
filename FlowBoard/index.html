@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowBoard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="sidebar">
+      <div id="brand">
+        <span class="brand-icon">⬡</span>
+        <span class="brand-name">FlowBoard</span>
+      </div>
+
+      <!-- View navigation -->
+      <nav id="nav-views">
+        <button class="nav-btn active" data-view="board">
+          <span class="nav-icon">▦</span> Board
+        </button>
+        <button class="nav-btn" data-view="list">
+          <span class="nav-icon">☰</span> List
+        </button>
+        <button class="nav-btn" data-view="analytics">
+          <span class="nav-icon">◈</span> Analytics
+        </button>
+      </nav>
+
+      <!-- Projects -->
+      <div class="sidebar-section">
+        <div class="section-label">Projects</div>
+        <div id="project-list"><!-- rendered by app.js --></div>
+      </div>
+
+      <!-- Members -->
+      <div class="sidebar-section">
+        <div class="section-label">Members</div>
+        <div id="member-list"><!-- rendered by app.js --></div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div id="main">
+
+      <!-- TOP BAR -->
+      <header id="topbar">
+        <div id="topbar-left">
+          <div id="view-title">All Projects</div>
+        </div>
+        <div id="topbar-controls">
+          <input id="search-input" type="text" placeholder="Search tasks..." autocomplete="off">
+          <select id="filter-priority">
+            <option value="">All priorities</option>
+            <option value="critical">🔴 Critical</option>
+            <option value="high">🟠 High</option>
+            <option value="medium">🔵 Medium</option>
+            <option value="low">⚪ Low</option>
+          </select>
+          <button id="btn-new-task" class="btn-primary">+ New Task</button>
+        </div>
+      </header>
+
+      <!-- STATS BAR -->
+      <div id="stats-bar">
+        <div class="stat-item">
+          <span class="stat-label">Total</span>
+          <strong id="stats-total">0</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">In Progress</span>
+          <strong id="stats-inprogress">0</strong>
+        </div>
+        <div class="stat-item stat-done">
+          <span class="stat-label">Done</span>
+          <strong id="stats-done">0</strong>
+        </div>
+        <div class="stat-item stat-overdue">
+          <span class="stat-label">Overdue</span>
+          <strong id="stats-overdue">0</strong>
+        </div>
+      </div>
+
+      <!-- VIEWS -->
+      <div id="content">
+
+        <!-- Board view (default active) -->
+        <div id="view-board" class="view">
+          <div id="board-container">
+            <!-- 5 columns rendered by board.js -->
+          </div>
+        </div>
+
+        <!-- List view -->
+        <div id="view-list" class="view hidden">
+          <div id="list-container">
+            <!-- Table rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Analytics view -->
+        <div id="view-analytics" class="view hidden">
+          <div id="analytics-container">
+            <div class="chart-row">
+              <div class="chart-card">
+                <h3 class="chart-title">Velocity — Last 7 Days</h3>
+                <canvas id="velocity-chart" width="400" height="200"></canvas>
+              </div>
+              <div class="chart-card">
+                <h3 class="chart-title">Burndown — Last 14 Days</h3>
+                <canvas id="burndown-chart" width="400" height="200"></canvas>
+              </div>
+            </div>
+            <div class="chart-row">
+              <div class="chart-card">
+                <h3 class="chart-title">Tasks by Status</h3>
+                <canvas id="distribution-chart" width="300" height="300"></canvas>
+              </div>
+              <div class="chart-card">
+                <h3 class="chart-title">Tasks by Priority</h3>
+                <canvas id="priority-chart" width="300" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- #content -->
+    </div><!-- #main -->
+  </div><!-- #app -->
+
+  <!-- TASK MODAL -->
+  <div id="task-modal-overlay" class="modal-overlay hidden">
+    <div id="task-modal" class="modal">
+      <div class="modal-header">
+        <h2 id="modal-heading">New Task</h2>
+        <button id="btn-modal-close" class="modal-close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Title</label>
+          <input id="modal-title" type="text" placeholder="Task title" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="modal-description" rows="3" placeholder="What needs to be done?"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="modal-status">
+              <option value="backlog">Backlog</option>
+              <option value="todo">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="review">Review</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="modal-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Assignee</label>
+            <select id="modal-assignee">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Project</label>
+            <select id="modal-project">
+              <option value="">No project</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Due Date</label>
+            <input id="modal-due-date" type="date">
+          </div>
+          <div class="form-group">
+            <label>Story Points</label>
+            <input id="modal-story-points" type="number" min="0" max="100" placeholder="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tags</label>
+          <input id="modal-tags" type="text" placeholder="auth, api, frontend (comma-separated)">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-delete" class="btn-danger hidden">Delete Task</button>
+        <div class="modal-footer-right">
+          <button id="btn-modal-cancel" class="btn-secondary">Cancel</button>
+          <button id="btn-modal-save" class="btn-primary">Save Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="store.js"></script>
+  <script src="board.js"></script>
+  <script src="analytics.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

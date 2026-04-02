@@ -1,0 +1,332 @@
+"""
+Fine-Tune Trigger — Data Flywheel Step 3
+Launches LoRA/QLoRA fine-tune on Spark-1/2 from cleaned Curator output.
+
+Hardware routing:
+  - <3K samples + base ≤7B:  Spark-1 (GB10, CUDA 13.0, Unsloth)
+  - ≥3K samples OR base >7B:  Spark-2 via jump host (GB10, second GPU)
+  - Teacher labels:           NIM llama-3.3-70b (free tier, no GPU used)
+
+Usage:
+    python3 fine_tune_trigger.py --input clean_data/curator_cleaned.jsonl
+    python3 fine_tune_trigger.py --input clean_data/ --base-model qwen2.5-coder:32b --dry-run
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import subprocess
+import sys
+from pathlib import Path
+
+log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+UNSLOTH_SCRIPT = "/home/rblake2320/data-flywheel/unsloth_finetune.py"
+OLLAMA_IMPORT_SCRIPT = "/home/rblake2320/data-flywheel/import_to_ollama.sh"
+NIM_TEACHER_URL = "https://integrate.api.nvidia.com/v1"
+NIM_TEACHER_MODEL = "meta/llama-3.3-70b-instruct"
+
+MODEL_SIZE_MAP = {
+    "qwen2.5:7b": 7,
+    "qwen2.5-coder:32b": 32,
+    "qwen3:30b": 30,
+    "llama3.1:70b": 70,
+    "mk-copilot-v2:latest": 7,
+    "aiarmy-code-architect:latest": 32,
+}
+
+SPARK2_JUMP = "rblake2320@192.168.12.132"
+SPARK2_HOST = "rblake2320@10.0.0.2"
+
+
+# ---------------------------------------------------------------------------
+# Teacher labeling via NIM (improves dataset quality before fine-tune)
+# ---------------------------------------------------------------------------
+
+def teacher_label(records: list[dict], api_key: str, max_samples: int = 500) -> list[dict]:
+    """
+    Use NIM llama-3.3-70b to score and potentially rewrite low-quality outputs.
+    Only processes samples with quality_score < 0.75 up to max_samples.
+    """
+    import os
+    try:
+        import httpx
+    except ImportError:
+        log.warning("httpx not installed — skipping teacher labeling")
+        return records
+
+    key = api_key or os.getenv("NVIDIA_API_KEY", "")
+    if not key:
+        log.warning("NVIDIA_API_KEY not set — skipping teacher labeling")
+        return records
+
+    relabeled = 0
+    for rec in records:
+        if relabeled >= max_samples:
+            break
+        score = rec.get("metadata", {}).get("quality_score", 1.0)
+        if score >= 0.75:
+            continue
+
+        # Ask teacher to evaluate and optionally improve the response
+        prompt = f"""Evaluate this AI response for quality (1-10) and rewrite if below 6.
+
+INPUT: {rec['input'][:500]}
+RESPONSE: {rec['output'][:1000]}
+
+Reply in JSON: {{"score": <1-10>, "rewrite": "<improved response or null if score>=6>"}}"""
+
+        try:
+            import httpx
+            with httpx.Client(timeout=30) as client:
+                resp = client.post(
+                    f"{NIM_TEACHER_URL}/chat/completions",
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    json={
+                        "model": NIM_TEACHER_MODEL,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 500,
+                        "temperature": 0.2,
+                    }
+                )
+                resp.raise_for_status()
+                content = resp.json()["choices"][0]["message"]["content"]
+                data = json.loads(content)
+                if data.get("rewrite"):
+                    rec["output"] = data["rewrite"]
+                    rec.setdefault("metadata", {})["quality_score"] = data["score"] / 10.0
+                    rec["metadata"]["teacher_labeled"] = True
+                    relabeled += 1
+        except Exception as e:
+            log.debug("Teacher labeling failed for sample: %s", e)
+            continue
+
+    log.info("Teacher labeled %d low-quality samples", relabeled)
+    return records
+
+
+# ---------------------------------------------------------------------------
+# Unsloth fine-tune script generator
+# ---------------------------------------------------------------------------
+
+def generate_unsloth_script(
+    input_jsonl: Path,
+    base_model: str,
+    output_dir: Path,
+    epochs: int = 3,
+    lora_r: int = 16,
+) -> Path:
+    """Write the Unsloth training script to disk."""
+    script_path = output_dir / "unsloth_finetune.py"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Map Ollama model name to HuggingFace model ID
+    hf_model_map = {
+        "qwen2.5-coder:32b": "Qwen/Qwen2.5-Coder-32B-Instruct",
+        "qwen2.5:7b": "Qwen/Qwen2.5-7B-Instruct",
+        "qwen3:30b": "Qwen/Qwen3-30B-A3B",
+        "llama3.1:70b": "meta-llama/Llama-3.1-70B-Instruct",
+    }
+    hf_model = hf_model_map.get(base_model, "Qwen/Qwen2.5-Coder-32B-Instruct")
+
+    script = f"""#!/usr/bin/env python3
+# Auto-generated by fine_tune_trigger.py — {Path(__file__).name}
+# Base: {base_model} ({hf_model})
+# Data: {input_jsonl}
+
+from unsloth import FastLanguageModel
+from datasets import load_dataset
+from trl import SFTTrainer
+from transformers import TrainingArguments
+import torch
+
+MAX_SEQ_LEN = 4096
+DTYPE = None  # auto
+LOAD_IN_4BIT = True
+
+model, tokenizer = FastLanguageModel.from_pretrained(
+    model_name = "{hf_model}",
+    max_seq_length = MAX_SEQ_LEN,
+    dtype = DTYPE,
+    load_in_4bit = LOAD_IN_4BIT,
+)
+
+model = FastLanguageModel.get_peft_model(
+    model,
+    r = {lora_r},
+    target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
+                      "gate_proj", "up_proj", "down_proj"],
+    lora_alpha = {lora_r * 2},
+    lora_dropout = 0,
+    bias = "none",
+    use_gradient_checkpointing = "unsloth",
+)
+
+dataset = load_dataset("json", data_files="{input_jsonl}", split="train")
+
+def format_example(ex):
+    return {{"text": f"{{ex['input']}}\\n\\n### Response:\\n{{ex['output']}}"}}
+
+dataset = dataset.map(format_example)
+
+trainer = SFTTrainer(
+    model = model,
+    tokenizer = tokenizer,
+    train_dataset = dataset,
+    dataset_text_field = "text",
+    max_seq_length = MAX_SEQ_LEN,
+    dataset_num_proc = 4,
+    args = TrainingArguments(
+        per_device_train_batch_size = 2,
+        gradient_accumulation_steps = 4,
+        warmup_steps = 10,
+        num_train_epochs = {epochs},
+        learning_rate = 2e-4,
+        fp16 = not torch.cuda.is_bf16_supported(),
+        bf16 = torch.cuda.is_bf16_supported(),
+        logging_steps = 10,
+        optim = "adamw_8bit",
+        weight_decay = 0.01,
+        lr_scheduler_type = "cosine",
+        output_dir = "{output_dir}/checkpoints",
+        report_to = "none",
+    ),
+)
+
+print("Starting fine-tune...")
+trainer.train()
+
+# Save adapter
+model.save_pretrained("{output_dir}/lora_adapter")
+tokenizer.save_pretrained("{output_dir}/lora_adapter")
+print("LoRA adapter saved to {output_dir}/lora_adapter")
+print("Next: bash {output_dir}/import_to_ollama.sh")
+"""
+    with open(script_path, "w") as f:
+        f.write(script)
+
+    # Also write the Ollama import script
+    import_script = output_dir / "import_to_ollama.sh"
+    import_script_content = f"""#!/usr/bin/env bash
+# Import fine-tuned adapter into Ollama as a new model
+set -euo pipefail
+ADAPTER="{output_dir}/lora_adapter"
+MODEL_NAME="flywheel-{base_model.replace(':', '-').replace('.', '')}"
+
+echo "Merging LoRA adapter into base model..."
+python3 -c "
+from unsloth import FastLanguageModel
+model, tokenizer = FastLanguageModel.from_pretrained('$ADAPTER')
+model.save_pretrained_gguf('{output_dir}/gguf', tokenizer, quantization_method='q4_k_m')
+"
+
+echo "Creating Modelfile..."
+cat > {output_dir}/Modelfile << 'EOF'
+FROM {output_dir}/gguf/model.gguf
+PARAMETER num_ctx 8192
+PARAMETER temperature 0.7
+SYSTEM "You are an expert AI assistant fine-tuned on production query data."
+EOF
+
+ollama create $MODEL_NAME -f {output_dir}/Modelfile
+echo "Model created: $MODEL_NAME"
+echo "Test: ollama run $MODEL_NAME 'hello world'"
+echo ""
+echo "Next: Add $MODEL_NAME to ~/ai-army-os/config.yaml as flywheel tier"
+"""
+    with open(import_script, "w") as f:
+        f.write(import_script_content)
+    import_script.chmod(0o755)
+
+    return script_path
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    parser = argparse.ArgumentParser(description="Fine-Tune Trigger — Data Flywheel Step 3")
+    parser.add_argument("--input", required=True, help="Cleaned JSONL from NeMo Curator")
+    parser.add_argument("--base-model", default="qwen2.5-coder:32b",
+                        help="Ollama model to fine-tune")
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--teacher-label", action="store_true",
+                        help="Use NIM teacher to improve low-quality samples")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Generate scripts without running them")
+    args = parser.parse_args()
+
+    input_path = Path(args.input)
+    if not input_path.exists():
+        print(f"ERROR: Input not found: {input_path}")
+        sys.exit(1)
+
+    # Count records
+    records = []
+    if input_path.is_file():
+        with open(input_path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        records.append(json.loads(line))
+                    except Exception:
+                        pass
+
+    n = len(records)
+    model_size = MODEL_SIZE_MAP.get(args.base_model, 32)
+    use_spark2 = n >= 3000 or model_size > 30
+
+    print(f"\n=== Fine-Tune Trigger ===")
+    print(f"  Dataset:    {n:,} records ({input_path})")
+    print(f"  Base model: {args.base_model} ({model_size}B params)")
+    print(f"  Target GPU: {'Spark-2 (jump host)' if use_spark2 else 'Spark-1'}")
+    print(f"  Epochs:     {args.epochs}")
+
+    # Teacher labeling (optional)
+    if args.teacher_label and not args.dry_run:
+        import os
+        records = teacher_label(records, api_key=os.getenv("NVIDIA_API_KEY", ""))
+
+    # Generate scripts
+    output_dir = Path("/home/rblake2320/data-flywheel/fine_tune_runs") / args.base_model.replace(":", "_")
+    script = generate_unsloth_script(input_path, args.base_model, output_dir, args.epochs)
+    print(f"\n  Script:     {script}")
+    print(f"  Import:     {output_dir}/import_to_ollama.sh")
+
+    if args.dry_run:
+        print("\n  [DRY RUN] Scripts generated but not executed")
+        print(f"\n  To run: python3 {script}")
+        return
+
+    if not use_spark2:
+        print("\n  Launching on Spark-1 (local)...")
+        result = subprocess.run(
+            ["python3", str(script)],
+            capture_output=False,
+        )
+        if result.returncode != 0:
+            print("Fine-tune failed — check output above")
+            sys.exit(1)
+    else:
+        print(f"\n  Launching on Spark-2 via jump host...")
+        scp_cmd = f"scp -J {SPARK2_JUMP} {script} {SPARK2_HOST}:/tmp/unsloth_finetune.py"
+        run_cmd = f"ssh -J {SPARK2_JUMP} {SPARK2_HOST} 'python3 /tmp/unsloth_finetune.py'"
+        print(f"  SCP:  {scp_cmd}")
+        print(f"  Run:  {run_cmd}")
+        subprocess.run(scp_cmd, shell=True, check=True)
+        subprocess.run(run_cmd, shell=True, check=True)
+
+    print(f"\nFine-tune complete. Import to Ollama:")
+    print(f"  bash {output_dir}/import_to_ollama.sh")
+
+
+if __name__ == "__main__":
+    main()
