@@ -2,6 +2,43 @@
 
 All notable changes to the PKA workspace should be recorded here.
 
+## 0.7.0 - 2026-04-02
+
+Platform maturity: repo boundary fix, production telemetry, session continuity.
+
+### Gap 1: Repo Boundary Fix (CRITICAL SAFETY)
+- PKA workspace is now its own standalone git root (`git init` inside `PKA testing/`)
+- Remote: `https://github.com/rblake2320/pka-workspace.git` (force-pushed with full history)
+- Parent repo index cleaned: `git rm -r --cached "PKA testing/"` (PKA only, council untouched)
+- Pre-push bare backup at `C:\Users\techai\pka-workspace-backup.git`
+- `.gitignore` updated: added `.claude/worktrees/` and `Team/tasks/RESUME.json`
+- `REPO_ALIGNMENT.md` updated to reflect standalone status
+- `pka_doctor.py check_git_boundary` passes: toplevel == ROOT (portable, derived from `Path(__file__)`)
+- 5 stale Claude Code agent worktrees removed before init
+
+### Gap 2: Production Telemetry
+- Added `scripts/pka_telemetry.py` — 8-section trend analysis + anomaly detection:
+  score trajectory, check reliability, agent velocity, tool mix, session health,
+  guardrail trends, stale task alert, anomaly summary
+- Data sufficiency guards: each section prints "Insufficient data" rather than
+  misleading trends when record count is below threshold
+- Runtime budget: 3s per section, 10s total; slow sections skip with warning
+- Agent velocity requires 5+ completed tasks per agent before trend claims
+- Exit code always 0 (anomalies are warnings; revisit in v0.8.0)
+- Updated `scripts/pka_operator_run.py`: telemetry wired as step 7 (after scorecard,
+  before observability)
+
+### Gap 3: Session Continuity
+- Upgraded `scripts/pka_session_gate.py start`: scans all non-terminal tasks, flags
+  stale (>48h), groups by state, outputs ranked work queue, writes `Team/tasks/RESUME.json`
+- Upgraded `scripts/pka_session_gate.py end`: also writes `RESUME.json` after audit
+- `parse_task_file()` calls wrapped in try/except — corrupt files skip with warning
+- Upgraded `scripts/pka_lib.py FileLock`: writes `{pid}:{timestamp}` on lock creation;
+  on contention checks age (>300s) and PID liveness (Windows-safe: ctypes.windll.kernel32.
+  OpenProcess, NOT os.kill); stale breaks logged to `logs/guardrail_*.jsonl`
+- Added `scripts/pka_doctor.py check_stale_tasks()`: warns on non-terminal tasks with
+  updated_at older than 48h (WARNING not FAIL)
+
 ## 0.5.1 - 2026-04-02
 
 Agent readiness hardening.

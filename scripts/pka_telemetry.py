@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-PKA Production Telemetry — trend analysis and anomaly detection.
+PKA Production Telemetry  |  trend analysis and anomaly detection.
 
 Reads all existing log sources and produces actionable intelligence.
-Exit code is always 0 — anomalies are warnings only.
+Exit code is always 0  |  anomalies are warnings only.
 Revisit exit-code policy in v0.8.0 when data volume supports real thresholds.
 """
 from __future__ import annotations
@@ -113,7 +113,7 @@ def section_score_trajectory(runs: list[dict]) -> list[str]:
     lines = ["## 1. Score Trajectory"]
     if len(runs) < MIN_VALIDATION_RUNS:
         lines.append(
-            f"  Insufficient data ({len(runs)} records) — "
+            f"  Insufficient data ({len(runs)} records)  |  "
             f"need at least {MIN_VALIDATION_RUNS} for meaningful analysis"
         )
         return lines
@@ -125,12 +125,12 @@ def section_score_trajectory(runs: list[dict]) -> list[str]:
         if drop > 25:
             anomalies.append(
                 f"  [ANOMALY] Score dropped {drop} points: "
-                f"run {i} ({scores[i-1][0]}) → run {i+1} ({scores[i][0]})"
+                f"run {i} ({scores[i-1][0]}) -> run {i+1} ({scores[i][0]})"
             )
 
     current = scores[-1][1]
     prev = scores[-2][1] if len(scores) >= 2 else current
-    trend = "▲" if current > prev else ("▼" if current < prev else "→")
+    trend = "(up)" if current > prev else ("(down)" if current < prev else "(stable)")
     min_s = min(s for _, s in scores)
     max_s = max(s for _, s in scores)
     lines.append(
@@ -147,7 +147,7 @@ def section_check_reliability(runs: list[dict]) -> list[str]:
     lines = ["## 2. Check Reliability"]
     if len(runs) < MIN_VALIDATION_RUNS:
         lines.append(
-            f"  Insufficient data ({len(runs)} records) — "
+            f"  Insufficient data ({len(runs)} records)  |  "
             f"need at least {MIN_VALIDATION_RUNS} for meaningful analysis"
         )
         return lines
@@ -169,7 +169,7 @@ def section_check_reliability(runs: list[dict]) -> list[str]:
 def section_agent_velocity(tasks: list[dict]) -> list[str]:
     lines = ["## 3. Agent Velocity"]
     if not tasks:
-        lines.append("  Insufficient data (0 records) — need tasks for meaningful analysis")
+        lines.append("  Insufficient data (0 records)  |  need tasks for meaningful analysis")
         return lines
 
     by_agent: dict[str, list[dict]] = defaultdict(list)
@@ -183,7 +183,7 @@ def section_agent_velocity(tasks: list[dict]) -> list[str]:
         if n_done < MIN_TASKS_PER_AGENT:
             lines.append(
                 f"  {agent}: {n_done}/{total} completed "
-                f"(low sample — trend needs {MIN_TASKS_PER_AGENT}+ completed)"
+                f"(low sample  |  trend needs {MIN_TASKS_PER_AGENT}+ completed)"
             )
         else:
             verdicts = [t.get("verdict") or "" for t in completed]
@@ -200,7 +200,7 @@ def section_tool_mix(entries: list[dict]) -> list[str]:
     lines = ["## 4. Tool Mix"]
     if len(entries) < 10:
         lines.append(
-            f"  Insufficient data ({len(entries)} records) — "
+            f"  Insufficient data ({len(entries)} records)  |  "
             "need at least 10 for meaningful analysis"
         )
         return lines
@@ -218,7 +218,7 @@ def section_tool_mix(entries: list[dict]) -> list[str]:
         breakdown = " | ".join(
             f"{k}:{v}" for k, v in sorted(counts.items(), key=lambda x: -x[1])[:5]
         )
-        lines.append(f"  {day}: {total} calls — {breakdown}")
+        lines.append(f"  {day}: {total} calls  |  {breakdown}")
     return lines
 
 
@@ -228,7 +228,7 @@ def section_session_health(entries: list[dict]) -> list[str]:
     lines = ["## 5. Session Health"]
     if len(entries) < 5:
         lines.append(
-            f"  Insufficient data ({len(entries)} records) — "
+            f"  Insufficient data ({len(entries)} records)  |  "
             "need at least 5 for meaningful analysis"
         )
         return lines
@@ -399,7 +399,7 @@ def main() -> int:
         elapsed = time.time() - t0
         if elapsed > SECTION_BUDGET_S:
             output_lines = output_lines[:1] + [
-                f"  [TIMING] Skipped — took {elapsed:.1f}s, budget is {SECTION_BUDGET_S}s"
+                f"  [TIMING] Skipped  |  took {elapsed:.1f}s, budget is {SECTION_BUDGET_S}s"
             ]
         for line in output_lines:
             print(line)
