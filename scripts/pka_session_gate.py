@@ -38,6 +38,56 @@ _STATE_PRIORITY = {
     "new": 4,
 }
 STALE_HOURS = 48
+INBOX_STALE_HOURS = 24  # Items older than this are flagged UNPROCESSED
+
+# Classify Team Inbox items by extension
+_INBOX_TYPES = {
+    ".html": "artifact",
+    ".htm": "artifact",
+    ".md": "brief",
+    ".txt": "brief",
+    ".pdf": "document",
+    ".png": "asset",
+    ".jpg": "asset",
+    ".jpeg": "asset",
+    ".gif": "asset",
+    ".json": "data",
+    ".csv": "data",
+    ".py": "code",
+    ".ts": "code",
+    ".js": "code",
+}
+
+
+def _classify_inbox_item(path: Path) -> str:
+    return _INBOX_TYPES.get(path.suffix.lower(), "file")
+
+
+def _scan_inbox_items() -> list[dict]:
+    """Return enriched metadata for all non-processed Team Inbox items."""
+    now = datetime.now(timezone.utc)
+    threshold = now - timedelta(hours=INBOX_STALE_HOURS)
+    items = []
+    for path in sorted(TEAM_INBOX.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(ROOT)
+        if "processed" in rel.parts or path.name == "README.md":
+            continue
+        try:
+            mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+            age_h = (now - mtime).total_seconds() / 3600
+            unprocessed = mtime < threshold
+        except Exception:
+            age_h = 0.0
+            unprocessed = False
+        items.append({
+            "path": str(rel),
+            "type": _classify_inbox_item(path),
+            "age_hours": round(age_h, 1),
+            "unprocessed": unprocessed,
+        })
+    return items
 
 
 def _scan_non_terminal_tasks() -> list[dict]:
@@ -130,6 +180,8 @@ def _build_resume(tasks: list[dict]) -> dict:
         except Exception:
             continue
 
+    inbox_items = _scan_inbox_items()
+
     return {
         "generated_at": timestamp(),
         "non_terminal_count": len(queue),
@@ -137,6 +189,8 @@ def _build_resume(tasks: list[dict]) -> dict:
         "active_jobs": active_jobs,
         "pending_approvals": pending_approvals,
         "work_queue": queue,
+        "inbox_items": inbox_items,
+        "inbox_unprocessed_count": sum(1 for i in inbox_items if i["unprocessed"]),
     }
 
 
@@ -154,22 +208,21 @@ def cmd_start(_: argparse.Namespace) -> int:
             print(f"- Missing required path: {item}")
         return 1
 
-    inbox_files = []
-    for path in sorted(TEAM_INBOX.rglob("*")):
-        if path.is_file():
-            rel = path.relative_to(ROOT)
-            if "processed" not in rel.parts:
-                inbox_files.append(str(rel))
-
     # Scan non-terminal tasks and build resumption manifest
     tasks = _scan_non_terminal_tasks()
     resume = _build_resume(tasks)
     _write_resume(resume)
 
+    inbox_items = resume["inbox_items"]
+    unprocessed = [i for i in inbox_items if i["unprocessed"]]
+
     print("PKA session start: PASS")
-    print(f"- Team Inbox items: {len(inbox_files)}")
-    for item in inbox_files[:20]:
-        print(f"  - {item}")
+    print(f"- Team Inbox items: {len(inbox_items)}")
+    if unprocessed:
+        print(f"  [WARN] *** {len(unprocessed)} UNPROCESSED item(s) in Team Inbox (>{INBOX_STALE_HOURS}h old) — AXIOM must route before proceeding ***")
+    for item in inbox_items[:20]:
+        flag = " [UNPROCESSED]" if item["unprocessed"] else ""
+        print(f"  - [{item['type']}] {item['path']} (age: {item['age_hours']}h){flag}")
 
     print(f"- Active messages: {len(resume['active_messages'])}")
     for m in resume["active_messages"][:5]:
