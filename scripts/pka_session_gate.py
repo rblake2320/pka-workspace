@@ -16,7 +16,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pka_lib import MESSAGES_ACTIVE, TASKS_DIR, parse_task_file, timestamp
+from pka_lib import APPROVALS_PENDING, JOBS_ACTIVE, MESSAGES_ACTIVE, TASKS_DIR, ensure_runtime_dirs, parse_task_file, timestamp
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -98,10 +98,44 @@ def _build_resume(tasks: list[dict]) -> dict:
         for p in sorted(MESSAGES_ACTIVE.glob("*.json")):
             active_messages.append(str(p.relative_to(ROOT)))
 
+    ensure_runtime_dirs()
+    active_jobs: list[dict] = []
+    for p in sorted(JOBS_ACTIVE.glob("*.json")):
+        try:
+            payload = json.loads(p.read_text(encoding="utf-8"))
+            active_jobs.append(
+                {
+                    "job_id": payload.get("job_id", p.stem),
+                    "task_id": payload.get("task_id", ""),
+                    "status": payload.get("status", ""),
+                    "current_agent": payload.get("current_agent", ""),
+                    "pending_approval_id": payload.get("pending_approval_id", ""),
+                }
+            )
+        except Exception:
+            continue
+
+    pending_approvals: list[dict] = []
+    for p in sorted(APPROVALS_PENDING.glob("*.json")):
+        try:
+            payload = json.loads(p.read_text(encoding="utf-8"))
+            pending_approvals.append(
+                {
+                    "approval_id": payload.get("approval_id", p.stem),
+                    "job_id": payload.get("job_id", ""),
+                    "approval_type": payload.get("approval_type", ""),
+                    "requested_by": payload.get("requested_by", ""),
+                }
+            )
+        except Exception:
+            continue
+
     return {
         "generated_at": timestamp(),
         "non_terminal_count": len(queue),
         "active_messages": active_messages,
+        "active_jobs": active_jobs,
+        "pending_approvals": pending_approvals,
         "work_queue": queue,
     }
 
@@ -140,6 +174,13 @@ def cmd_start(_: argparse.Namespace) -> int:
     print(f"- Active messages: {len(resume['active_messages'])}")
     for m in resume["active_messages"][:5]:
         print(f"  - {m}")
+    print(f"- Active jobs: {len(resume['active_jobs'])}")
+    for job in resume["active_jobs"][:10]:
+        approval_flag = f" approval={job['pending_approval_id']}" if job["pending_approval_id"] else ""
+        print(f"  - {job['job_id']} | task={job['task_id']} | status={job['status']} | agent={job['current_agent']}{approval_flag}")
+    print(f"- Pending approvals: {len(resume['pending_approvals'])}")
+    for approval in resume["pending_approvals"][:10]:
+        print(f"  - {approval['approval_id']} | job={approval['job_id']} | type={approval['approval_type']} | requested_by={approval['requested_by']}")
 
     queue = resume["work_queue"]
     stale_count = sum(1 for t in queue if t["stale"])

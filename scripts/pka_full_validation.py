@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pka_lib import LOGS_DIR, REPORTS_DIR
+from pka_lib import LOGS_DIR, REPORTS_DIR, acquire_validation_lock
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,6 +28,12 @@ def run(*args: str) -> tuple[bool, str]:
 
 
 def main() -> int:
+    with acquire_validation_lock():
+        os.environ["PKA_VALIDATION_LOCKED"] = "1"
+        return _run_suite()
+
+
+def _run_suite() -> int:
     checks: list[tuple[str, bool, str]] = []
 
     ok, output = run("scripts/pka_process_audit.py")

@@ -26,6 +26,7 @@ SECTION_BUDGET_S = 3.0   # max seconds per section before skip warning
 MIN_VALIDATION_RUNS = 3  # minimum validation runs for trajectory
 MIN_SESSION_DAYS = 2     # minimum session days for drift
 MIN_TASKS_PER_AGENT = 5  # minimum completed tasks before velocity trend claims
+RELIABILITY_WINDOW_H = 24  # hours to look back for reliability and anomaly metrics
 
 
 def utc_now() -> datetime:
@@ -107,6 +108,32 @@ def load_task_records() -> list[dict]:
     return records
 
 
+# ── Windowing helper ──────────────────────────────────────────────────────────
+
+def recent_runs(runs: list[dict], hours: int = RELIABILITY_WINDOW_H) -> list[dict]:
+    """Return only validation runs from the last ``hours`` hours."""
+    cutoff = utc_now() - timedelta(hours=hours)
+    result = []
+    for r in runs:
+        ts = parse_iso(r.get("timestamp", "") or "")
+        if ts is not None and ts > cutoff:
+            result.append(r)
+    return result
+
+
+def current_health_runs(runs: list[dict]) -> list[dict]:
+    """Return the latest consecutive all-pass validation streak."""
+    streak: list[dict] = []
+    for run in reversed(runs):
+        checks = run.get("checks", [])
+        is_clean = bool(checks) and all(bool(check.get("ok")) for check in checks)
+        if not is_clean:
+            break
+        streak.append(run)
+    streak.reverse()
+    return streak
+
+
 # ── Section 1: Score Trajectory ───────────────────────────────────────────────
 
 def section_score_trajectory(runs: list[dict]) -> list[str]:
@@ -118,14 +145,17 @@ def section_score_trajectory(runs: list[dict]) -> list[str]:
         )
         return lines
 
-    scores = [(r.get("timestamp", ""), int(r.get("score", 0))) for r in runs]
+    streak = current_health_runs(runs)
+    recent = recent_runs(runs)
+    window = streak or recent or runs
+    scores = [(r.get("timestamp", ""), int(r.get("score", 0))) for r in window]
     anomalies = []
     for i in range(1, len(scores)):
         drop = scores[i - 1][1] - scores[i][1]
         if drop > 25:
             anomalies.append(
                 f"  [ANOMALY] Score dropped {drop} points: "
-                f"run {i} ({scores[i-1][0]}) -> run {i+1} ({scores[i][0]})"
+                f"window run {i} ({scores[i-1][0]}) -> window run {i+1} ({scores[i][0]})"
             )
 
     current = scores[-1][1]
@@ -134,26 +164,39 @@ def section_score_trajectory(runs: list[dict]) -> list[str]:
     min_s = min(s for _, s in scores)
     max_s = max(s for _, s in scores)
     lines.append(
-        f"  Latest: {current}/100 {trend}  |  Runs: {len(runs)}"
+        f"  Latest: {current}/100 {trend}  |  Current-health window: {len(window)} run(s)"
         f"  |  Min: {min_s}  |  Max: {max_s}"
     )
-    lines.extend(anomalies) if anomalies else lines.append("  No score regressions detected")
+    lines.extend(anomalies) if anomalies else lines.append("  No current-health score regressions detected")
+    if streak:
+        lines.append(f"  Current healthy streak: {len(streak)} consecutive clean validation run(s)")
+    if recent and len(recent) > len(window):
+        lines.append(
+            f"  Historical context: {len(recent) - len(window)} additional recent run(s) exist outside the healthy streak"
+        )
     return lines
 
 
 # ── Section 2: Check Reliability ─────────────────────────────────────────────
 
 def section_check_reliability(runs: list[dict]) -> list[str]:
-    lines = ["## 2. Check Reliability"]
-    if len(runs) < MIN_VALIDATION_RUNS:
+    streak = current_health_runs(runs)
+    windowed = streak or recent_runs(runs)
+    label = (
+        f"current clean streak ({len(streak)} run(s))"
+        if streak
+        else f"last {RELIABILITY_WINDOW_H}h"
+    )
+    lines = [f"## 2. Check Reliability ({label})"]
+    if len(windowed) < MIN_VALIDATION_RUNS:
         lines.append(
-            f"  Insufficient data ({len(runs)} records)  |  "
+            f"  Insufficient recent data ({len(windowed)} records in last {RELIABILITY_WINDOW_H}h)  |  "
             f"need at least {MIN_VALIDATION_RUNS} for meaningful analysis"
         )
         return lines
 
     check_counts: dict[str, list[bool]] = defaultdict(list)
-    for run in runs:
+    for run in windowed:
         for check in run.get("checks", []):
             check_counts[check["name"]].append(bool(check.get("ok")))
 
@@ -309,14 +352,16 @@ def section_anomaly_summary(
     lines = ["## 8. Anomaly Summary"]
     anomalies = []
 
-    # Score drops
-    if len(runs) >= 2:
-        scores = [int(r.get("score", 0)) for r in runs]
+    # Score drops — use only the latest health window so resolved regressions do
+    # not remain active anomalies after the platform is stable again.
+    windowed = current_health_runs(runs) or recent_runs(runs)
+    if len(windowed) >= 2:
+        scores = [int(r.get("score", 0)) for r in windowed]
         for i in range(1, len(scores)):
             drop = scores[i - 1] - scores[i]
             if drop > 25:
                 anomalies.append(
-                    f"  [HIGH] Score dropped {drop} points in consecutive validation runs"
+                    f"  [HIGH] Score dropped {drop} points in consecutive current-health validation runs"
                 )
 
     # Runaway sessions
@@ -355,6 +400,26 @@ def section_anomaly_summary(
     return lines
 
 
+# ── Section 9: Historical Context ────────────────────────────────────────────
+
+def section_historical_context(runs: list[dict]) -> list[str]:
+    lines = ["## 9. Historical Context (all-time)"]
+    recent = recent_runs(runs)
+    lines.append(f"  Total runs: {len(runs)} | Recent (last {RELIABILITY_WINDOW_H}h): {len(recent)}")
+    if len(runs) < MIN_VALIDATION_RUNS:
+        return lines
+
+    check_counts: dict[str, list[bool]] = defaultdict(list)
+    for run in runs:
+        for check in run.get("checks", []):
+            check_counts[check["name"]].append(bool(check.get("ok")))
+
+    for name, results in sorted(check_counts.items()):
+        pass_rate = sum(results) / len(results) * 100
+        lines.append(f"  {name}: {pass_rate:.0f}% all-time ({sum(results)}/{len(results)})")
+    return lines
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> int:
@@ -388,6 +453,7 @@ def main() -> int:
             "anomaly_summary",
             lambda: section_anomaly_summary(runs, entries, tasks, guardrail),
         ),
+        ("historical_context", lambda: section_historical_context(runs)),
     ]
 
     for name, fn in sections:

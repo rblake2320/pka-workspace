@@ -54,6 +54,22 @@ def cmd_approval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_approval_response(args: argparse.Namespace) -> int:
+    payload = {
+        "type": "approval_response",
+        "timestamp": timestamp(),
+        "from": args.from_agent,
+        "to": args.to_agent,
+        "task_id": args.task_id,
+        "approval_id": args.approval_id,
+        "decision": args.decision,
+        "note": args.note,
+    }
+    path = create_message_file(payload, args.task_id)
+    print(f"Created {path}")
+    return 0
+
+
 def cmd_complete(args: argparse.Namespace) -> int:
     payload = {
         "type": "completion_notice",
@@ -125,6 +141,15 @@ def build_parser() -> argparse.ArgumentParser:
     approval.add_argument("--approval-type", required=True)
     approval.add_argument("--artifact", required=True)
     approval.set_defaults(func=cmd_approval)
+
+    approval_response = sub.add_parser("approval-response")
+    approval_response.add_argument("--task-id", required=True)
+    approval_response.add_argument("--approval-id", required=True)
+    approval_response.add_argument("--from-agent", required=True)
+    approval_response.add_argument("--to-agent", required=True)
+    approval_response.add_argument("--decision", required=True, choices=["approved", "rejected"])
+    approval_response.add_argument("--note", default="")
+    approval_response.set_defaults(func=cmd_approval_response)
 
     complete = sub.add_parser("complete")
     complete.add_argument("--task-id", required=True)

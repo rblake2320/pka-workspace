@@ -63,6 +63,14 @@ Required fields:
 - `approval_type`
 - `artifact`
 
+### `approval_response`
+Use when an approval request is explicitly resolved.
+
+Required fields:
+- `task_id`
+- `approval_id`
+- `decision`
+
 ### `completion_notice`
 Use when an agent has finished its step and is handing off.
 
@@ -74,6 +82,7 @@ Required fields:
 
 ## Rules
 - If the message changes task state, update the task record too
+- If the message changes runtime approval state, update `Team/runtime/approvals/` and `Team/runtime/jobs/` too
 - If the message results in a final deliverable, update the delivery manifest too
 - Do not use messages for trivial conversation
 - Do not store secrets or owner-private context in protocol messages

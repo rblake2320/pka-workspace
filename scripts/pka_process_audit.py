@@ -11,6 +11,7 @@ Purpose:
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -23,6 +24,8 @@ OWNER_INBOX = ROOT / "Owner's Inbox"
 MANIFEST = OWNER_INBOX / "DELIVERY_MANIFEST.md"
 STATUS = TEAM_DIR / "status.md"
 HANDOFF = TEAM_DIR / "handoff.md"
+RUNTIME_JOBS = TEAM_DIR / "runtime" / "jobs" / "active"
+RUNTIME_APPROVALS = TEAM_DIR / "runtime" / "approvals" / "pending"
 
 VALID_STATES = {
     "new",
@@ -255,6 +258,30 @@ def audit_journals() -> list[str]:
     return issues
 
 
+def audit_runtime_state() -> list[str]:
+    issues: list[str] = []
+    for path in sorted(RUNTIME_JOBS.glob("*.json")):
+        try:
+            payload = json.loads(read_text(path))
+        except Exception as exc:
+            issues.append(f"{path.relative_to(ROOT)}: invalid runtime job json ({exc})")
+            continue
+        if not payload.get("task_id"):
+            issues.append(f"{path.relative_to(ROOT)}: runtime job missing task_id")
+        if payload.get("status") == "waiting_approval" and not payload.get("pending_approval_id"):
+            issues.append(f"{path.relative_to(ROOT)}: waiting_approval without pending_approval_id")
+    for path in sorted(RUNTIME_APPROVALS.glob("*.json")):
+        try:
+            payload = json.loads(read_text(path))
+        except Exception as exc:
+            issues.append(f"{path.relative_to(ROOT)}: invalid approval json ({exc})")
+            continue
+        job_id = payload.get("job_id", "")
+        if job_id and not (RUNTIME_JOBS / f"{job_id}.json").exists():
+            issues.append(f"{path.relative_to(ROOT)}: linked runtime job missing ({job_id})")
+    return issues
+
+
 def main() -> int:
     issues: list[str] = []
 
@@ -264,6 +291,7 @@ def main() -> int:
     issues.extend(audit_control_files())
     issues.extend(audit_task_records())
     issues.extend(audit_journals())
+    issues.extend(audit_runtime_state())
 
     secret_paths = [STATUS, HANDOFF, MANIFEST]
     if TASKS_DIR.exists():

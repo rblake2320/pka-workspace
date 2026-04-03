@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import contextlib
 import ctypes
 import ctypes.wintypes
 import json
@@ -21,6 +22,11 @@ MESSAGES_ACTIVE = TEAM_DIR / "messages" / "active"
 MESSAGES_ARCHIVE = TEAM_DIR / "messages" / "archive"
 LOGS_DIR = ROOT / "logs"
 REPORTS_DIR = ROOT / "Owner's Inbox" / "reports"
+RUNTIME_DIR = TEAM_DIR / "runtime"
+JOBS_ACTIVE = RUNTIME_DIR / "jobs" / "active"
+JOBS_ARCHIVE = RUNTIME_DIR / "jobs" / "archive"
+APPROVALS_PENDING = RUNTIME_DIR / "approvals" / "pending"
+APPROVALS_RESOLVED = RUNTIME_DIR / "approvals" / "resolved"
 
 VALID_STATES = {
     "new",
@@ -171,6 +177,24 @@ class FileLock:
             self.lock_path.unlink()
         except FileNotFoundError:
             pass
+
+
+VALIDATION_LOCK = LOGS_DIR / ".pka-validation"
+
+
+def acquire_validation_lock(timeout_s: int = 600) -> "FileLock | contextlib.AbstractContextManager[None]":
+    """Suite-level lock preventing concurrent validation runs.
+
+    If PKA_VALIDATION_LOCKED=1 is set (a parent process holds the lock),
+    returns a no-op context manager to avoid deadlock in nested subprocess calls.
+    Timeout defaults to 600s (10 min) to exceed the longest known validation run.
+    """
+    if os.environ.get("PKA_VALIDATION_LOCKED") == "1":
+        return contextlib.nullcontext()
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    # 0.5s delay × (timeout_s * 2) retries ≈ timeout_s seconds of waiting
+    retries = max(1, timeout_s * 2)
+    return FileLock(VALIDATION_LOCK, retries=retries, delay=0.5)
 
 
 def slugify(value: str) -> str:
@@ -427,3 +451,8 @@ def archive_message(path: Path) -> Path:
     target = MESSAGES_ARCHIVE / path.name
     path.replace(target)
     return target
+
+
+def ensure_runtime_dirs() -> None:
+    for path in (RUNTIME_DIR, JOBS_ACTIVE, JOBS_ARCHIVE, APPROVALS_PENDING, APPROVALS_RESOLVED):
+        path.mkdir(parents=True, exist_ok=True)

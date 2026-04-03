@@ -17,11 +17,14 @@ All mutations are restored before exit.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+from pka_lib import acquire_validation_lock
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -75,6 +78,12 @@ def restore_text(path: Path, content: str) -> None:
 
 
 def main() -> int:
+    with acquire_validation_lock():
+        os.environ["PKA_VALIDATION_LOCKED"] = "1"
+        return _run_resilience()
+
+
+def _run_resilience() -> int:
     results: list[tuple[str, bool, str]] = []
     manifest_before = backup_text(MANIFEST)
     status_before = backup_text(STATUS)

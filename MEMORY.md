@@ -1,0 +1,60 @@
+# Workspace Memory Index
+
+This is the canonical startup index for cross-session memory in
+`C:\Users\techai\PKA testing`.
+
+## What This Workspace Is
+- Personal AI orchestration workspace for Ron
+- AXIOM-centered multi-agent operating model
+- `Team Inbox/` is intake
+- `Owner's Inbox/` is delivery
+
+## Canonical Memory Stack
+
+### Identity And Rules
+- `CLAUDE.md` — workspace identity, agent roster, startup and shutdown rules
+- `README.md` — repo overview and operator commands
+- `Team/CORE_RULES.md` — team-wide non-negotiables
+- `Team/OPERATING_MODEL.md` — canonical lifecycle and process rules
+- `Team/roster.md` — active agent roster and responsibilities
+
+### Current Session State
+- `Owner's Inbox/owner.md` — Ron's profile, priorities, and working style
+- `Team/handoff.md` — latest session summary and next attention items
+- `Team/status.md` — active work and session-start checklist
+- `Team Inbox/` — unprocessed user input for the team
+
+### Completed Work History
+- `Owner's Inbox/DELIVERY_MANIFEST.md` — indexed history of consequential deliverables
+- `Owner's Inbox/` — completed reports, verdicts, plans, and evidence packs
+- `Team/tasks/` — task records, definitions of done, operational history
+
+### Agent Memory
+- `Team/AXIOM/journal.md`
+- `Team/CRUCIBLE/journal.md`
+- `Team/DEBUGGER/journal.md`
+- `Team/FORGE/journal.md`
+- `Team/GRID/journal.md`
+- `Team/HELM/journal.md`
+- `Team/LEGAL/journal.md`
+- `Team/NOVA/journal.md`
+- `Team/RADAR/journal.md`
+- `Team/SCRIBE/journal.md`
+- `Team/SENTINEL/journal.md`
+- `Team/SPARK/journal.md`
+- `Team/VENTURE/journal.md`
+
+## Retrieval Protocol
+- For "what were we last working on", start with `Team/handoff.md`, then `Team/status.md`, then `Owner's Inbox/DELIVERY_MANIFEST.md`.
+- For "what changed", inspect the relevant task record, deliverable, and current file state.
+- For agent-specific history, read that agent's journal before answering.
+- For ambiguous prior-work questions, search the workspace instead of guessing.
+
+## Current High-Signal State
+- Latest handoff says there are no active consequential tasks.
+- Latest handoff highlights recent work on PKA v0.5.0 and v0.6.0 validation, resilience test cleanup, Council plus AgentForge ledger planning, and patent assessment.
+- Latest status board says no active routed work and points to the task ledger and real tests as the source of truth.
+- Delivery manifest is the best compact index of what has already been completed.
+
+## Guardrail
+New chats in this folder should treat these files as persistent memory and should not answer prior-work questions from model memory alone.

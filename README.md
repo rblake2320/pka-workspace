@@ -130,6 +130,7 @@ python scripts\pka_full_validation.py
 python scripts\pka_scorecard.py
 python scripts\pka_observability.py
 python scripts\pka_agent_readiness.py
+python scripts\pka_runtime_check.py
 ```
 
 ## Operator Commands
@@ -143,6 +144,7 @@ python scripts\pka_doctor.py
 python scripts\pka_machine_health.py
 python scripts\pka_sync.py
 python scripts\pka_entitlement_check.py
+python scripts\pka_runtime.py --help
 python scripts\pka_operator_run.py
 python scripts\pka_evidence_pack.py --task-id TASK-YYYYMMDD-001
 python scripts\pka_recovery_playbook.py --task-id TASK-YYYYMMDD-001

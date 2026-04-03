@@ -26,6 +26,7 @@ def main() -> int:
         ("machine_health", ("scripts/pka_machine_health.py",)),
         ("sync", ("scripts/pka_sync.py",)),
         ("entitlements", ("scripts/pka_entitlement_check.py",)),
+        ("runtime", ("scripts/pka_runtime_check.py",)),
         ("full_validation", ("scripts/pka_full_validation.py",)),
         ("scorecard", ("scripts/pka_scorecard.py",)),
         ("telemetry", ("scripts/pka_telemetry.py",)),

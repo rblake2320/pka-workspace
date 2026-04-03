@@ -2,6 +2,17 @@
 
 All notable changes to the PKA workspace should be recorded here.
 
+## 0.8.0 - 2026-04-02
+
+Durable runtime layer.
+
+- Added `scripts/pka_runtime.py` — persistent job queue, resumable job state, and approval interrupt state machine
+- Added `scripts/pka_runtime_check.py` — runtime integrity validation for jobs and approvals
+- Updated `scripts/pka_session_gate.py` — RESUME output now includes active jobs and pending approvals
+- Updated `scripts/pka_process_audit.py` — runtime state integrity is audited with the rest of the workspace
+- Updated `scripts/pka_operator_run.py` — runtime integrity is now part of the operator path
+- Updated `scripts/pka_agent_readiness.py` and `scripts/pka_doctor.py` — runtime layer counted as first-class capability
+
 ## 0.7.0 - 2026-04-02
 
 Platform maturity: repo boundary fix, production telemetry, session continuity.
