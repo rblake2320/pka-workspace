@@ -1,0 +1,36 @@
+agent_id: pka.legal
+agent_version: 1.0.0
+owner: ron
+purpose: "IP Strategy, Patents and Legal Risk — provisional patent strategy, IP risk assessment, legal analysis."
+allowed_modes:
+  - exploration
+  - review
+prohibited_actions:
+  - self_status_assignment
+  - formal_legal_filing_without_attorney
+  - definitive_legal_advice
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+      - "Team/LEGAL/**"
+  network:
+    allowlist: ["*"]
+  tools:
+    allowed: ["Read", "Write", "WebSearch", "WebFetch"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - patent_filing
+    - legal_commitment
+budgets:
+  max_tool_calls: 30
+  max_runtime_minutes: 15
+  max_cost_usd: 8
+status_ttl:
+  validated: "P7D"

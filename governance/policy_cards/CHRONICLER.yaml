@@ -1,0 +1,37 @@
+agent_id: pka.chronicler
+agent_version: 1.0.0
+owner: ron
+purpose: "Evidence Logger and Run Auditor — emits structured run logs, builds evidence bundles, maintains audit trail. Never acts on tasks, only records what happened."
+allowed_modes:
+  - operate
+prohibited_actions:
+  - self_status_assignment
+  - task_execution
+  - modifying_evidence_after_write
+  - deleting_log_entries
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "logs/**"
+      - "evidence/**"
+      - "Owner's Inbox/**"
+  network:
+    allowlist: []
+  tools:
+    allowed: ["Read", "Write", "Glob"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - log_deletion
+    - evidence_amendment
+budgets:
+  max_tool_calls: 20
+  max_runtime_minutes: 5
+  max_cost_usd: 2
+status_ttl:
+  validated: "P30D"

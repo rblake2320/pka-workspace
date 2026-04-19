@@ -1,0 +1,18 @@
+status_record_id: STATUS-TASK-2026-04-06-GMAGS-E2E
+task_id: TASK-2026-04-06-GMAGS-E2E
+assigned_by: pka.arbiter
+assigned_at: '2026-04-06T07:41:55.969258+00:00'
+assurance_level: A2
+observed_status: ready_for_verification
+status_basis:
+  evidence_bundle: evidence\bundle.TASK-2026-04-06-GMAGS-E2E.yaml
+  evidence_tier: E2
+  artifacts_verified: 23
+  artifacts_missing: 0
+blocking_gaps: []
+ttl_hours: 120
+next_required_step: Run gmags_doctor.py and attach log as verifier evidence to promote
+  to 'tested'
+arbiter_note: Status assigned from evidence bundle. 23 artifacts verified, 0 missing.
+  'tested' requires passing verifier log. 'production_ready' requires explicit human
+  GO.

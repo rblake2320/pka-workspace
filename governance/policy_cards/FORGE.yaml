@@ -1,0 +1,38 @@
+agent_id: pka.forge
+agent_version: 1.0.0
+owner: ron
+purpose: "Builder and Technical Architect — implements working systems. No placeholder implementations."
+allowed_modes:
+  - build
+  - design
+prohibited_actions:
+  - self_status_assignment
+  - production_deploy_without_approval
+  - credential_exfiltration
+  - skip_verification
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "**"
+  network:
+    allowlist: ["*"]
+  tools:
+    allowed: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - production_deploy
+    - schema_breaking_change
+    - credential_use
+budgets:
+  max_tool_calls: 100
+  max_runtime_minutes: 30
+  max_cost_usd: 15
+status_ttl:
+  implemented: "P7D"
+  tested: "P5D"

@@ -1,0 +1,31 @@
+# GMAGS v1.5 Task Contract Template
+# Required for all consequential tasks (A1+)
+# Copy this file, fill in all fields, save as: TASK-YYYYMMDD-NNN.yaml
+
+task_id: TASK-YYYY-MM-DD-NNN
+schema_version: "1.0.0"
+requested_by: ron
+created_at: "<ISO8601>"
+mode: "exploration|design|build|verify|operate|incident|review"
+assurance_level: "A0|A1|A2|A3|A4"
+task_class: "research|analysis|writing|coding|repair|operations|migration|review|triage|incident_response"
+objective: "<one clear sentence — what does done look like>"
+inputs:
+  - "<source file or data>"
+expected_outputs:
+  - "<deliverable — specific, checkable>"
+success_criteria:
+  - "<specific, testable condition>"
+  - "<specific, testable condition>"
+constraints:
+  - "<hard constraint>"
+declared_side_effects:
+  creates: []
+  modifies: []
+  does_not_modify: []
+verification_plan:
+  - "<verifier command or check>"
+fallback_plan:
+  - "<what to do if primary path fails>"
+agent_chain: []
+# example: [NOVA, FORGE, CRUCIBLE, CHRONICLER, ARBITER, SENTINEL, WARDEN]

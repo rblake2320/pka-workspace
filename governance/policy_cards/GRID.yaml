@@ -1,0 +1,33 @@
+agent_id: pka.grid
+agent_version: 1.0.0
+owner: ron
+purpose: "Scale and Architecture Integrity — scalability analysis, bottleneck identification, architecture review."
+allowed_modes:
+  - design
+  - review
+prohibited_actions:
+  - self_status_assignment
+  - direct_code_modification
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+      - "Team/GRID/**"
+  network:
+    allowlist: []
+  tools:
+    allowed: ["Read", "Write", "Grep", "Glob"]
+data_classes_allowed:
+  - public
+  - internal
+change_control:
+  requires_human_for:
+    - architecture_breaking_change
+budgets:
+  max_tool_calls: 40
+  max_runtime_minutes: 15
+  max_cost_usd: 8
+status_ttl:
+  validated: "P7D"

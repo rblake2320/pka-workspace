@@ -12,6 +12,8 @@ This is the canonical startup index for cross-session memory in
 ## Canonical Memory Stack
 
 ### Identity And Rules
+- `VERSION` — current workspace release number
+- `CHANGELOG.md` — latest implemented changes by version
 - `CLAUDE.md` — workspace identity, agent roster, startup and shutdown rules
 - `README.md` — repo overview and operator commands
 - `Team/CORE_RULES.md` — team-wide non-negotiables
@@ -45,15 +47,17 @@ This is the canonical startup index for cross-session memory in
 - `Team/VENTURE/journal.md`
 
 ## Retrieval Protocol
-- For "what were we last working on", start with `Team/handoff.md`, then `Team/status.md`, then `Owner's Inbox/DELIVERY_MANIFEST.md`.
-- For "what changed", inspect the relevant task record, deliverable, and current file state.
+- For `what version are we on` or `what is this folder doing now`, start with `VERSION`, then `CHANGELOG.md`, then the latest implementation report in `Owner's Inbox/`.
+- For `what were we last working on`, start with `Team/handoff.md`, then `Team/status.md`, then `Owner's Inbox/DELIVERY_MANIFEST.md`.
+- For `what changed`, inspect the relevant task record, deliverable, and current file state.
 - For agent-specific history, read that agent's journal before answering.
 - For ambiguous prior-work questions, search the workspace instead of guessing.
 
 ## Current High-Signal State
-- Latest handoff says there are no active consequential tasks.
-- Latest handoff highlights recent work on PKA v0.5.0 and v0.6.0 validation, resilience test cleanup, Council plus AgentForge ledger planning, and patent assessment.
-- Latest status board says no active routed work and points to the task ledger and real tests as the source of truth.
+- Current workspace version is `0.8.0`.
+- `0.8.0` added a durable runtime layer: `scripts/pka_runtime.py`, `scripts/pka_runtime_check.py`, runtime-aware session gate output, runtime auditing, and runtime readiness coverage.
+- `0.7.0` established repo-boundary correction, production telemetry, and stronger session continuity.
+- Latest handoff/status files may lag behind versioned reality and should not override `VERSION` plus `CHANGELOG.md` when summarizing the current state of the folder.
 - Delivery manifest is the best compact index of what has already been completed.
 
 ## Guardrail

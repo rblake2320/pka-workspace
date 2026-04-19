@@ -1,0 +1,48 @@
+bundle_id: BUNDLE-TASK-2026-04-06-GMAGS-E2E
+task_id: TASK-2026-04-06-GMAGS-E2E
+created_at: '2026-04-06T07:41:55.967748+00:00'
+created_by: pka.chronicler
+artifacts:
+- path: governance\task_contracts\TASK-2026-04-06-GMAGS-E2E.yaml
+  role: task_contract
+  exists: true
+- path: logs\run.TASK-2026-04-06-GMAGS-E2E.20260406T074155Z.yaml
+  role: run_log
+  exists: true
+- path: .claude\agents\CHRONICLER.md
+  role: primary_output
+  exists: true
+- path: .claude\agents\ARBITER.md
+  role: primary_output
+  exists: true
+- path: .claude\agents\WARDEN.md
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\AXIOM.yaml
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\NOVA.yaml
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\FORGE.yaml
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\SENTINEL.yaml
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\CRUCIBLE.yaml
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\HELM.yaml
+  role: primary_output
+  exists: true
+- path: governance\policy_cards\DEBUGGER.yaml
+  role: primary_output
+  exists: true
+status_inputs:
+- policy_card@1.0.0
+- task_contract@1.0.0
+artifacts_verified: 23
+artifacts_missing: 0
+gaps_identified: []
+ready_for_arbiter: true
