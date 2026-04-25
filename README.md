@@ -152,8 +152,9 @@ python scripts\pka_recovery_playbook.py --task-id TASK-YYYYMMDD-001
 
 ## Repository Note
 
-This workspace currently lives inside a larger parent git repository rather than as its own standalone repo.
-See `RELEASE_PROCESS.md` for how versioning is handled safely until that is corrected.
+This workspace is its own standalone git repository. `scripts/pka_doctor.py`
+checks that the git top-level matches this folder before the workspace is
+called healthy.
 
 ---
 

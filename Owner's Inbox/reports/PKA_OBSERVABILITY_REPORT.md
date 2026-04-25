@@ -1,6 +1,6 @@
 # PKA Observability Report
 
-- Generated: 2026-04-03T16:51:28Z
+- Generated: 2026-04-25T19:59:21Z
 - Validation runs recorded: 36
 - Latest validation score: 100/100
 - Latest validation pass count: 8/8
