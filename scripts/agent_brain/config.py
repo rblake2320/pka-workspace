@@ -26,11 +26,16 @@ READONLY_PATHS = {
 READONLY_DIRS: set[Path] = set()  # Agent CAN write to Owner's Inbox (deliverables go there)
 
 # ---------------------------------------------------------------------------
-# Ollama endpoints
+# Model provider endpoints
 # ---------------------------------------------------------------------------
 SPARK1_ENDPOINT = os.getenv("AGENT_BRAIN_SPARK1", "http://192.168.12.132:11434")
 SPARK2_ENDPOINT = os.getenv("AGENT_BRAIN_SPARK2", "http://10.0.0.2:11434")
 TUNNEL_ENDPOINT = os.getenv("AGENT_BRAIN_TUNNEL", "http://ollama.ultrarag.app")
+LOCAL_OLLAMA_ENDPOINT = os.getenv("AGENT_BRAIN_LOCAL_OLLAMA", "http://127.0.0.1:11434")
+OPENAI_COMPAT_ENDPOINT = os.getenv("AGENT_BRAIN_OPENAI_COMPAT_BASE_URL", "https://api.openai.com")
+OPENAI_COMPAT_API_KEY_ENV = os.getenv("AGENT_BRAIN_OPENAI_COMPAT_API_KEY_ENV", "OPENAI_API_KEY")
+OPENAI_COMPAT_MODEL = os.getenv("AGENT_BRAIN_OPENAI_COMPAT_MODEL", "gpt-4o-mini")
+LOCAL_TOOL_CAPABLE = os.getenv("AGENT_BRAIN_LOCAL_TOOLS", "").lower() in {"1", "true", "yes"}
 
 # Primary endpoint used by default; falls back to tunnel on timeout
 PRIMARY_ENDPOINT = os.getenv("AGENT_BRAIN_PRIMARY", SPARK1_ENDPOINT)
@@ -40,12 +45,15 @@ PRIMARY_ENDPOINT = os.getenv("AGENT_BRAIN_PRIMARY", SPARK1_ENDPOINT)
 # ---------------------------------------------------------------------------
 @dataclass
 class ModelProfile:
-    name: str              # Ollama model tag
-    endpoint: str          # Ollama base URL
+    name: str              # Provider model tag
+    endpoint: str          # OpenAI-compatible base URL
     context_window: int    # Max tokens
     avg_latency_s: float   # Approximate first-token latency
     capabilities: set[str] = field(default_factory=set)
     inject_think_false: bool = False  # qwen3 needs think:false suppression
+    provider: str = "ollama"
+    api_key_env: str | None = None
+    fallback_endpoint: str | None = None
 
 
 MODELS: dict[str, ModelProfile] = {
@@ -56,6 +64,7 @@ MODELS: dict[str, ModelProfile] = {
         avg_latency_s=1.0,
         capabilities={"fast", "summarize"},
         inject_think_false=True,
+        fallback_endpoint=TUNNEL_ENDPOINT,
     ),
     "qwen3": ModelProfile(
         name="qwen3-fast-hermes:latest",
@@ -64,6 +73,7 @@ MODELS: dict[str, ModelProfile] = {
         avg_latency_s=2.0,
         capabilities={"tool_calling", "fast"},
         inject_think_false=True,
+        fallback_endpoint=TUNNEL_ENDPOINT,
     ),
     "qwen3-8b": ModelProfile(
         name="qwen3:latest",   # 8B — lighter, faster
@@ -72,6 +82,7 @@ MODELS: dict[str, ModelProfile] = {
         avg_latency_s=1.0,
         capabilities={"tool_calling", "fast"},
         inject_think_false=True,
+        fallback_endpoint=TUNNEL_ENDPOINT,
     ),
     "llama70b": ModelProfile(
         name="llama3.1:70b",
@@ -79,6 +90,7 @@ MODELS: dict[str, ModelProfile] = {
         context_window=131072,
         avg_latency_s=31.9,
         capabilities={"reasoning", "tool_calling"},
+        fallback_endpoint=TUNNEL_ENDPOINT,
     ),
     "deepseek": ModelProfile(
         name="deepseek-r1:32b",
@@ -86,6 +98,32 @@ MODELS: dict[str, ModelProfile] = {
         context_window=32768,
         avg_latency_s=15.0,
         capabilities={"reasoning"},
+        fallback_endpoint=TUNNEL_ENDPOINT,
+    ),
+    "local": ModelProfile(
+        name=os.getenv("AGENT_BRAIN_LOCAL_MODEL", "imds-v2:latest"),
+        endpoint=LOCAL_OLLAMA_ENDPOINT,
+        context_window=int(os.getenv("AGENT_BRAIN_LOCAL_CONTEXT", "32768")),
+        avg_latency_s=float(os.getenv("AGENT_BRAIN_LOCAL_LATENCY", "1.0")),
+        capabilities=({"tool_calling"} if LOCAL_TOOL_CAPABLE else set()) | {"fast", "local"},
+        inject_think_false=True,
+    ),
+    "local-imds": ModelProfile(
+        name="imds-v2:latest",
+        endpoint=LOCAL_OLLAMA_ENDPOINT,
+        context_window=32768,
+        avg_latency_s=1.0,
+        capabilities={"fast", "local"},
+        inject_think_false=True,
+    ),
+    "cloud": ModelProfile(
+        name=OPENAI_COMPAT_MODEL,
+        endpoint=OPENAI_COMPAT_ENDPOINT,
+        context_window=int(os.getenv("AGENT_BRAIN_OPENAI_COMPAT_CONTEXT", "128000")),
+        avg_latency_s=float(os.getenv("AGENT_BRAIN_OPENAI_COMPAT_LATENCY", "2.0")),
+        capabilities={"tool_calling", "reasoning", "cloud"},
+        provider="openai-compatible",
+        api_key_env=OPENAI_COMPAT_API_KEY_ENV,
     ),
 }
 

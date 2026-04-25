@@ -11,8 +11,8 @@
 - **Date**: 2026-04-25
 - **Tasks completed**: setup/code review and validation sweep
 - **Deliverables to Owner's Inbox**: `SENTINEL-pka-setup-review-2026-04-25.md`
-- **Pending/blocked**: Agent Brain live LLM execution waits on Spark/Ollama connectivity
-- **Key decisions made**: Core PKA workspace is healthy; Agent Brain is now a normal tracked package, with prior nested repo history preserved as a bundle backup
+- **Pending/blocked**: Cloud OpenAI-compatible backend needs a valid API key; Spark/Tunnel Ollama still depends on remote endpoint/model availability
+- **Key decisions made**: Core PKA workspace is healthy; Agent Brain now routes local SLMs and cloud LLMs through one loop; local Ollama `imds-v2:latest` is live
 
 ## Pending Work (cross-session)
 | Task | Assigned To | Status | Notes |

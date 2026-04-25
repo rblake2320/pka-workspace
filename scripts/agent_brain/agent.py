@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import time
 import uuid
@@ -157,13 +158,10 @@ class AgentBrain:
         endpoint: str | None = None,
         auto_approve: bool = False,
     ):
-        from .config import PRIMARY_ENDPOINT, TUNNEL_ENDPOINT
         self._auto_approve = auto_approve
-        self.llm = OllamaClient(
-            endpoint=endpoint or PRIMARY_ENDPOINT,
-            fallback=TUNNEL_ENDPOINT,
-        )
+        self.llm = OllamaClient(endpoint=endpoint)
         self.router = ModelRouter(override=model_override)
+        self._model_override = model_override
         self.memory = MemoryStore()
         self.guardrails = GuardrailBridge()
         self.audit = AuditLogger()
@@ -190,7 +188,12 @@ class AgentBrain:
             return False
 
     def _build_system_prompt(self) -> str:
-        memory_ctx = self.memory.get_context_block(MEMORY_CONTEXT_MAX_CHARS)
+        selected = self.router.select("", tool_calling_required=True)
+        cloud_memory_allowed = os.getenv("AGENT_BRAIN_ALLOW_CLOUD_MEMORY", "").lower() in {"1", "true", "yes"}
+        if selected.provider == "openai-compatible" and not cloud_memory_allowed:
+            memory_ctx = "[Local Agent Brain memory withheld for cloud provider data isolation]"
+        else:
+            memory_ctx = self.memory.get_context_block(MEMORY_CONTEXT_MAX_CHARS)
         tool_names = ", ".join(TOOL_REGISTRY.keys())
         return _SYSTEM_PROMPT_TEMPLATE.format(
             memory_context=memory_ctx,
@@ -238,12 +241,14 @@ class AgentBrain:
 
             print_fn(f"  [iter {iteration+1}] model={profile.name}")
 
+            model_tools_schema = tools_schema if "tool_calling" in profile.capabilities else None
+
             # Call LLM
             try:
                 resp: ChatResponse = await self.llm.chat_completion(
                     messages=messages,
                     model_profile=profile,
-                    tools=tools_schema if tools_schema else None,
+                    tools=model_tools_schema if model_tools_schema else None,
                     temperature=0.7,
                 )
             except Exception as exc:
@@ -252,7 +257,7 @@ class AgentBrain:
                     resp = await self.llm.chat_completion(
                         messages=messages,
                         model_profile=profile,
-                        tools=tools_schema if tools_schema else None,
+                        tools=model_tools_schema if model_tools_schema else None,
                         temperature=0.9,
                     )
                 except Exception as exc2:
@@ -338,4 +343,8 @@ class AgentBrain:
 
     async def ping(self) -> bool:
         """Check if the LLM backend is reachable."""
+        if self._model_override:
+            from .config import MODELS
+            if self._model_override in MODELS:
+                return await self.llm.ping(self._model_override)
         return await self.llm.ping()

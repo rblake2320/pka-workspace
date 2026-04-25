@@ -138,6 +138,8 @@ async def cmd_worker(args: argparse.Namespace) -> int:
 
 async def cmd_status(args: argparse.Namespace) -> int:
     """Show agent brain status: memory, sessions, model health."""
+    import os
+
     from .agent import AgentBrain
     from .config import DATA_DIR, LOGS_DIR, MEMORY_DIR, MODELS, SESSIONS_DIR
     from .memory import MemoryStore
@@ -145,8 +147,10 @@ async def cmd_status(args: argparse.Namespace) -> int:
     _print_header()
 
     # LLM ping
-    agent = AgentBrain()
-    print("Checking LLM backend...", end=" ", flush=True)
+    ping_model = args.model or None
+    agent = AgentBrain(model_override=ping_model)
+    ping_label = ping_model or "default"
+    print(f"Checking LLM backend ({ping_label})...", end=" ", flush=True)
     ok = await agent.ping()
     print("OK" if ok else "OFFLINE")
 
@@ -166,7 +170,13 @@ async def cmd_status(args: argparse.Namespace) -> int:
     # Models
     print(f"\nConfigured models:")
     for key, profile in MODELS.items():
-        print(f"  {key:12s} {profile.name:40s} {profile.avg_latency_s}s latency")
+        key_state = ""
+        if profile.api_key_env:
+            key_state = " key=SET" if os.getenv(profile.api_key_env) else f" key=MISSING:{profile.api_key_env}"
+        print(
+            f"  {key:12s} {profile.provider:18s} {profile.name:40s} "
+            f"{profile.avg_latency_s}s latency{key_state}"
+        )
 
     return 0
 
@@ -184,7 +194,7 @@ def main() -> int:
     # run
     p_run = sub.add_parser("run", help="Execute a one-shot task")
     p_run.add_argument("task", help="Task description or question")
-    p_run.add_argument("--model", help="Override model key (gemma3/qwen3/llama70b/deepseek)")
+    p_run.add_argument("--model", help="Override model key (local/local-imds/cloud/gemma3/qwen3/qwen3-8b/llama70b/deepseek) or raw model tag")
     p_run.add_argument("--session", help="Session ID to use (creates new if omitted)")
     p_run.add_argument("--verbose", "-v", action="store_true", help="Show tool call details")
     p_run.add_argument("--quiet", "-q", action="store_true", help="Suppress header output")
@@ -200,7 +210,8 @@ def main() -> int:
     p_worker.add_argument("--interval", type=float, default=10.0, help="Poll interval in seconds")
 
     # status
-    sub.add_parser("status", help="Show agent brain status and health")
+    p_status = sub.add_parser("status", help="Show agent brain status and health")
+    p_status.add_argument("--model", help="Model key to ping for backend health")
 
     args = parser.parse_args()
 

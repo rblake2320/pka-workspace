@@ -29,14 +29,24 @@
 - Added `.gitignore` coverage for Agent Brain runtime logs, sessions, sandbox, and bytecode cache.
 - Converted `scripts/agent_brain/` from an embedded git repository into a normal tracked workspace package.
 - Preserved the prior Agent Brain repo history in `backups/agent_brain/agent_brain-history-20260425.bundle`.
+- Added provider-aware model profiles so Agent Brain can use local Ollama SLMs, Spark/Tunnel Ollama models, or cloud OpenAI-compatible LLMs through the same loop.
+- Confirmed local Ollama is live through `--model local` using `imds-v2:latest`.
+- Confirmed cloud OpenAI-compatible routing reaches the API, but the configured key returns `401 Unauthorized`.
 
 ## Remaining Blockers
 
-1. `python -m scripts.agent_brain status` reports the LLM backend as `OFFLINE`. The code path is healthy, but live model execution depends on Spark/Ollama connectivity.
+1. Cloud OpenAI-compatible execution is configured but currently blocked by auth: the configured API key returns `401 Unauthorized`.
+2. Default Spark/Tunnel Ollama execution may still be offline if those remote endpoints are unreachable or missing the configured models.
 2. Existing uncommitted workspace state includes the deleted `Team Inbox/bpc-protocol.html`; this was not changed during this review.
 
 ## Action
 
-- Restore or verify Spark/Ollama connectivity, then rerun:
+- Local SLM is already live:
+  `python -m scripts.agent_brain status --model local`
+- Restore/replace the cloud API key, then rerun:
+  `python -m scripts.agent_brain status --model cloud`
+- For task execution, use:
   `python -m scripts.agent_brain run "What version is this workspace?" --model qwen3-8b --verbose`
+  `python -m scripts.agent_brain run "What version is this workspace?" --model local --verbose`
+  `python -m scripts.agent_brain run "What version is this workspace?" --model cloud --verbose`
 - Use the tracked bundle if the old embedded Agent Brain git history ever needs to be restored or inspected.
