@@ -33,6 +33,7 @@ ignore = [
     "SIM118", # in dict.keys() (readability preference)
     "RUF002", # ambiguous Unicode in docstring (intentional em-dash/arrows in docs)
     "RUF003", # ambiguous Unicode in comment (intentional)
+    "RUF059", # unused unpacked variable (common in tuple unpack from DB rows / legacy archive scripts)
 ]
 
 [tool.ruff.lint.per-file-ignores]
