@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import contextlib
 import ctypes
-import ctypes.wintypes
 import json
 import os
 import re
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -94,19 +94,25 @@ class FileLock:
 
     @staticmethod
     def _is_pid_alive(pid: int) -> bool:
-        """Return True if the PID is alive on Windows using OpenProcess."""
-        try:
-            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-            handle = ctypes.windll.kernel32.OpenProcess(
-                PROCESS_QUERY_LIMITED_INFORMATION, False, pid
-            )
-            if handle:
-                ctypes.windll.kernel32.CloseHandle(handle)
+        """Return True if the PID is alive. Windows uses OpenProcess; others use os.kill(0)."""
+        if sys.platform == "win32":
+            try:
+                PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+                handle = ctypes.windll.kernel32.OpenProcess(  # type: ignore[attr-defined]
+                    PROCESS_QUERY_LIMITED_INFORMATION, False, pid
+                )
+                if handle:
+                    ctypes.windll.kernel32.CloseHandle(handle)  # type: ignore[attr-defined]
+                    return True
+                return False
+            except Exception:
                 return True
-            return False
-        except Exception:
-            # If ctypes check fails for any reason, assume alive (safe default)
-            return True
+        else:
+            try:
+                os.kill(pid, 0)
+                return True
+            except OSError:
+                return False
 
     # ── Stale detection ───────────────────────────────────────────────────
 
