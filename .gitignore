@@ -42,6 +42,15 @@ Owner's Inbox/*.lock
 
 # Machine-generated session resumption manifest — rebuilt on every start/end
 Team/tasks/RESUME.json
+Team/runtime/jobs/archive/*.json
+Team/runtime/approvals/resolved/*.json
+
+# Agent Brain local runtime state
+scripts/agent_brain/data/logs/
+scripts/agent_brain/data/sessions/
+scripts/agent_brain/data/sandbox/
+scripts/agent_brain/__pycache__/
+scripts/agent_brain/tools/__pycache__/
 
 # Claude Code agent worktrees — ephemeral, not part of repo history
 .claude/worktrees/

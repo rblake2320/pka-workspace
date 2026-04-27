@@ -16,6 +16,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from pka_lib import acquire_validation_lock
 
 ROOT = Path(__file__).resolve().parent.parent
 TASKS_DIR = ROOT / "Team" / "tasks"
@@ -65,6 +66,18 @@ def main() -> int:
     context = "Live integration test for ledger, manifest, session gates, and audit"
     dod = "Task is created, advanced, delivered, logged, audited, and regression is blocked"
 
+    with acquire_validation_lock():
+        return _run_test(date_prefix, iso_date, title, objective, context, dod)
+
+
+def _run_test(
+    date_prefix: str,
+    iso_date: str,
+    title: str,
+    objective: str,
+    context: str,
+    dod: str,
+) -> int:
     manifest_before = MANIFEST.read_text(encoding="utf-8")
     task_path: Path | None = None
     task_id: str | None = None

@@ -1,0 +1,56 @@
+task_id: TASK-2026-04-06-GMAGS-E2E
+schema_version: 1.0.0
+requested_by: ron
+created_at: '2026-04-06T07:41:55.948741+00:00'
+mode: build
+assurance_level: A2
+task_class: coding
+objective: Deploy GMAGS v1.5 governance infrastructure to the PKA workspace and verify
+  it is structurally complete.
+inputs:
+- Downloads/GOD_MODE_AGENT_GOVERNANCE_SPEC_v1.5.md
+- governance/policy_cards/*.yaml
+- .claude/agents/*.md
+expected_outputs:
+- "governance/policy_cards/ \u2014 16 agent policy cards"
+- .claude/agents/CHRONICLER.md
+- .claude/agents/ARBITER.md
+- .claude/agents/WARDEN.md
+- governance/verifiers/registry.yaml
+- scripts/gmags_doctor.py
+- scripts/gmags_e2e_test.py
+success_criteria:
+- all 16 agents have policy cards
+- CHRONICLER, ARBITER, WARDEN agent files exist
+- gmags_doctor.py passes with 0 failures
+- evidence bundle created with artifacts_verified >= 5
+- status assigned by ARBITER (not acting agent)
+- WARDEN gap check produces conformance record
+constraints:
+- No acting agent may assign its own authoritative status
+- Evidence must be file artifacts, not prose
+- SENTINEL must not review its own work
+declared_side_effects:
+  creates:
+  - governance/task_contracts/TASK-2026-04-06-GMAGS-E2E.yaml
+  - logs/run.TASK-2026-04-06-GMAGS-E2E.20260406T074155Z.yaml
+  - evidence/bundle.TASK-2026-04-06-GMAGS-E2E.yaml
+  - governance/status/status.TASK-2026-04-06-GMAGS-E2E.yaml
+  - governance/conformance/conformance-20260406.yaml
+  modifies: []
+  does_not_modify:
+  - Owner's Inbox/
+  - Team/tasks/
+verification_plan:
+- python scripts/gmags_doctor.py
+- python scripts/gmags_e2e_test.py
+fallback_plan:
+- Return partial results with explicit gap records for missing artifacts
+agent_chain:
+- AXIOM
+- FORGE
+- CRUCIBLE
+- CHRONICLER
+- ARBITER
+- WARDEN
+- SENTINEL

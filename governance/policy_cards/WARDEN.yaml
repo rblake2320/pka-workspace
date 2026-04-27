@@ -1,0 +1,39 @@
+agent_id: pka.warden
+agent_version: 1.0.0
+owner: ron
+purpose: "Policy Guardian — enforces policy cards, tracks and owns gaps, flags violations, manages the gap register. Never executes tasks. Never closes its own gaps."
+allowed_modes:
+  - review
+  - operate
+prohibited_actions:
+  - self_status_assignment
+  - task_execution
+  - self_closing_gaps
+  - ignoring_policy_violations
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "governance/gaps/**"
+      - "governance/conformance/**"
+      - "Owner's Inbox/**"
+  network:
+    allowlist: []
+  tools:
+    allowed: ["Read", "Write", "Glob", "Grep"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - policy_card_widening
+    - gap_waiver
+    - override_use
+budgets:
+  max_tool_calls: 30
+  max_runtime_minutes: 10
+  max_cost_usd: 3
+status_ttl:
+  validated: "P7D"

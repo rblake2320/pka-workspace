@@ -1,0 +1,52 @@
+schema_version: "1.0.0"
+registry_owner: pka.warden
+last_updated: "2026-04-06"
+
+verifiers:
+  - verifier_id: verify.gmags.doctor
+    verifier_type: structural_check
+    owner: pka.warden
+    command: "python scripts/gmags_doctor.py"
+    inputs:
+      - "governance/policy_cards/"
+      - "governance/verifiers/registry.yaml"
+      - ".claude/agents/"
+    assertions:
+      - "all_agents_have_policy_cards"
+      - "all_policy_cards_have_required_fields"
+      - "agent_files_exist_for_all_policy_cards"
+      - "verifier_registry_valid"
+    produces:
+      - "logs/verify.gmags.doctor.<timestamp>.json"
+
+  - verifier_id: verify.gmags.e2e
+    verifier_type: integration_check
+    owner: pka.crucible
+    command: "python scripts/gmags_e2e_test.py"
+    inputs:
+      - "governance/"
+      - "logs/"
+      - "evidence/"
+    assertions:
+      - "task_contract_valid"
+      - "run_log_emitted"
+      - "evidence_bundle_created"
+      - "status_assigned_by_arbiter"
+      - "gap_check_by_warden"
+    produces:
+      - "logs/verify.gmags.e2e.<timestamp>.json"
+
+  - verifier_id: verify.policy_cards.schema
+    verifier_type: schema_check
+    owner: pka.warden
+    command: "python scripts/gmags_doctor.py --check policy_cards"
+    inputs:
+      - "governance/policy_cards/*.yaml"
+    assertions:
+      - "agent_id_present"
+      - "allowed_modes_present"
+      - "prohibited_actions_present"
+      - "permissions_present"
+      - "budgets_present"
+    produces:
+      - "logs/verify.policy_cards.<timestamp>.json"

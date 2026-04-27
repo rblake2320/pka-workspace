@@ -3,12 +3,20 @@
 *This file is OVERWRITTEN each session — only the most recent handoff matters.*
 
 ## Last Session
-- **Date**: 2026-04-02
+- **Date**: 2026-04-25
 - **Duration**: Rolling session state
 - **Ron's focus**: High-rigor AI operating process
 - **Session outcome**: clean progress
 
 ## What Was Accomplished
+- Codex/SENTINEL: PKA setup and code review | Result: GO core workspace / HOLD live Agent Brain LLM | Output: `Owner's Inbox/SENTINEL-pka-setup-review-2026-04-25.md`
+- Fixed Agent Brain worker runtime compatibility (`job_id`) and heartbeat CLI arguments.
+- Updated setup documentation and ignore rules for standalone repo reality and Agent Brain runtime state.
+- Converted `scripts/agent_brain` to a normal tracked workspace package after preserving its nested git history at `backups/agent_brain/agent_brain-history-20260425.bundle`.
+- Added provider-aware Agent Brain routing for local Ollama SLMs, Spark/Tunnel Ollama, and cloud OpenAI-compatible LLMs.
+- Verified local Ollama Agent Brain path with `--model local`; `imds-v2:latest` responds.
+- Cloud OpenAI-compatible route reaches the API but current configured key returns `401 Unauthorized`.
+- Verified doctor, process audit, runtime check, E2E, resilience, full validation, readiness, scorecard, observability, compile, CLI help, and Agent Brain worker unit checks.
 - CRUCIBLE: PKA v0.5.0 Full Script Test Sweep | Route: AXIOM -> CRUCIBLE | Result: PARTIAL PASS — 10/13, all failures cascade from process_audit defects | Output: `Owner's Inbox/CRUCIBLE-pka-v050-test-sweep.md`
 - CRUCIBLE reopen test | Route: CRUCIBLE | Result: GO | Output: `Owner's Inbox/CRUCIBLE-pka-v060-test-sweep.md`
 - FORGE: Fix pka_resilience_test.py stub self-cleanup | Route: AXIOM -> FORGE -> SENTINEL | Result: GO | Output: `scripts/pka_resilience_test.py (stub self-cleanup implemented)`
@@ -16,7 +24,8 @@
 - LEGAL: PKA audit trail patent provisional filing | Route: AXIOM -> LEGAL | Result: GO (conditional) | Output: `Owner's Inbox/LEGAL-pka-audit-trail-patent-assessment.md`
 
 ## What Is Pending
-- No active consequential tasks
+- Replace/fix the cloud API key before cloud LLM execution.
+- Restore/verify Spark/Tunnel Ollama endpoints if those remote models are needed.
 
 ## What Needs Attention Next
 - Review active tasks in `Team/tasks/`

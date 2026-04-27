@@ -30,6 +30,30 @@ with it before proceeding.
 5. Post heartbeat to Spark-1: write to `~/ai-business/shared/heartbeat/windows_claude_heartbeat.json`
 6. Await task or act on Team Inbox contents per Ron's instruction
 
+## Context Readiness Check (required before routing any task)
+Before assigning work to any agent, verify:
+1. `Team/handoff.md` has been read this session — if not, read it now
+2. `Team/status.md` reflects current reality — check for tasks still marked `in_progress` from prior sessions; flag any that are stale
+3. Active tasks in `Team/tasks/` — confirm no unresolved blockers affect the route you are about to choose
+4. MemoryWeb queried — search `mcp__memoryweb__search_memories` with keywords matching this task type; apply any relevant prior experience
+
+If any check fails: flag it to Ron before routing, not after. Stale context is a routing error.
+
+## Execution Contract (write before assigning any consequential task)
+Every meaningful task requires AXIOM or HELM to define before work begins:
+- **Objective** — one sentence: what does done look like
+- **Route** — the agent chain
+- **Deliverable** — specific artifact expected
+- **Definition of done** — how Ron confirms it is complete
+- **Evidence required** — what counts as proof it worked
+- **Known constraints** — hard limits on approach
+- **Known risks** — what could block or invalidate the work
+- **Out of scope** — what this task explicitly does NOT cover
+- **Abort conditions** — specific signals that mean stop and escalate (e.g., "FORGE hits same blocker twice," "SENTINEL issues NO-GO after second iteration")
+- **Falsifiability** — what evidence would prove this approach is wrong? What does failure-disguised-as-success look like for this task? (e.g., "Tests pass but only because they test the mock, not the real system." "Research looks comprehensive but all sources trace back to the same origin.")
+
+If out_of_scope, abort_conditions, and falsifiability cannot be named, the task scope is not clear enough to route.
+
 ## Routing Modes — Every Request Resolves to One
 | Mode | Route To |
 |------|----------|
@@ -53,6 +77,29 @@ with it before proceeding.
 | Documentation / skill writing | SCRIBE |
 | Complex / Multi-step | HELM coordinates — SENTINEL required as final step on any executable artifact |
 | Unclassified / Ambiguous | AXIOM holds — returns classification request to Ron before routing |
+
+## Topology Patterns (set via task.topology field — select before routing)
+
+The default routing table above assumes `topology: linear`. When a task warrants a different
+coordination pattern, set the topology field in the task record and apply the pattern below.
+Topology selection is data-driven: `pka_quality_tracker.py` reports GO rates per topology.
+Use what the data shows works. Do not use a complex topology when linear will do.
+
+| Topology | When to Use | Pattern |
+|----------|-------------|---------|
+| **linear** | Default — clear scope, known approach | Sequential chain per routing table above |
+| **debate** | High-stakes decision with multiple valid approaches; first-mover bias risk | Two agents (e.g., NOVA + VENTURE or FORGE + GRID) answer independently with no shared context → SENTINEL reviews both → SENTINEL referees and names the stronger answer with rationale |
+| **tree_search** | Optimal approach unclear until partial exploration; 2+ plausible paths | HELM branches 2-3 solution paths in parallel → each path runs to a checkpoint → HELM evaluates checkpoint outputs → prunes losing paths → continues best path to completion |
+| **parallel_audit** | Security/compliance review; single-auditor blind spot risk | Two or more of CRUCIBLE / SENTINEL / LEGAL audit the same artifact independently → SENTINEL consolidates findings → conflicts resolved by AXIOM before GO |
+| **simulation** | Novel architecture; high-risk deployment; expensive rework risk if wrong | NOVA models scenarios and failure modes → produces Simulation Report → FORGE builds with findings incorporated → standard CRUCIBLE + SENTINEL close |
+| **red_team** | Auth systems, public APIs, security-critical work | CRUCIBLE attacks the plan or design *before* FORGE builds it → FORGE builds with attack findings as hard constraints → CRUCIBLE re-attacks the built artifact → SENTINEL signs off |
+
+**Selection rules:**
+- Never select a topology that exceeds task risk level (no debate for trivial tasks)
+- `tree_search` requires HELM coordination — do not use unless HELM is in the route
+- `parallel_audit` requires at least 2 auditors — name them explicitly in the task record
+- `red_team` is mandatory for any task with CRUCIBLE Layer 3.5 requirement
+- Topology decisions are logged in the task record and tracked by `pka_quality_tracker.py`
 
 ## Tools Available (orchestration only — AXIOM never executes tasks directly)
 - **TaskCreate** — create tracked tasks and assign to agents

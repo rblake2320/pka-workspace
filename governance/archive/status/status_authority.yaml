@@ -1,0 +1,10 @@
+schema_version: "1.0.0"
+authority_id: pka.arbiter
+created_at: "2026-04-06T00:00:00Z"
+description: "Active status records. Managed exclusively by ARBITER. No acting agent may write here."
+
+# Status records are appended below as individual files: status.<TASK-ID>.yaml
+# This file is the registry index only.
+
+active_status_records: []
+revoked_records: []

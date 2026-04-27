@@ -24,6 +24,8 @@ REQUIRED_PATHS = [
     ROOT / "Owner's Inbox" / "owner.md",
     ROOT / "Team" / "OPERATING_MODEL.md",
     ROOT / "Team" / "AGENT_TOOL_ENTITLEMENTS.json",
+    ROOT / "scripts" / "pka_runtime.py",
+    ROOT / "scripts" / "pka_runtime_check.py",
     TASKS_DIR,
     MANIFEST,
     STATUS,
@@ -182,6 +184,8 @@ def check_health_surfaces() -> list[str]:
         ROOT / "scripts" / "pka_machine_health.py",
         ROOT / "scripts" / "pka_entitlement_check.py",
         ROOT / "scripts" / "pka_recovery_playbook.py",
+        ROOT / "scripts" / "pka_runtime.py",
+        ROOT / "scripts" / "pka_runtime_check.py",
     ):
         if not path.exists():
             issues.append(f"Missing readiness control: {path.relative_to(ROOT)}")

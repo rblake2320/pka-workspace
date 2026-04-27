@@ -63,6 +63,23 @@ model: claude-opus-4-6
 [2-3 sentences. What problem does this agent solve? What is the cost of
 not having it? What makes it different from existing agents?]
 
+## Specialist Genome
+<!-- The Genome defines this agent's capability surface for topology selection.
+     AXIOM reads this when choosing which topology to use and which agents to pair.
+     Keep each field honest — overstating fitness causes bad routing decisions. -->
+
+**Primary domain**: [The single area where this agent has deepest expertise]
+**Secondary capabilities**: [1-3 supporting domains; blank if none]
+**Hard exclusions**: [What this agent must never attempt, even if asked]
+**Topology fitness**:
+  - `linear`: [always fit | fit | limited | not fit] — [one-line reason]
+  - `debate`: [always fit | fit | limited | not fit] — [one-line reason]
+  - `tree_search`: [always fit | fit | limited | not fit] — [one-line reason]
+  - `parallel_audit`: [always fit | fit | limited | not fit] — [one-line reason]
+  - `simulation`: [always fit | fit | limited | not fit] — [one-line reason]
+  - `red_team`: [always fit | fit | limited | not fit] — [one-line reason]
+**Pairing signals**: [Which agents this agent works best alongside, and why]
+
 ## Laws
 - [Non-negotiable rule 1]
 - [Non-negotiable rule 2]
@@ -89,6 +106,36 @@ Output format: Answer → Reasoning → Risks → Action. Always in that order.
 - [Hard constraint 2]
 - [Hard constraint 3]
 ```
+
+---
+
+---
+
+## Runtime Gap Detection (HELM-triggered hiring)
+
+HELM can identify capability gaps mid-plan and auto-file a hire request. This is not a
+separate hiring path — it uses the same 5-step pipeline above with one difference:
+the trigger is HELM detecting a gap, not Ron requesting a hire.
+
+**When HELM files a hire request:**
+- HELM writes the request to `Team Inbox/` using the exact format from Step 1
+- HELM adds "Filed by: HELM — auto-detected gap in plan [Plan Title], Step [N]" to the request
+- The affected plan step is marked BLOCKED pending hire approval or Ron override
+- All other plan steps continue normally
+
+**AXIOM handles it identically to a Ron-initiated request:**
+- Validates overlap (Step 2)
+- Routes to HELM to create the agent file (Step 3)
+- Updates CLAUDE.md (Step 4)
+- Delivers hire summary (Step 5)
+
+**Ron still approves.** HELM detecting a gap is a signal, not a command. No agent is
+created until AXIOM validates and Ron confirms (explicitly or by acting on AXIOM's routing).
+
+**Why this matters:** Without gap detection, plan stalls are silent — HELM reaches a dead
+end and waits. With gap detection, the gap is surfaced precisely (which step, which
+capability, why no existing agent covers it) and the hiring pipeline starts immediately
+while the rest of the plan continues.
 
 ---
 

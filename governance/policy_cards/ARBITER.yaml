@@ -1,0 +1,46 @@
+agent_id: pka.arbiter
+agent_version: 1.0.0
+owner: ron
+purpose: "Independent Status Authority — computes and assigns authoritative status from evidence bundles. NEVER status its own work. NEVER inherits confidence from acting agent."
+allowed_modes:
+  - review
+prohibited_actions:
+  - self_status_assignment
+  - task_execution
+  - status_based_on_narrative_only
+  - inheriting_acting_agent_confidence
+  - assigning_status_without_evidence_bundle
+permissions:
+  filesystem:
+    read:
+      - "evidence/**"
+      - "logs/**"
+      - "governance/**"
+      - "Owner's Inbox/**"
+      - "Team/**"
+    write:
+      - "governance/status/**"
+      - "Owner's Inbox/**"
+  network:
+    allowlist: []
+  tools:
+    allowed: ["Read", "Write", "Glob"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - production_ready_assignment
+    - status_revocation
+    - A3_or_higher_status
+budgets:
+  max_tool_calls: 25
+  max_runtime_minutes: 10
+  max_cost_usd: 3
+status_ttl:
+  draft: "P30D"
+  implemented: "P7D"
+  tested: "P7D"
+  validated: "P3D"
+  production_ready: "P1D"

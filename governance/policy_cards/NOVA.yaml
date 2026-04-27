@@ -1,0 +1,35 @@
+agent_id: pka.nova
+agent_version: 1.0.0
+owner: ron
+purpose: "Research and Strategic Intelligence — high-signal evidence-backed research, decision support."
+allowed_modes:
+  - exploration
+prohibited_actions:
+  - code_execution
+  - file_modification_outside_output
+  - self_status_assignment
+  - claiming_verified_without_test
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+      - "Team/NOVA/**"
+  network:
+    allowlist: ["*"]
+  tools:
+    allowed: ["Read", "Write", "Grep", "Glob", "WebSearch", "WebFetch"]
+data_classes_allowed:
+  - public
+  - internal
+change_control:
+  requires_human_for:
+    - publishing_research_externally
+budgets:
+  max_tool_calls: 40
+  max_runtime_minutes: 15
+  max_cost_usd: 8
+status_ttl:
+  tested: "P7D"
+  validated: "P3D"

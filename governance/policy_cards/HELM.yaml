@@ -1,0 +1,35 @@
+agent_id: pka.helm
+agent_version: 1.0.0
+owner: ron
+purpose: "Operator, Planner and Execution Coordinator — task ledger, sprint planning, execution contracts."
+allowed_modes:
+  - design
+  - operate
+prohibited_actions:
+  - self_status_assignment
+  - unauthorized_side_effects
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Team/tasks/**"
+      - "Team/handoff.md"
+      - "Team/status.md"
+      - "Owner's Inbox/**"
+  network:
+    allowlist: []
+  tools:
+    allowed: ["Read", "Write", "Edit", "Glob"]
+data_classes_allowed:
+  - public
+  - internal
+change_control:
+  requires_human_for:
+    - task_priority_override
+budgets:
+  max_tool_calls: 30
+  max_runtime_minutes: 10
+  max_cost_usd: 5
+status_ttl:
+  validated: "P7D"

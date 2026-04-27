@@ -11,6 +11,7 @@ Purpose:
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -23,6 +24,8 @@ OWNER_INBOX = ROOT / "Owner's Inbox"
 MANIFEST = OWNER_INBOX / "DELIVERY_MANIFEST.md"
 STATUS = TEAM_DIR / "status.md"
 HANDOFF = TEAM_DIR / "handoff.md"
+RUNTIME_JOBS = TEAM_DIR / "runtime" / "jobs" / "active"
+RUNTIME_APPROVALS = TEAM_DIR / "runtime" / "approvals" / "pending"
 
 VALID_STATES = {
     "new",
@@ -255,6 +258,92 @@ def audit_journals() -> list[str]:
     return issues
 
 
+def audit_runtime_state() -> list[str]:
+    issues: list[str] = []
+    for path in sorted(RUNTIME_JOBS.glob("*.json")):
+        try:
+            payload = json.loads(read_text(path))
+        except Exception as exc:
+            issues.append(f"{path.relative_to(ROOT)}: invalid runtime job json ({exc})")
+            continue
+        if not payload.get("task_id"):
+            issues.append(f"{path.relative_to(ROOT)}: runtime job missing task_id")
+        if payload.get("status") == "waiting_approval" and not payload.get("pending_approval_id"):
+            issues.append(f"{path.relative_to(ROOT)}: waiting_approval without pending_approval_id")
+    for path in sorted(RUNTIME_APPROVALS.glob("*.json")):
+        try:
+            payload = json.loads(read_text(path))
+        except Exception as exc:
+            issues.append(f"{path.relative_to(ROOT)}: invalid approval json ({exc})")
+            continue
+        job_id = payload.get("job_id", "")
+        if job_id and not (RUNTIME_JOBS / f"{job_id}.json").exists():
+            issues.append(f"{path.relative_to(ROOT)}: linked runtime job missing ({job_id})")
+    return issues
+
+
+def audit_evidence_bundles() -> list[str]:
+    """Validate all JSON evidence bundles in governance/evidence/."""
+    issues: list[str] = []
+    evidence_dir = ROOT / "governance" / "evidence"
+    if not evidence_dir.exists():
+        return issues  # no bundles yet is not an error
+
+    BUNDLE_EVIDENCE_CLASSES = {"tool_receipt", "live_observation", "source_attribution", "inference", "ungrounded"}
+
+    for path in sorted(evidence_dir.glob("*.json")):
+        try:
+            bundle = json.loads(read_text(path))
+        except Exception as exc:
+            issues.append(f"governance/evidence/{path.name}: invalid JSON ({exc})")
+            continue
+
+        for field in ("bundle_id", "task_id", "agent_id", "verdict", "created_at", "items"):
+            if field not in bundle:
+                issues.append(f"governance/evidence/{path.name}: missing field '{field}'")
+
+        items = bundle.get("items", [])
+        if not isinstance(items, list):
+            issues.append(f"governance/evidence/{path.name}: 'items' must be a list")
+            continue
+
+        for idx, item in enumerate(items):
+            cls = item.get("class", "")
+            if cls not in BUNDLE_EVIDENCE_CLASSES:
+                issues.append(f"governance/evidence/{path.name}: item[{idx}] invalid class '{cls}'")
+            for req in ("claim", "evidence", "timestamp"):
+                if not item.get(req):
+                    issues.append(f"governance/evidence/{path.name}: item[{idx}] missing '{req}'")
+
+        verdict = bundle.get("verdict", "").upper()
+        if verdict == "GO":
+            has_hard = any(i.get("class") in ("tool_receipt", "live_observation") for i in items)
+            if not has_hard:
+                issues.append(f"governance/evidence/{path.name}: GO verdict with no tool_receipt/live_observation")
+
+    return issues
+
+
+def audit_handoff_json() -> list[str]:
+    """Validate structured handoff JSON if present."""
+    issues: list[str] = []
+    handoff_json = TEAM_DIR / "handoff.json"
+    if not handoff_json.exists():
+        return issues  # not yet generated is not an error
+
+    try:
+        data = json.loads(read_text(handoff_json))
+    except Exception as exc:
+        issues.append(f"Team/handoff.json: invalid JSON ({exc})")
+        return issues
+
+    for field in ("session_id", "timestamp", "tasks_active", "tasks_delivered"):
+        if field not in data:
+            issues.append(f"Team/handoff.json: missing field '{field}'")
+
+    return issues
+
+
 def main() -> int:
     issues: list[str] = []
 
@@ -264,6 +353,9 @@ def main() -> int:
     issues.extend(audit_control_files())
     issues.extend(audit_task_records())
     issues.extend(audit_journals())
+    issues.extend(audit_runtime_state())
+    issues.extend(audit_evidence_bundles())
+    issues.extend(audit_handoff_json())
 
     secret_paths = [STATUS, HANDOFF, MANIFEST]
     if TASKS_DIR.exists():

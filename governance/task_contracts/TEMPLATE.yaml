@@ -1,0 +1,46 @@
+# GMAGS v1.5 Task Contract Template
+# Required for all consequential tasks (A1+)
+# Copy this file, fill in all fields, save as: TASK-YYYYMMDD-NNN.yaml
+
+task_id: TASK-YYYY-MM-DD-NNN
+schema_version: "1.0.0"
+requested_by: ron
+created_at: "<ISO8601>"
+mode: "exploration|design|build|verify|operate|incident|review"
+assurance_level: "A0|A1|A2|A3|A4"
+task_class: "research|analysis|writing|coding|repair|operations|migration|review|triage|incident_response"
+objective: "<one clear sentence — what does done look like>"
+inputs:
+  - "<source file or data>"
+expected_outputs:
+  - "<deliverable — specific, checkable>"
+success_criteria:
+  - "<specific, testable condition>"
+  - "<specific, testable condition>"
+constraints:
+  - "<hard constraint>"
+out_of_scope:
+  - "<what this task explicitly does NOT cover>"
+abort_conditions:
+  - "<specific signal that means stop work and escalate>"
+falsifiability:
+  wrong_approach_evidence: "<what evidence would prove this approach is wrong>"
+  failure_disguised_as_success: "<what does a false positive look like for this task>"
+topology: "linear"
+# topology controls the agent coordination pattern for this task:
+#   linear         — default sequential chain (NOVA → FORGE → CRUCIBLE → SENTINEL)
+#   debate         — two agents answer independently, SENTINEL referees; use for high-stakes decisions
+#   tree_search    — HELM branches 2-3 paths in parallel, prunes to best; use when optimal approach is unclear
+#   parallel_audit — multiple agents audit independently, SENTINEL consolidates; use for security/compliance
+#   simulation     — NOVA models failure modes first, FORGE builds with findings; use for novel/risky architectures
+#   red_team       — CRUCIBLE attacks the plan before FORGE builds; use for auth, public APIs, security-critical work
+declared_side_effects:
+  creates: []
+  modifies: []
+  does_not_modify: []
+verification_plan:
+  - "<verifier command or check>"
+fallback_plan:
+  - "<what to do if primary path fails>"
+agent_chain: []
+# example: [NOVA, FORGE, CRUCIBLE, CHRONICLER, ARBITER, SENTINEL, WARDEN]

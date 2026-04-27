@@ -1,0 +1,33 @@
+agent_id: pka.debugger
+agent_version: 1.0.0
+owner: ron
+purpose: "Ultra Master Debugger — root cause analysis, defect isolation, targeted fixes with regression evidence."
+allowed_modes:
+  - exploration
+  - build
+prohibited_actions:
+  - self_status_assignment
+  - broad_code_refactoring_without_scope
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+      - "Team/DEBUGGER/**"
+  network:
+    allowlist: ["localhost", "127.0.0.1"]
+  tools:
+    allowed: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+data_classes_allowed:
+  - public
+  - internal
+change_control:
+  requires_human_for:
+    - production_hotfix
+budgets:
+  max_tool_calls: 80
+  max_runtime_minutes: 30
+  max_cost_usd: 10
+status_ttl:
+  tested: "P7D"

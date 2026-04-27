@@ -1,0 +1,18 @@
+conformance_id: CONFORMANCE-20260406
+assessed_by: pka.warden
+assessed_at: '2026-04-06T07:41:55.970769+00:00'
+compliance_level: C2
+self_attested: true
+checks:
+  policy_cards_present: true
+  task_contracts_in_use: true
+  run_logs_emitted: true
+  evidence_bundles_present: true
+  status_authority_independent: true
+  gaps_tracked_with_verifiers: true
+  ttls_defined: true
+  data_classes_declared: true
+open_gaps: []
+blocking_gaps: []
+warden_note: "Compliance assessed at C2. 0 open gaps. Self-attested (C2 max without\
+  \ independent assessor per GMAGS \xA731.1)."

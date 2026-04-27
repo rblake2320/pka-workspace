@@ -5,6 +5,7 @@ One line per completed item. Newest entries go at the top.
 
 | Date | Task | Route | Verdict | Deliverable | Next Action |
 |------|------|------|------|------|------|
+| 2026-04-25 | PKA setup and code review | Codex,SENTINEL | GO core / HOLD live Agent Brain LLM | Owner's Inbox/SENTINEL-pka-setup-review-2026-04-25.md | Restore Spark/Ollama connectivity; Agent Brain history preserved in backups/agent_brain/agent_brain-history-20260425.bundle |
 | 2026-04-02 | PKA-v0.6.0 gap-close | AXIOM,FORGE,CRUCIBLE,SENTINEL | GO | Owner's Inbox/SENTINEL-pka-v060-verdict.md | v0.6.0 complete — curl restored, reopen command live, 13 agent definitions standardized, 7 Self-Models populated, MemoryWeb wired, agent leaderboard added, guardrails deployed |
 | 2026-04-02 | TASK-20260402-012 | CRUCIBLE | GO | Owner's Inbox/CRUCIBLE-pka-v060-test-sweep.md | SENTINEL review |
 | 2026-04-02 | TASK-20260402-008 | AXIOM,FORGE,SENTINEL | GO | scripts/pka_resilience_test.py (stub self-cleanup — stubs deleted after each run) | None — resilience test now self-cleans; process audit pass confirmed |

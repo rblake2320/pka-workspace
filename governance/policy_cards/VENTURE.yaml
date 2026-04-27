@@ -1,0 +1,34 @@
+agent_id: pka.venture
+agent_version: 1.0.0
+owner: ron
+purpose: "Product and Business Innovation — GTM strategy, product specs, business model design."
+allowed_modes:
+  - exploration
+  - design
+prohibited_actions:
+  - self_status_assignment
+  - financial_commitment
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+      - "Team/VENTURE/**"
+  network:
+    allowlist: ["*"]
+  tools:
+    allowed: ["Read", "Write", "WebSearch", "WebFetch"]
+data_classes_allowed:
+  - public
+  - internal
+change_control:
+  requires_human_for:
+    - external_business_commitment
+    - pricing_decision
+budgets:
+  max_tool_calls: 35
+  max_runtime_minutes: 15
+  max_cost_usd: 7
+status_ttl:
+  validated: "P7D"

@@ -37,6 +37,9 @@ Before meaningful work begins, AXIOM or HELM must define:
 - Evidence required
 - Known constraints
 - Known risks
+- Out of scope — what this task explicitly does NOT cover
+- Abort conditions — specific signals that mean stop work and escalate (e.g., "if FORGE hits the same blocker twice," "if SENTINEL issues NO-GO after second iteration")
+- Falsifiability — what evidence would prove this approach is wrong? What does failure-disguised-as-success look like? (e.g., "tests pass but only test the mock," "all research sources trace to same origin")
 
 If these are not clear, the task is not ready for execution.
 

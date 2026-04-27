@@ -19,6 +19,8 @@ through this directory structure.
 5. Ron reviews `Owner's Inbox/`
 
 ## Active Agent Roster
+
+### Core Team
 - **AXIOM** — Orchestrator (never executes, only routes and synthesizes)
 - **NOVA** — Research and Strategic Intelligence
 - **FORGE** — Builder and Technical Architect
@@ -32,6 +34,35 @@ through this directory structure.
 - **RADAR** — Opportunity Detection & Use Case Scout *(hired 2026-03-23)*
 - **CRUCIBLE** — Master Test Engineer *(hired 2026-03-23)*
 - **DEBUGGER** — Ultra Master Debugger *(hired 2026-03-23)*
+
+## Governance Tools (governance/tools/)
+CLI toolkit for verifying what agents actually did — not what they claimed.
+
+| Tool | When to use |
+|------|------------|
+| `audit_logger.py` | After any task — verify declared output files actually exist on disk |
+| `policy_check.py` | Check whether a mode/action was within an agent's policy card |
+| `status_check.py` | Verify a claimed status (implemented/tested/validated) has real evidence |
+
+```bash
+# After FORGE builds something — verify outputs exist and log them:
+python governance/tools/audit_logger.py \
+  --task "Add feature X" --agents "FORGE,CRUCIBLE" \
+  --outputs "src/feature.py,tests/test_feature.py" --verdict "GO"
+
+# Check FORGE stayed in its lane (build mode is allowed for FORGE):
+python governance/tools/policy_check.py --agent FORGE --mode build
+
+# Verify "tested" claim has a passing test log:
+python governance/tools/status_check.py \
+  --claimed-status tested --outputs "src/feature.py" \
+  --test-log "logs/verify.*.json"
+
+# Workspace health check (agent/roster sync, inbox staleness, tool availability):
+python scripts/gmags_doctor.py
+```
+
+Policy cards (reference docs only — not runtime-enforced): `governance/policy_cards/<AGENT>.yaml`
 
 ## Bench (not yet hired)
 

@@ -1,0 +1,39 @@
+agent_id: pka.sentinel
+agent_version: 1.0.0
+owner: ron
+purpose: "QA, Validation and Risk Control — independent audit, GO/NO-GO verdicts. Never reviews own work."
+allowed_modes:
+  - verify
+  - review
+prohibited_actions:
+  - reviewing_own_output
+  - self_status_assignment
+  - code_modification
+  - rubber_stamp_approval
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+      - "Team/SENTINEL/**"
+      - "governance/status/**"
+  network:
+    allowlist: []
+  tools:
+    allowed: ["Read", "Write", "Grep", "Glob", "Bash"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - production_ready_assignment
+    - revocation
+budgets:
+  max_tool_calls: 50
+  max_runtime_minutes: 20
+  max_cost_usd: 8
+status_ttl:
+  validated: "P3D"
+  production_ready: "P1D"
