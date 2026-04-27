@@ -6,7 +6,6 @@ import sys
 
 from pka_lib import APPROVALS_PENDING, JOBS_ACTIVE, ensure_runtime_dirs
 
-
 VALID_JOB_STATES = {"queued", "running", "waiting_approval", "interrupted", "completed"}
 
 

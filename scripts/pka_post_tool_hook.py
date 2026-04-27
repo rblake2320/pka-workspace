@@ -33,8 +33,8 @@ def _run_guardrails(data: dict) -> None:
         sys.path.insert(0, str(SCRIPTS_DIR))
         from pka_guardrails import (
             check_input_guardrail,
-            check_secret_guardrail,
             check_scope_guardrail,
+            check_secret_guardrail,
             log_violation,
         )
         tool_name = data.get("tool_name", "")

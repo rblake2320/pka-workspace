@@ -1,7 +1,6 @@
 """Core ReAct agent loop with tool execution, guardrails, and audit logging."""
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import sys
@@ -12,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 from .config import (
-    DATA_DIR,
     LOGS_DIR,
     MAX_ITERATIONS,
     MEMORY_CONTEXT_MAX_CHARS,
@@ -69,7 +67,7 @@ class GuardrailBridge:
             _scripts = str(PKA_ROOT / "scripts")
             if _scripts not in sys.path:
                 sys.path.insert(0, _scripts)
-            from pka_guardrails import check_secret_guardrail, check_scope_guardrail, log_violation
+            from pka_guardrails import check_scope_guardrail, check_secret_guardrail, log_violation
             self._check_secret = check_secret_guardrail
             self._check_scope = check_scope_guardrail
             self._log = log_violation
@@ -251,7 +249,7 @@ class AgentBrain:
                     tools=model_tools_schema if model_tools_schema else None,
                     temperature=0.7,
                 )
-            except Exception as exc:
+            except Exception:
                 # Retry once with higher temperature
                 try:
                     resp = await self.llm.chat_completion(
@@ -292,7 +290,7 @@ class AgentBrain:
 
                     # Truncate long tool results for context efficiency
                     if len(result) > TOOL_OUTPUT_MAX_CHARS:
-                        result = result[:TOOL_OUTPUT_MAX_CHARS] + f"\n...[truncated]"
+                        result = result[:TOOL_OUTPUT_MAX_CHARS] + "\n...[truncated]"
 
                     print_fn(f"    ← {result[:120]}{'...' if len(result) > 120 else ''}")
 

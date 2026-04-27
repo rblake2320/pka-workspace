@@ -18,7 +18,6 @@ from pka_lib import (
     parse_task_file,
 )
 
-
 REQUIRED_PATHS = [
     ROOT / "Team Inbox",
     ROOT / "Owner's Inbox" / "owner.md",

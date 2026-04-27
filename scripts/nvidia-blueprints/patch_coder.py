@@ -1,5 +1,4 @@
 """Patch coder.py to integrate guardrails."""
-import re
 
 with open('/home/rblake2320/ai-army-os/agents/coder.py') as f:
     src = f.read()

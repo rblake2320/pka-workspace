@@ -20,7 +20,7 @@ import re
 import sys
 from pathlib import Path
 
-from pka_lib import ROOT, TEAM_DIR, timestamp
+from pka_lib import TEAM_DIR, timestamp
 
 HOT_ENTRIES = 20  # keep last N session log entries in the active journal
 

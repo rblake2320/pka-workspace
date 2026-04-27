@@ -16,12 +16,12 @@ import argparse
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from pka_recovery_playbook import FAILED_VERDICTS, generate_for_task
+
 from pka_lib import (
-    ROOT,
     MANIFEST,
-    TASKS_DIR,
+    ROOT,
     STATE_ORDER,
+    TASKS_DIR,
     VALID_STATES,
     FileLock,
     find_task_path,
@@ -32,6 +32,7 @@ from pka_lib import (
     today,
     write_task_file,
 )
+from pka_recovery_playbook import FAILED_VERDICTS, generate_for_task
 
 
 def cmd_create(args: argparse.Namespace) -> int:
@@ -129,7 +130,7 @@ def cmd_update_state(args: argparse.Namespace) -> int:
     return 0
 
 
-def _journal_path(agent: str) -> "Path":
+def _journal_path(agent: str) -> Path:
     agent_dir = ROOT / "Team" / agent
     if not agent_dir.is_dir():
         raise SystemExit(f"Unknown agent: {agent} (no directory at Team/{agent})")

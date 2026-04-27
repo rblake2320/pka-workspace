@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
-from pathlib import Path
 
 
 def _print_header() -> None:
@@ -141,7 +140,7 @@ async def cmd_status(args: argparse.Namespace) -> int:
     import os
 
     from .agent import AgentBrain
-    from .config import DATA_DIR, LOGS_DIR, MEMORY_DIR, MODELS, SESSIONS_DIR
+    from .config import LOGS_DIR, MODELS
     from .memory import MemoryStore
 
     _print_header()
@@ -168,7 +167,7 @@ async def cmd_status(args: argparse.Namespace) -> int:
     print(f"Audit logs: {len(log_files)} files")
 
     # Models
-    print(f"\nConfigured models:")
+    print("\nConfigured models:")
     for key, profile in MODELS.items():
         key_state = ""
         if profile.api_key_env:

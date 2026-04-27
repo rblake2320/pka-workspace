@@ -28,7 +28,6 @@ Message format in chat dir:
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 import time

@@ -11,7 +11,6 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 TEAM_DIR = ROOT / "Team"
 TASKS_DIR = TEAM_DIR / "tasks"
@@ -161,7 +160,7 @@ class FileLock:
 
     # ── Context manager ───────────────────────────────────────────────────
 
-    def __enter__(self) -> "FileLock":
+    def __enter__(self) -> FileLock:
         for _ in range(self.retries):
             try:
                 self.fd = os.open(str(self.lock_path), os.O_CREAT | os.O_EXCL | os.O_RDWR)
@@ -188,7 +187,7 @@ class FileLock:
 VALIDATION_LOCK = LOGS_DIR / ".pka-validation"
 
 
-def acquire_validation_lock(timeout_s: int = 600) -> "FileLock | contextlib.AbstractContextManager[None]":
+def acquire_validation_lock(timeout_s: int = 600) -> FileLock | contextlib.AbstractContextManager[None]:
     """Suite-level lock preventing concurrent validation runs.
 
     If PKA_VALIDATION_LOCKED=1 is set (a parent process holds the lock),

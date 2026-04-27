@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from pathlib import Path
 
 from ..config import (
     SPARK1_SSH_HOST,
@@ -53,7 +52,7 @@ async def _ssh_run(ssh_args: list[str], command: str, timeout: int) -> str:
         output = stdout.decode("utf-8", errors="replace")
         rc = proc.returncode
         if len(output) > TOOL_OUTPUT_MAX_CHARS:
-            output = output[:TOOL_OUTPUT_MAX_CHARS] + f"\n... [truncated]"
+            output = output[:TOOL_OUTPUT_MAX_CHARS] + "\n... [truncated]"
         return f"[exit {rc}]\n{output}" if output.strip() else f"[exit {rc}] (no output)"
     except FileNotFoundError:
         return "[ERROR] 'ssh' not found in PATH. Ensure OpenSSH is installed."

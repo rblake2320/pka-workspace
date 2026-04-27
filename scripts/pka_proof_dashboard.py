@@ -15,8 +15,6 @@ import re
 import sys
 from pathlib import Path
 
-import json
-
 ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "Owner's Inbox" / "reports"
 MANIFEST = ROOT / "Owner's Inbox" / "DELIVERY_MANIFEST.md"

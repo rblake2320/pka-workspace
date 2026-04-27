@@ -7,7 +7,6 @@ from pathlib import Path
 
 from pka_lib import ROOT, find_task_path, parse_task_file
 
-
 RECOVERY_DIR = ROOT / "Owner's Inbox" / "recovery"
 FAILED_VERDICTS = {"HOLD", "NO-GO", "PARTIAL PASS", "FAIL"}
 

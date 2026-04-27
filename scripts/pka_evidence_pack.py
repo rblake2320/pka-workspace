@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
 
 from pka_lib import MANIFEST, ROOT, find_task_path, parse_task_file, read_text
 

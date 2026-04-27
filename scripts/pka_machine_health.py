@@ -9,7 +9,6 @@ from pathlib import Path
 
 from pka_lib import REPORTS_DIR, ROOT
 
-
 OUT = REPORTS_DIR / "PKA_MACHINE_HEALTH_REPORT.md"
 SPARK_HOST = "192.168.12.132"
 SPARK_USER = "rblake2320"

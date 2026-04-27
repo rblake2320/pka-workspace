@@ -4,10 +4,8 @@ from __future__ import annotations
 import json
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
 from pka_lib import LOGS_DIR, REPORTS_DIR
-
 
 HISTORY_FILE = LOGS_DIR / "pka_validation_history.jsonl"
 OUTPUT_PATH = REPORTS_DIR / "PKA_OBSERVABILITY_REPORT.md"

@@ -23,9 +23,9 @@ Usage:
 """
 from __future__ import annotations
 
-import re
-import os
 import logging
+import os
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -283,7 +283,6 @@ class CoderGuardrails:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    import json
 
     guard = CoderGuardrails()
     passed = 0

@@ -284,7 +284,7 @@ def main():
     model_size = MODEL_SIZE_MAP.get(args.base_model, 32)
     use_spark2 = n >= 3000 or model_size > 30
 
-    print(f"\n=== Fine-Tune Trigger ===")
+    print("\n=== Fine-Tune Trigger ===")
     print(f"  Dataset:    {n:,} records ({input_path})")
     print(f"  Base model: {args.base_model} ({model_size}B params)")
     print(f"  Target GPU: {'Spark-2 (jump host)' if use_spark2 else 'Spark-1'}")
@@ -316,7 +316,7 @@ def main():
             print("Fine-tune failed — check output above")
             sys.exit(1)
     else:
-        print(f"\n  Launching on Spark-2 via jump host...")
+        print("\n  Launching on Spark-2 via jump host...")
         scp_cmd = f"scp -J {SPARK2_JUMP} {script} {SPARK2_HOST}:/tmp/unsloth_finetune.py"
         run_cmd = f"ssh -J {SPARK2_JUMP} {SPARK2_HOST} 'python3 /tmp/unsloth_finetune.py'"
         print(f"  SCP:  {scp_cmd}")
@@ -324,7 +324,7 @@ def main():
         subprocess.run(scp_cmd, shell=True, check=True)
         subprocess.run(run_cmd, shell=True, check=True)
 
-    print(f"\nFine-tune complete. Import to Ollama:")
+    print("\nFine-tune complete. Import to Ollama:")
     print(f"  bash {output_dir}/import_to_ollama.sh")
 
 

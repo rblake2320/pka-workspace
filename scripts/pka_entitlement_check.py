@@ -4,10 +4,8 @@ from __future__ import annotations
 import json
 import re
 import sys
-from pathlib import Path
 
 from pka_lib import REPORTS_DIR, ROOT, TEAM_DIR
-
 
 ROSTER = TEAM_DIR / "roster.md"
 MATRIX = TEAM_DIR / "AGENT_TOOL_ENTITLEMENTS.json"

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from .models import InferenceSpec, LLMTextColumnSpec, ModelSpec, SamplerColumnSpec, TemplateSpec
 
-
 DEFAULT_MODELS = [
     "nvidia/nemotron-3-nano-30b-a3b",
     "nvidia/nvidia-nemotron-nano-9b-v2",

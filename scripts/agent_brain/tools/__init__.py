@@ -5,7 +5,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any, Callable
 
-TOOL_REGISTRY: dict[str, "ToolDef"] = {}
+TOOL_REGISTRY: dict[str, ToolDef] = {}
 
 # Callback for human approval gate — set by the agent before running.
 # Signature: async def(tool_name: str, arguments: dict) -> bool

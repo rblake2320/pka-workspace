@@ -20,14 +20,13 @@ import re
 import sys
 from collections import Counter
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 from pka_lib import (
-    FileLock,
     LOGS_DIR,
     REPORTS_DIR,
     ROOT,
     TASKS_DIR,
+    FileLock,
 )
 
 TEAM_DIR = ROOT / "Team"

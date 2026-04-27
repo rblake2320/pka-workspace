@@ -146,7 +146,7 @@ async def file_write(path: str, content: str, mode: str = "write") -> str:
         from pka_guardrails import check_secret_guardrail
         violations = check_secret_guardrail("Write", {"content": content})
         if violations:
-            return f"[GUARDRAIL] Secret detected in content — write blocked:\n" + "\n".join(violations)
+            return "[GUARDRAIL] Secret detected in content — write blocked:\n" + "\n".join(violations)
     except ImportError:
         pass  # guardrails not available, proceed
 

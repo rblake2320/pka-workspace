@@ -9,8 +9,8 @@ import json
 import logging
 import os
 import subprocess
-import time
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -31,7 +31,7 @@ _forge_pw = os.environ.get("FORGE_AGENT_PASSWORD")
 _sentinel_pw = os.environ.get("SENTINEL_AGENT_PASSWORD")
 
 if not all([_nova_pw, _forge_pw, _sentinel_pw]):
-    raise EnvironmentError(
+    raise OSError(
         "Missing required env vars: NOVA_AGENT_PASSWORD, FORGE_AGENT_PASSWORD, "
         "SENTINEL_AGENT_PASSWORD. Set these in the systemd service file."
     )

@@ -21,7 +21,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, ContextTypes, MessageHandler, filters
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -239,7 +239,7 @@ async def main() -> None:
         print(f"[bridge] ERROR: {e} -- exiting")
         return
 
-    print(f"[bridge] Starting AI Army Telegram Bridge")
+    print("[bridge] Starting AI Army Telegram Bridge")
     print(f"[bridge] Chat dir : {CHAT_DIR}")
     print(f"[bridge] Group ID : {group_id}")
 
@@ -261,13 +261,13 @@ async def main() -> None:
         await app.initialize()
         await app.start()
         await app.updater.start_polling(drop_pending_updates=True)
-        print(f"[bridge] Telegram polling active -- bridge is live")
+        print("[bridge] Telegram polling active -- bridge is live")
 
         try:
             while True:
                 await asyncio.sleep(1)
         except (KeyboardInterrupt, SystemExit):
-            print(f"[bridge] Shutting down...")
+            print("[bridge] Shutting down...")
 
         await app.updater.stop()
         await app.stop()
@@ -275,7 +275,7 @@ async def main() -> None:
 
     observer.stop()
     observer.join()
-    print(f"[bridge] Stopped")
+    print("[bridge] Stopped")
 
 
 if __name__ == "__main__":

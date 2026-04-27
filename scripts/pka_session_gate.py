@@ -16,8 +16,15 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pka_lib import APPROVALS_PENDING, JOBS_ACTIVE, MESSAGES_ACTIVE, TASKS_DIR, ensure_runtime_dirs, parse_task_file, timestamp
-
+from pka_lib import (
+    APPROVALS_PENDING,
+    JOBS_ACTIVE,
+    MESSAGES_ACTIVE,
+    TASKS_DIR,
+    ensure_runtime_dirs,
+    parse_task_file,
+    timestamp,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 TEAM_INBOX = ROOT / "Team Inbox"

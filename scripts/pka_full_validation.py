@@ -10,7 +10,6 @@ from pathlib import Path
 
 from pka_lib import LOGS_DIR, REPORTS_DIR, acquire_validation_lock
 
-
 ROOT = Path(__file__).resolve().parent.parent
 HISTORY_FILE = LOGS_DIR / "pka_validation_history.jsonl"
 LATEST_REPORT = REPORTS_DIR / "PKA_LATEST_VALIDATION_REPORT.md"

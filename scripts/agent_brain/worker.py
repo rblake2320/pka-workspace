@@ -5,11 +5,8 @@ import asyncio
 import json
 import subprocess
 import sys
-from pathlib import Path
 
-from .config import JOBS_ACTIVE, PKA_ROOT
-from .config import AGENT_BRAIN_ROOT
-
+from .config import PKA_ROOT
 
 # Make sure pka_runtime is reachable
 _PKA_SCRIPTS = PKA_ROOT / "scripts"

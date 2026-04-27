@@ -16,7 +16,6 @@ import re
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 TEAM_DIR = ROOT / "Team"
 TASKS_DIR = TEAM_DIR / "tasks"

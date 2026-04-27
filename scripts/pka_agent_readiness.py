@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
 
-from pka_lib import LOGS_DIR, MANIFEST, REPORTS_DIR, ROOT, TASKS_DIR, TEAM_DIR
-
+from pka_lib import LOGS_DIR, REPORTS_DIR, ROOT, TASKS_DIR, TEAM_DIR
 
 OUT = REPORTS_DIR / "PKA_AGENT_READINESS_REPORT.md"
 

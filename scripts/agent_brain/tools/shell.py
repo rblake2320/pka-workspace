@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-import shlex
 from pathlib import Path
 
 from ..config import DATA_DIR, PKA_ROOT, SANDBOX_DIR, SHELL_TIMEOUT_S, TOOL_OUTPUT_MAX_CHARS

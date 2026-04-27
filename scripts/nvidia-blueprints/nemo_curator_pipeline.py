@@ -17,8 +17,8 @@ import hashlib
 import json
 import logging
 import re
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 log = logging.getLogger(__name__)
 
@@ -166,7 +166,7 @@ def run_pipeline(input_path: Path, output_path: Path) -> dict:
     with open(summary_file, "w") as f:
         json.dump(summary, f, indent=2)
 
-    print(f"\n=== NeMo Curator Pipeline Complete ===")
+    print("\n=== NeMo Curator Pipeline Complete ===")
     print(f"  Loaded:          {stats['loaded']:,}")
     print(f"  After quality:   {stats['after_quality_filter']:,}")
     print(f"  After dedup:     {stats['after_dedup']:,}")

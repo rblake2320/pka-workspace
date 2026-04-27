@@ -14,19 +14,19 @@ APPEND_BLOCK = '''
 # Patterns that should NEVER appear in RAG/agent output directed at end users
 _OUTPUT_BLOCK_PATTERNS: list[str] = [
     # Model self-disclosure / jailbreak confirmation
-    r"i\s+(am\s+)?(now\s+)?operating\s+(without|outside)\s+(my\s+)?(restrictions|guidelines|rules)",
-    r"my\s+(new\s+)?(instructions?|programming|directive)\s+(are|is|say)\s*:",
-    r"(jailbreak|DAN\s+mode)\s+(activated|enabled|successful)",
+    r"i\\s+(am\\s+)?(now\\s+)?operating\\s+(without|outside)\\s+(my\\s+)?(restrictions|guidelines|rules)",
+    r"my\\s+(new\\s+)?(instructions?|programming|directive)\\s+(are|is|say)\\s*:",
+    r"(jailbreak|DAN\\s+mode)\\s+(activated|enabled|successful)",
 
     # Credential/secret output
-    r"(password|secret|api[_\\s]key|token|private[_\\s]key)\s*[:=]\s*[\\w\\-]{8,}",
+    r"(password|secret|api[_\\s]key|token|private[_\\s]key)\\s*[:=]\\s*[\\w\\-]{8,}",
 
     # Instruction injection confirmation
-    r"(ignoring|disregarding)\s+(previous|prior|all|your)\s+(instructions?|rules|guidelines)",
-    r"as\s+(your|a|the)\s+(new\s+)?(master|owner|god|administrator)\s*[,:]",
+    r"(ignoring|disregarding)\\s+(previous|prior|all|your)\\s+(instructions?|rules|guidelines)",
+    r"as\\s+(your|a|the)\\s+(new\\s+)?(master|owner|god|administrator)\\s*[,:]",
 
     # System prompt leakage markers
-    r"<\s*/?system\s*>.*</\s*system\s*>",
+    r"<\\s*/?system\\s*>.*</\\s*system\\s*>",
     r"\\[SYSTEM\\].*\\[/SYSTEM\\]",
 ]
 
