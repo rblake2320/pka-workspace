@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
 import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
-from pka_lib import MANIFEST, ROOT, list_task_records
+from pka_lib import MANIFEST, list_task_records
 
 
 def parse_date(value: str) -> datetime | None:
@@ -78,7 +79,6 @@ def safe_div(numerator: int, denominator: int) -> float:
 
 def agent_scorecard(records: list[tuple[Path, dict[str, str], str]]) -> list[dict]:
     """Compute per-agent metrics from the task ledger."""
-    from pathlib import Path as _Path
     from collections import defaultdict
 
     stats: dict[str, dict[str, int]] = defaultdict(lambda: {"completed": 0, "go": 0, "nogo_hold": 0, "rework": 0})
@@ -147,9 +147,7 @@ def main() -> int:
         if verdict in {"GO", "HOLD", "NO-GO"}:
             verdict_known += 1
             notes = body.lower()
-            if verdict == "GO" and "escaped defect" not in notes and "reopened" not in notes:
-                verdict_held += 1
-            elif verdict in {"HOLD", "NO-GO"}:
+            if (verdict == "GO" and "escaped defect" not in notes and "reopened" not in notes) or verdict in {"HOLD", "NO-GO"}:
                 verdict_held += 1
 
         notes = body.lower()

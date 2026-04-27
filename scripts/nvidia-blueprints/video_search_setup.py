@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import logging
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -424,7 +423,7 @@ def create_schema_on_spark1():
     """SSH to Spark-1 and create the pgvector schema."""
     sql = SCHEMA_SQL.replace("'", "'\\''")  # escape single quotes for shell
     cmd = f"ssh {SPARK1_HOST} \"psql '{SPARK1_PG_DSN}' -c '{sql}'\""
-    print(f"Creating pgvector schema on Spark-1...")
+    print("Creating pgvector schema on Spark-1...")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode == 0:
         print("[OK] Schema created on Spark-1")
@@ -442,7 +441,7 @@ def deploy_video_api_spark1():
     """Write and start the video search API on Spark-1."""
     # Write API file
     api_remote = "/home/rblake2320/video-search/video_api.py"
-    service_remote = "/home/rblake2320/video-search/video_api.service"
+    _service_remote = "/home/rblake2320/video-search/video_api.service"
 
     print("Deploying Video Search API to Spark-1...")
     subprocess.run(

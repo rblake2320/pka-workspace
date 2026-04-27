@@ -17,7 +17,7 @@ class ContextManager:
     TAIL_MIN = 6                # Always protect at least 6 tail messages
     SUMMARY_TOOL_TRUNCATE = 200  # Chars to keep per old tool result
 
-    def __init__(self, max_tokens: int, llm_client: "OllamaClient"):
+    def __init__(self, max_tokens: int, llm_client: OllamaClient):
         self.max_tokens = max_tokens
         self.llm = llm_client
         self._compression_count = 0
@@ -47,11 +47,6 @@ class ContextManager:
         if len(messages) <= 4:
             return messages  # Too short to compress
 
-        # Calculate tail protection count
-        tail_token_budget = max(
-            self.TAIL_MIN * 2,
-            int(self.max_tokens * self.TAIL_FRACTION // 100),  # rough msg estimate
-        )
         tail_count = max(self.TAIL_MIN, min(10, len(messages) // 3))
 
         # Protected zones

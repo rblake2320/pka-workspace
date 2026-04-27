@@ -7,13 +7,12 @@ Simulates a real task flowing through the full GMAGS agent chain:
 Runs a real task: "Create a GMAGS-compliant task contract for the GMAGS rollout task."
 Verifies that every governance artifact is created and structurally valid.
 """
-import os
-import sys
 import json
-import yaml
-import shutil
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+import yaml
 
 BASE = Path(__file__).parent.parent
 NOW = datetime.now(timezone.utc)
@@ -387,7 +386,7 @@ def warden_gap_check(verified_artifacts, missing_artifacts):
             "related_task_id": TASK_ID,
             "baseline": "artifact does not exist",
             "target": "artifact exists and passes schema check",
-            "verifier_command": f"python scripts/gmags_doctor.py --check agents",
+            "verifier_command": "python scripts/gmags_doctor.py --check agents",
             "status": "open",
             "closure_evidence": None,
             "warden_note": f"Required artifact not found: {m}"
@@ -560,11 +559,11 @@ def print_summary(verdict, status_record, conformance, gaps):
 def main():
     print("GMAGS v1.5 E2E Test — PKA Workspace")
     print(f"Task ID: {TASK_ID}")
-    print(f"Mode: verify | Assurance: A2")
+    print("Mode: verify | Assurance: A2")
 
     contract_path, contract = create_task_contract()
     verified, missing = verify_forge_artifacts()
-    crucible_ok = crucible_verify()
+    crucible_verify()
     bundle_path, evidence_bundle = chronicler_log(contract_path, verified, missing)
     status_path, status_record = arbiter_assign_status(bundle_path, evidence_bundle)
     gaps, conformance = warden_gap_check(verified, missing)

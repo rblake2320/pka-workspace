@@ -1,0 +1,45 @@
+[project]
+name = "pka-workspace"
+requires-python = ">=3.9"
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "S", "B", "SIM", "RUF"]
+ignore = [
+    "E501",   # line too long (formatter handles it)
+    "S101",   # assert usage (fine in scripts)
+    "S603",   # subprocess call without shell check (intentional git/python calls)
+    "S607",   # partial executable path (git, python, etc.)
+    "B008",   # function call in default argument
+    "SIM108", # ternary operator suggestion (readability preference)
+    "S110",   # try-except-pass (intentional defensive programming)
+    "S112",   # try-except-continue (intentional)
+    "SIM105", # use contextlib.suppress (style preference, existing code uses try/except)
+    "UP045",  # use X | None instead of Optional[X] (covered by __future__ annotations)
+    "RUF005", # collection literal concatenation (readability preference)
+    "E741",   # ambiguous variable name (acceptable in short contexts)
+    "B904",   # raise without from inside except (style preference)
+    "S310",   # urllib.request usage (all callers hit known internal endpoints)
+    "S608",   # SQL in f-string (bridge scripts querying known schemas, no user input)
+    "S104",   # 0.0.0.0 bind (intentional for local dev servers)
+    "S105",   # hardcoded password string (false positive on placeholder check strings)
+    "S324",   # insecure hash function (md5/sha1 used for non-security purposes)
+    "S108",   # hardcoded /tmp path (deploy scripts, intentional)
+    "SIM102", # collapsible if (readability preference)
+    "SIM103", # needless bool (readability preference)
+    "SIM118", # in dict.keys() (readability preference)
+    "RUF002", # ambiguous Unicode in docstring (intentional em-dash/arrows in docs)
+    "RUF003", # ambiguous Unicode in comment (intentional)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test_*.py" = ["S101", "S113"]
+"tmp_*.py" = ["ALL"]
+"scripts/nvidia-blueprints/*.py" = ["S602", "S603", "S607"]  # intentional shell=True for SSH/SCP
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

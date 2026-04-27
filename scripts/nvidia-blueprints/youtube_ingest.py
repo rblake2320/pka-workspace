@@ -61,7 +61,7 @@ def get_captions(url: str, lang: str = "en") -> list[dict]:
     Returns list of {start_s, end_s, text} dicts sorted by time.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
-        result = subprocess.run(
+        subprocess.run(
             [
                 "yt-dlp",
                 "--write-auto-subs", "--write-subs",
@@ -78,7 +78,7 @@ def get_captions(url: str, lang: str = "en") -> list[dict]:
         sub_files = list(Path(tmpdir).glob("*.json3"))
         if not sub_files:
             # Try vtt format as fallback
-            result2 = subprocess.run(
+            subprocess.run(
                 [
                     "yt-dlp",
                     "--write-auto-subs", "--write-subs",
@@ -402,9 +402,9 @@ def main():
             return
 
     print("\nNote: Full visual CLIP search requires:")
-    print(f"  1. Start CLIP service: python3 clip_service.py  (RTX 5090, port 8320)")
-    print(f"  2. Start Video API:    python3 video_api.py      (Spark-1, port 8310)")
-    print(f"\nFor now, caption search is available without any services.")
+    print("  1. Start CLIP service: python3 clip_service.py  (RTX 5090, port 8320)")
+    print("  2. Start Video API:    python3 video_api.py      (Spark-1, port 8310)")
+    print("\nFor now, caption search is available without any services.")
 
     if args.search_after:
         results = search_captions_local(captions, args.search_after, top_k=10)
