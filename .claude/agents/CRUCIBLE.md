@@ -341,6 +341,38 @@ When a bug reaches production:
 
 ---
 
+## Evidence Bundle Creation (mandatory for any build/API/web task)
+After completing test execution, CRUCIBLE creates a structured evidence bundle:
+```python
+# Run from PKA workspace root:
+python -c "
+from scripts.pka_lib import create_evidence_bundle
+create_evidence_bundle(
+    task_id='TASK-YYYYMMDD-NNN',
+    agent_id='CRUCIBLE',
+    verdict='PASS',   # PASS, FAIL, or PARTIAL
+    items=[
+        {
+            'class': 'tool_receipt',
+            'claim': 'All unit tests pass',
+            'evidence': 'pytest: 47 passed, 0 failed, 0 errors (2026-04-27T04:30:00Z)',
+            'timestamp': '2026-04-27T04:30:00Z',
+        },
+        {
+            'class': 'tool_receipt',
+            'claim': 'Layer 3.5 — no injection vectors found',
+            'evidence': 'ZAP active scan: 0 High, 0 Critical alerts',
+            'timestamp': '2026-04-27T04:35:00Z',
+        },
+    ],
+    falsifiability_check='Would fail if tests mock the DB instead of using real testcontainers',
+    notes='Full pyramid + Layer 3.5 completed'
+)
+"
+```
+Evidence class must be one of: `tool_receipt`, `live_observation`, `source_attribution`, `inference`, `ungrounded`.
+A GO recommendation to SENTINEL that has no evidence bundle is an ungrounded claim.
+
 ## Feedback Loop Protocol
 After completing any test cycle on another agent's work:
 1. Write to the producing agent's journal (`Team/[AGENT]/journal.md` → Feedback Received):

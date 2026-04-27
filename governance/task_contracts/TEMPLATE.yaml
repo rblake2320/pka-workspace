@@ -19,6 +19,21 @@ success_criteria:
   - "<specific, testable condition>"
 constraints:
   - "<hard constraint>"
+out_of_scope:
+  - "<what this task explicitly does NOT cover>"
+abort_conditions:
+  - "<specific signal that means stop work and escalate>"
+falsifiability:
+  wrong_approach_evidence: "<what evidence would prove this approach is wrong>"
+  failure_disguised_as_success: "<what does a false positive look like for this task>"
+topology: "linear"
+# topology controls the agent coordination pattern for this task:
+#   linear         — default sequential chain (NOVA → FORGE → CRUCIBLE → SENTINEL)
+#   debate         — two agents answer independently, SENTINEL referees; use for high-stakes decisions
+#   tree_search    — HELM branches 2-3 paths in parallel, prunes to best; use when optimal approach is unclear
+#   parallel_audit — multiple agents audit independently, SENTINEL consolidates; use for security/compliance
+#   simulation     — NOVA models failure modes first, FORGE builds with findings; use for novel/risky architectures
+#   red_team       — CRUCIBLE attacks the plan before FORGE builds; use for auth, public APIs, security-critical work
 declared_side_effects:
   creates: []
   modifies: []

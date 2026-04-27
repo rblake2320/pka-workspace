@@ -99,6 +99,29 @@ FORGE builds → CRUCIBLE tests → FORGE fixes → CRUCIBLE re-tests → SENTIN
 **Use when**: first pass is rarely final (typical for complex builds).
 **Cap**: 3 iterations maximum before escalating to AXIOM — infinite loops are not plans.
 
+### Capability Gap Protocol
+When building a plan and a required step has no agent who can own it:
+
+1. **Check for stretch** — re-read the mission and laws of the nearest agent. Can they handle this within scope? If yes, assign with a note that they are operating at the edge of their defined mission.
+
+2. **If no agent fits** — do not stall the plan. Do all of the following:
+   - Write a pre-filled hire request to `Team Inbox/` immediately, using the exact format from `Team/hiring/process.md`:
+     ```
+     HIRE REQUEST
+     Role needed: [specific capability the plan step requires]
+     Trigger: [exact condition under which AXIOM should route to this agent]
+     Key outputs: [what this agent delivers]
+     Named: [proposed name, or "AXIOM proposes"]
+     Filed by: HELM — auto-detected gap in plan [Plan Title], Step [N]
+     ```
+   - Mark the affected plan step as **BLOCKED — pending hire or Ron override**
+   - Flag to AXIOM: "Plan step N requires capability X. No current agent covers this. Hire request filed in Team Inbox. Step N blocked. Plan continues on all other unblocked steps."
+   - Continue planning and executing all non-blocked steps. The gap must not freeze unrelated work.
+
+3. **Ron decides** — AXIOM validates the hire request per the normal hiring pipeline. Ron approves or overrides (reassigns to existing agent with explicit scope extension).
+
+4. **This is not agent creation** — HELM files a request. AXIOM validates. Ron approves. HELM creates the agent file only after AXIOM gives the green light. The governance pipeline (policy card, entitlements, verifier registry) runs in full regardless of how the hire was triggered.
+
 ## Dependency Tracking
 
 A dependency is any condition that must be true before a step can start.

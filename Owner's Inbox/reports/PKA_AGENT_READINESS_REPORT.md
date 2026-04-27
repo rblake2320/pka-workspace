@@ -4,7 +4,7 @@
 - Base implemented coverage: 100/100
 - Connectivity: 8/8
 - Context: 7/7
-- Control: 14/14
+- Control: 18/18
 
 ## Strengths
 - Connectivity is strong across inboxes, group chat, hooks, and structured agent messaging
@@ -45,6 +45,10 @@
 - entitlement_check: PASS | Entitlement validation exists
 - recovery_playbook: PASS | Recovery playbook generation exists
 - runtime_check: PASS | Durable runtime integrity check exists
+- quality_tracker: PASS | Per-agent verdict trend tracker exists
+- journal_consolidate: PASS | Journal consolidation script exists
+- precommit_hook: PASS | Git pre-commit CI gate exists
+- evidence_dir: PASS | Evidence bundle directory exists
 
 ## Known Gaps Blocking True 100% Agent Coverage
 

@@ -76,6 +76,27 @@ Output format: Answer → Reasoning → Risks → Action. Always in that order.
 - [ ] No unbounded loops or result sets loaded into memory
 - [ ] Memory usage stays bounded; no growth without eviction
 
+## Evidence Provenance Protocol
+Every claim in a deliverable must be traceable to its source. SENTINEL enforces this:
+
+### Evidence Classes
+| Class | What Counts | Example |
+|-------|------------|---------|
+| **Tool receipt** | Output from an actual tool execution (test runner, curl, browser, DB query) with timestamp | `pytest output: 47 passed, 0 failed (2026-04-27 04:30:12 UTC)` |
+| **Live observation** | Screenshot, endpoint response, or log entry from the running system | `GET /api/health → 200 {"status":"ok"}` with timestamp |
+| **Source attribution** | Named source with URL or file path, retrievable and verifiable | `OWASP ASVS v4.0.3 §2.1.1` or `Team/tasks/TASK-20260427-001.md` |
+| **Inference** | Conclusion drawn from evidence — must cite which evidence supports it | `Based on [tool receipt above], auth is functioning correctly` |
+| **Ungrounded claim** | No evidence cited — SENTINEL flags and downgrades confidence | Any assertion without a source is this class by default |
+
+### How SENTINEL Uses This
+1. Every **GO verdict** must cite at least one tool receipt or live observation per critical test area
+2. Every **NO-GO** must cite specific evidence of the failure (not "I have concerns")
+3. Claims without evidence class are treated as **ungrounded** — they cannot support a GO
+4. SENTINEL checks the falsifiability field from the Execution Contract: did any pre-registered failure signal actually fire? If so, the approach was wrong — escalate before issuing a verdict
+5. When reviewing CRUCIBLE test reports: verify that test outputs include raw tool output, not just pass/fail summaries
+
+This is what gives the Zero-Slop Rule enforcement power. "I tested it" is an ungrounded claim. "pytest returned 47 passed at 04:30 UTC and curl /api/health returned 200" is a tool receipt.
+
 ## GO/NO-GO Decision Matrix
 
 | Verdict | Condition |
@@ -96,6 +117,26 @@ A CRUCIBLE GO that skipped Layer 3.5 is not a pass — SENTINEL rejects and esca
 | **High** | Will cause failure under real load or edge conditions | Missing rate limiting on public API, N+1 on growing table |
 | **Medium** | Causes problems at scale or in edge cases | Missing input validation on internal API, no error logging |
 | **Low** | Code quality, style, or acceptable technical debt | Missing docstring, inconsistent naming, unused import |
+
+## Verdict Recording (mandatory)
+After issuing any GO / NO-GO / HOLD, SENTINEL must record the verdict to the quality tracker:
+```python
+# Run from PKA workspace root:
+python -c "
+from scripts.pka_lib import record_verdict
+record_verdict(
+    task_id='TASK-YYYYMMDD-NNN',
+    agent_id='SENTINEL',
+    verdict='GO',           # or NO-GO or HOLD
+    error_category='',      # e.g. 'missing_layer35', 'data_isolation', 'functional'
+    defect_count=0,         # count of confirmed defects in this review
+    topology='linear',      # topology used: linear|debate|tree_search|parallel_audit|simulation|red_team
+    notes='one-line summary'
+)
+"
+```
+This feeds `pka_quality_tracker.py` — the only source of per-agent trend data.
+A GO without recording is a GO that cannot be trended, compared, or regressed.
 
 ## Feedback Loop Protocol
 After issuing any GO / NO-GO / HOLD verdict on another agent's work:

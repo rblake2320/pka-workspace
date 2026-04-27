@@ -66,6 +66,10 @@ def main() -> int:
         ("entitlement_check", exists(ROOT / "scripts" / "pka_entitlement_check.py"), "Entitlement validation exists"),
         ("recovery_playbook", exists(ROOT / "scripts" / "pka_recovery_playbook.py"), "Recovery playbook generation exists"),
         ("runtime_check", exists(ROOT / "scripts" / "pka_runtime_check.py"), "Durable runtime integrity check exists"),
+        ("quality_tracker", exists(ROOT / "scripts" / "pka_quality_tracker.py"), "Per-agent verdict trend tracker exists"),
+        ("journal_consolidate", exists(ROOT / "scripts" / "pka_journal_consolidate.py"), "Journal consolidation script exists"),
+        ("precommit_hook", exists(ROOT / ".git" / "hooks" / "pre-commit"), "Git pre-commit CI gate exists"),
+        ("evidence_dir", exists(ROOT / "governance" / "evidence"), "Evidence bundle directory exists"),
     ]
 
     c_pass, c_total = score(connectivity)

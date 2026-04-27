@@ -436,6 +436,35 @@ def sync_control_files() -> None:
     STATUS.write_text(status_text, encoding="utf-8")
     HANDOFF.write_text(handoff_text, encoding="utf-8")
 
+    # Structured JSON handoff — machine-readable session state for tooling
+    handoff_json = TEAM_DIR / "handoff.json"
+    handoff_data = {
+        "session_id": utc_now().strftime("%Y%m%d-%H%M%S"),
+        "timestamp": timestamp(),
+        "tasks_active": [
+            {
+                "task_id": t.get("task_id", ""),
+                "title": t.get("title", ""),
+                "state": t.get("state", ""),
+                "owner": t.get("owner", ""),
+                "updated_at": t.get("updated_at", ""),
+            }
+            for t in active
+        ],
+        "tasks_delivered": [
+            {
+                "task_id": t.get("task_id", ""),
+                "title": t.get("title", ""),
+                "verdict": t.get("verdict", ""),
+                "deliverable_file": t.get("deliverable_file", ""),
+            }
+            for t in delivered
+        ],
+        "pending_count": len(active),
+        "delivered_count": len(delivered),
+    }
+    handoff_json.write_text(json.dumps(handoff_data, indent=2), encoding="utf-8")
+
 
 def create_message_file(payload: dict[str, object], short_name: str) -> Path:
     MESSAGES_ACTIVE.mkdir(parents=True, exist_ok=True)
@@ -456,3 +485,131 @@ def archive_message(path: Path) -> Path:
 def ensure_runtime_dirs() -> None:
     for path in (RUNTIME_DIR, JOBS_ACTIVE, JOBS_ARCHIVE, APPROVALS_PENDING, APPROVALS_RESOLVED):
         path.mkdir(parents=True, exist_ok=True)
+
+
+# ── Evidence Bundle ──────────────────────────────────────────────────────
+
+EVIDENCE_DIR = ROOT / "governance" / "evidence"
+
+EVIDENCE_CLASSES = {"tool_receipt", "live_observation", "source_attribution", "inference", "ungrounded"}
+
+
+def create_evidence_bundle(
+    task_id: str,
+    agent_id: str,
+    verdict: str,
+    items: list[dict[str, str]],
+    *,
+    falsifiability_check: str = "",
+    notes: str = "",
+) -> Path:
+    """Create a structured evidence bundle for a task verdict.
+
+    Each item in *items* must have:
+      - ``class``: one of EVIDENCE_CLASSES
+      - ``claim``: what is being asserted
+      - ``evidence``: the raw proof (tool output, URL, observation)
+      - ``timestamp``: ISO-8601 when the evidence was captured
+
+    Returns the path to the written JSON file.
+    """
+    EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
+
+    for item in items:
+        if item.get("class") not in EVIDENCE_CLASSES:
+            raise ValueError(f"Invalid evidence class: {item.get('class')}")
+
+    bundle = {
+        "schema_version": "1.0.0",
+        "bundle_id": f"EVD-{task_id}",
+        "task_id": task_id,
+        "agent_id": agent_id,
+        "verdict": verdict,
+        "created_at": timestamp(),
+        "falsifiability_check": falsifiability_check,
+        "items": items,
+        "summary": {
+            "total": len(items),
+            "tool_receipts": sum(1 for i in items if i["class"] == "tool_receipt"),
+            "live_observations": sum(1 for i in items if i["class"] == "live_observation"),
+            "source_attributions": sum(1 for i in items if i["class"] == "source_attribution"),
+            "inferences": sum(1 for i in items if i["class"] == "inference"),
+            "ungrounded": sum(1 for i in items if i["class"] == "ungrounded"),
+        },
+        "notes": notes,
+    }
+
+    path = EVIDENCE_DIR / f"{task_id}.json"
+    path.write_text(json.dumps(bundle, indent=2), encoding="utf-8")
+    return path
+
+
+def validate_evidence_bundle(path: Path) -> list[str]:
+    """Validate a JSON evidence bundle. Returns a list of issues (empty = valid)."""
+    issues: list[str] = []
+    try:
+        bundle = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return [f"{path.name}: invalid JSON ({exc})"]
+
+    for field in ("bundle_id", "task_id", "agent_id", "verdict", "created_at", "items"):
+        if field not in bundle:
+            issues.append(f"{path.name}: missing required field '{field}'")
+
+    items = bundle.get("items", [])
+    if not isinstance(items, list):
+        issues.append(f"{path.name}: 'items' must be a list")
+        return issues
+
+    for idx, item in enumerate(items):
+        cls = item.get("class", "")
+        if cls not in EVIDENCE_CLASSES:
+            issues.append(f"{path.name}: item[{idx}] invalid class '{cls}'")
+        for req in ("claim", "evidence", "timestamp"):
+            if not item.get(req):
+                issues.append(f"{path.name}: item[{idx}] missing '{req}'")
+
+    # A GO verdict requires at least one tool_receipt or live_observation
+    verdict = bundle.get("verdict", "").upper()
+    if verdict == "GO":
+        has_hard = any(i.get("class") in ("tool_receipt", "live_observation") for i in items)
+        if not has_hard:
+            issues.append(f"{path.name}: GO verdict has no tool_receipt or live_observation — ungrounded")
+
+    # Flag ungrounded claims
+    ungrounded_count = sum(1 for i in items if i.get("class") == "ungrounded")
+    if ungrounded_count > 0:
+        issues.append(f"{path.name}: {ungrounded_count} ungrounded claim(s) — cannot support a GO")
+
+    return issues
+
+
+# ── Quality Verdict Record ───────────────────────────────────────────────
+
+QUALITY_LOG = LOGS_DIR / "pka_quality_tracker.jsonl"
+
+
+def record_verdict(
+    task_id: str,
+    agent_id: str,
+    verdict: str,
+    *,
+    error_category: str = "",
+    defect_count: int = 0,
+    topology: str = "linear",
+    notes: str = "",
+) -> None:
+    """Append a verdict record to the quality tracker JSONL."""
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    record = {
+        "ts": timestamp(),
+        "task_id": task_id,
+        "agent_id": agent_id,
+        "verdict": verdict,
+        "error_category": error_category,
+        "defect_count": defect_count,
+        "topology": topology,
+        "notes": notes,
+    }
+    with open(str(QUALITY_LOG), "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record) + "\n")

@@ -20,6 +20,9 @@ use the full template.
 - **What Good Looks Like**:
 - **What To Avoid**:
 - **Preferred Agent Or Route**:
+- **Out of Scope** (what this task does NOT cover):
+- **Abort If** (stop and escalate if this happens):
+- **How Would We Know This Is Wrong?** (what would prove the approach is flawed):
 
 ## Example
 ```md
