@@ -1,10 +1,11 @@
-import requests
 import json
 import time
 
+import requests
+
 council_id = "eaca8cd3-5388-4cf6-a0db-25d0e89cb7a2"
 print(f"Using council ID: {council_id}")
-print(f"Council title: Clean Test v2")
+print("Council title: Clean Test v2")
 
 # Step 2: POST message
 print()

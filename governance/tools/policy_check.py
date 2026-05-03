@@ -162,7 +162,7 @@ def main():
             audit_agents = entry.get("agents", [])
             agent_involved = agent in [a.upper() for a in audit_agents]
             print_check(
-                f"agent_in_last_audit",
+                "agent_in_last_audit",
                 agent_involved,
                 f"{agent} {'was' if agent_involved else 'was NOT'} in: {audit_agents}"
             )

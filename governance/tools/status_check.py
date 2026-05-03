@@ -205,7 +205,7 @@ def main():
     now = datetime.now(timezone.utc)
     claimed = args.claimed_status.lower().replace("-", "_")
 
-    print(f"\nSTATUS CHECK")
+    print("\nSTATUS CHECK")
     print(f"Claimed status : {claimed}")
     print(f"Time           : {now.strftime('%Y-%m-%d %H:%M:%S UTC')}")
     print()

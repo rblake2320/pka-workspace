@@ -38,10 +38,9 @@ PRACTICAL EXAMPLES:
     --outputs "some/file.py,another/file.md" --dry-run
 """
 import argparse
-import json
-import os
-import sys
 import glob as glob_module
+import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -93,7 +92,10 @@ def print_table(output_checks):
     print(f"\n{'Output':<{col_w}} {'Status':<12} {'Size':>10}  {'Modified'}")
     print("-" * (col_w + 40))
     for path, info in output_checks:
-        rel = str(path.relative_to(BASE)) if path.is_absolute() or BASE in path.parents else str(path)
+        try:
+            rel = str(path.relative_to(BASE))
+        except ValueError:
+            rel = str(path)
         if info["exists"]:
             if info.get("is_dir"):
                 status = "EXISTS (dir)"
