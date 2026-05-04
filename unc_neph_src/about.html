@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>About — Unc & Neph Vibe Coding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css" />
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+<style>
+/* --- 3D showcase card (About hero) --- */
+.showcase-card {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  background: #000000f2;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 56px;
+}
+.showcase-spotlight {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  animation: spotlight-fade 1.2s .2s ease forwards;
+}
+.showcase-spotlight svg {
+  position: absolute; top: -20%; left: -10%;
+  width: 140%; height: 170%;
+}
+@keyframes spotlight-fade { to { opacity: 1; } }
+
+.showcase-inner {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+.showcase-copy {
+  padding: 48px; display: flex; flex-direction: column; justify-content: center;
+}
+.showcase-copy .eyebrow { margin-bottom: 20px; color: #a8adb8; }
+.showcase-copy .eyebrow::before { background: #ffffff; box-shadow: 0 0 12px rgba(255,255,255,.7); }
+.showcase-copy h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(36px, 4.4vw, 56px);
+  line-height: 1.02; letter-spacing: -0.035em; font-weight: 600;
+  background: linear-gradient(180deg, #fafafa 0%, #9ca0aa 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  margin-bottom: 18px;
+}
+.showcase-copy p {
+  color: #c9ccd3; font-size: 15px; max-width: 420px;
+  margin-bottom: 8px;
+}
+.showcase-copy .chips {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px;
+}
+.showcase-copy .chips span {
+  font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+  color: #c9ccd3; padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,.15); border-radius: 999px;
+  background: rgba(255,255,255,.03);
+}
+
+.showcase-3d { position: relative; height: 100%; overflow: hidden; }
+.showcase-3d spline-viewer {
+  width: 100%; height: 100%;
+  display: block;
+  --spline-loading-bg: transparent;
+}
+.showcase-3d::after { display: none; }
+.showcase-loading {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.loader {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.15);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .showcase-card { height: auto; }
+  .showcase-inner { grid-template-columns: 1fr; }
+  .showcase-3d { height: 360px; }
+}
+
+.page-hero { padding: 80px 0 48px; }
+.page-hero .eyebrow { margin-bottom: 24px; }
+.page-hero h1 {
+  font-size: clamp(48px, 6.5vw, 88px);
+  line-height: 0.98; letter-spacing: -0.035em; font-weight: 500;
+  max-width: 1000px; margin-bottom: 28px;
+}
+.page-hero h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+.page-hero .lede { font-size: 18px; color: var(--ink-2); max-width: 680px; }
+
+/* Story grid */
+.story-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 80px; align-items: flex-start; }
+.story-grid aside .eyebrow { margin-bottom: 16px; }
+.story-grid aside h3 { font-size: 20px; font-weight: 500; margin-bottom: 10px; letter-spacing: -0.01em; }
+.story-grid aside p { font-size: 14px; color: var(--ink-3); }
+.story-body p { font-size: 17px; color: var(--ink-2); margin-bottom: 22px; line-height: 1.6; }
+.story-body p em { color: var(--accent); font-style: normal; }
+.story-body .pull {
+  font-family: 'Space Grotesk', sans-serif; font-size: 26px;
+  line-height: 1.25; letter-spacing: -0.02em; font-weight: 500;
+  color: var(--ink); border-left: 2px solid var(--accent);
+  padding: 8px 0 8px 24px; margin: 32px 0;
+}
+
+/* Two builders */
+.builders { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
+.builder {
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.builder .avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background:
+    conic-gradient(from 180deg, var(--accent), var(--accent-2), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 24px;
+  color: #0a0b0d; letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  position: relative;
+}
+.builder .avatar::after {
+  content: ''; position: absolute; inset: 3px; border-radius: 50%;
+  background: var(--panel);
+}
+.builder .avatar span { position: relative; z-index: 1; color: var(--ink); background: var(--panel); width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.builder h3 { font-size: 22px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.02em; }
+.builder .role {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--ink-3); letter-spacing: 0.06em; margin-bottom: 18px;
+  text-transform: uppercase;
+}
+.builder p { font-size: 14px; color: var(--ink-3); margin-bottom: 16px; }
+.builder ul {
+  list-style: none; padding: 0; margin: 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+  color: var(--ink-2); display: flex; flex-direction: column; gap: 6px;
+}
+.builder ul li::before { content: '→ '; color: var(--accent); }
+
+.link-line {
+  position: absolute;
+  z-index: -1; pointer-events: none;
+  height: 1px; top: 64px;
+  left: calc(50% - 40px); width: 80px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  display: block;
+}
+
+/* Why Vibe Coding */
+.vc {
+  padding: 64px 56px;
+  background: color-mix(in oklab, var(--panel) 60%, var(--bg));
+  border: 1px solid var(--line); border-radius: var(--radius);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+  position: relative; overflow: hidden;
+}
+.vc::before {
+  content: ''; position: absolute; bottom: -30%; left: -10%;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--accent-2) 18%, transparent) 0, transparent 60%);
+  filter: blur(30px); pointer-events: none;
+}
+.vc h2 { font-size: 40px; line-height: 1.05; letter-spacing: -0.02em; font-weight: 500; position: relative; }
+.vc h2 em { font-style: italic; color: var(--accent); font-weight: 400; }
+.vc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.vc-cols > div h5 {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-3); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.vc-cols > div h5::before { content: ''; width: 4px; height: 4px; border-radius: 50%; }
+.vc-cols > div.sounds h5::before { background: #ff6b6b; }
+.vc-cols > div.means h5::before { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.vc-cols ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink-2); }
+.vc-cols ul li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.vc-cols .sounds li { color: var(--ink-4); text-decoration: line-through; text-decoration-color: var(--ink-4); }
+
+/* Values */
+.values { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.value {
+  padding: 40px 24px; border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 12px;
+  transition: background .2s;
+}
+.value:last-child { border-right: none; }
+.value:hover { background: color-mix(in oklab, var(--panel) 70%, transparent); }
+.value .vn { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+.value h4 { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+.value p { font-size: 13px; color: var(--ink-3); }
+
+/* Toward */
+.toward { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.toward-card {
+  padding: 28px; display: flex; flex-direction: column; gap: 14px;
+  min-height: 220px;
+}
+.toward-card .stage { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); letter-spacing: 0.06em; }
+.toward-card h4 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+.toward-card p { font-size: 14px; color: var(--ink-3); }
+.toward-card .bar {
+  height: 3px; background: var(--line); border-radius: 2px; overflow: hidden;
+  margin-top: auto;
+}
+.toward-card .bar span { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+
+/* Timeline */
+.timeline-wrap { position: relative; padding-left: 24px; }
+.timeline-wrap::before {
+  content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
+  width: 1px; background: var(--line);
+}
+.t-item { position: relative; padding: 16px 0 24px; }
+.t-item::before {
+  content: ''; position: absolute; left: -22px; top: 22px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--bg); border: 1.5px solid var(--accent);
+}
+.t-item.done::before { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.t-item .when { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); letter-spacing: 0.06em; margin-bottom: 4px; }
+.t-item h4 { font-size: 17px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.01em; }
+.t-item p { font-size: 14px; color: var(--ink-3); }
+
+@media (max-width: 980px) {
+  .story-grid, .vc, .builders, .toward { grid-template-columns: 1fr; gap: 32px; }
+  .values { grid-template-columns: 1fr 1fr; }
+  .value:nth-child(2n) { border-right: none; }
+  .value { border-bottom: 1px solid var(--line); }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <circle cx="18" cy="18" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <circle cx="6" cy="6" r="1" fill="var(--accent)"/>
+        <circle cx="18" cy="18" r="1" fill="var(--accent)"/>
+        <path d="M8 8 L16 16" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+      Unc &amp; Neph
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html" class="active">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="index.html#lab">Lab</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#journal">Journal</a>
+    </div>
+    <a href="index.html#contact" class="nav-cta">Start a Project →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="showcase-card reveal">
+        <div class="showcase-spotlight" aria-hidden="true">
+          <svg viewBox="0 0 3787 2842" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#sc-filter)">
+              <ellipse cx="1924.71" cy="273.501" rx="1924.71" ry="273.501"
+                transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+                fill="white" fill-opacity="0.18"/>
+            </g>
+            <defs>
+              <filter id="sc-filter" x="0" y="0" width="3787" height="2842" filterUnits="userSpaceOnUse">
+                <feGaussianBlur stdDeviation="151"/>
+              </filter>
+            </defs>
+          </svg>
+        </div>
+        <div class="showcase-inner">
+          <div class="showcase-copy">
+            <div class="eyebrow">About — Two Builders, One Lab</div>
+            <h2>Interactive by<br/>design.</h2>
+            <p>We're an uncle-and-nephew build lab turning ideas into websites, AI workflows, and small, useful products. This page is where you get to know the people behind the signal.</p>
+            <p style="color:#8b909b; font-size: 13px;">Tip: hover the scene on the right — it's watching you back.</p>
+            <div class="chips">
+              <span>family-powered</span>
+              <span>ai-assisted</span>
+              <span>build-in-public</span>
+            </div>
+          </div>
+          <div class="showcase-3d">
+            <div class="showcase-loading"><span class="loader"></span></div>
+            <spline-viewer url="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" loading-anim-type="none"></spline-viewer>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow reveal">About — Two Builders, One Lab</div>
+      <h1 class="reveal">A build lab powered by<br/><em>family, curiosity,</em> and execution.</h1>
+      <p class="lede reveal">Unc &amp; Neph started as more than just writing code. It became a way to learn faster, build smarter, and create things people actually find useful — in public, on purpose.</p>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section style="padding-top:48px;">
+    <div class="wrap">
+      <div class="story-grid">
+        <aside class="reveal">
+          <div class="eyebrow">01 — Our Story</div>
+          <h3 style="margin-top:16px;">How this started.</h3>
+          <p>Two builders, two generations, one shared creative mission — shipping real products from a small home-grown lab.</p>
+          <div style="margin-top:32px; padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in oklab, var(--panel) 40%, transparent);">
+            <div class="mono" style="color:var(--ink-3); font-size: 11px; letter-spacing: 0.06em; margin-bottom: 10px;">// LAB STATS</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap: 16px;">
+              <div>
+                <div style="font-family:'Space Grotesk'; font-size: 28px; font-weight: 500; color: var(--accent);">14</div>
+                <div style="font-size: 11px; color: var(--ink-3); font-family:'JetBrains Mono', monospace;">weeks building</div>
+              </div>
+              <div>
+                <div style="font-family:'Space Grotesk'; font-size: 28px; font-weight: 500; color: var(--accent);">11</div>
+                <div style="font-size: 11px; color: var(--ink-3); font-family:'JetBrains Mono', monospace;">things shipped</div>
+              </div>
+              <div>
+                <div style="font-family:'Space Grotesk'; font-size: 28px; font-weight: 500; color: var(--ink);">04</div>
+                <div style="font-size: 11px; color: var(--ink-3); font-family:'JetBrains Mono', monospace;">active projects</div>
+              </div>
+              <div>
+                <div style="font-family:'Space Grotesk'; font-size: 28px; font-weight: 500; color: var(--ink);">∞</div>
+                <div style="font-size: 11px; color: var(--ink-3); font-family:'JetBrains Mono', monospace;">ideas in queue</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="story-body reveal">
+          <p>Unc &amp; Neph Vibe Coding started as more than just writing code. It became a way to learn faster, build smarter, and create things that people actually find <em>useful.</em></p>
+          <p>The uncle-and-nephew dynamic is part of the foundation: one side brings experience, systems thinking, and vision; the other brings energy, curiosity, and fresh perspective. Together, that creates a brand built around experimentation, growth, and real-world creation.</p>
+          <div class="pull">
+            We're building skills, products, and opportunities in public — turning ideas into websites, tools, automations, and digital experiences that can grow into something bigger.
+          </div>
+          <p>This is a lab, not an agency. A studio, not a portfolio. A workshop that keeps the lights on by shipping things people want to keep using — and posting the receipts when we do.</p>
+          <p>Some of what we make will be services. Some will be products. Some will be experiments that teach us something we didn't know we needed to know. All of it is part of the same compounding curve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Two Builders -->
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px;">02 — Two Signals</div>
+          <h2>Two builders.<br/>One connected signal.</h2>
+        </div>
+        <p>The node-network at the center of our brand is literal: two connected points, each carrying its own energy, amplifying the other.</p>
+      </div>
+
+      <div class="builders" style="position:relative;">
+        <div class="link-line"></div>
+        <div class="builder panel reveal">
+          <div class="avatar"><span>U</span></div>
+          <h3>Unc</h3>
+          <div class="role">Systems · Strategy · Architecture</div>
+          <p>Brings the experience, the frameworks, and the "why is this the real problem" instinct. The side of the signal that asks whether a thing is worth building before we build it.</p>
+          <ul>
+            <li>Product direction &amp; scoping</li>
+            <li>Backend &amp; systems design</li>
+            <li>Automation architecture</li>
+            <li>Client &amp; workflow strategy</li>
+          </ul>
+        </div>
+        <div class="builder panel reveal">
+          <div class="avatar"><span>N</span></div>
+          <h3>Neph</h3>
+          <div class="role">Momentum · Craft · AI-Assisted Build</div>
+          <p>Brings the energy, the curiosity, the "what if we just tried it tonight." The side of the signal that turns a Slack message at 9pm into a working prototype by morning.</p>
+          <ul>
+            <li>Frontend &amp; UI craft</li>
+            <li>AI workflows &amp; prompting</li>
+            <li>Rapid prototyping</li>
+            <li>Content &amp; build-in-public</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Vibe Coding -->
+  <section>
+    <div class="wrap">
+      <div class="vc reveal">
+        <div style="position:relative;">
+          <div class="eyebrow" style="margin-bottom:20px;">03 — Why "Vibe Coding"</div>
+          <h2>It's creative velocity,<br/>not <em>random messing around.</em></h2>
+          <p style="margin-top:20px; font-size:15px; max-width:420px; color: var(--ink-3);">
+            The phrase is cool but it needs framing. Vibe coding is our shorthand for creative, high-momentum building — where ideas move quickly into prototypes, experiments, and shipped products. AI-assisted, opinionated, and intentional.
+          </p>
+        </div>
+        <div class="vc-cols">
+          <div class="sounds">
+            <h5>What it's not</h5>
+            <ul>
+              <li>Random coding</li>
+              <li>Unserious work</li>
+              <li>Low-quality experiments</li>
+              <li>Vibes without output</li>
+              <li>Demo-ware</li>
+            </ul>
+          </div>
+          <div class="means">
+            <h5>What it is</h5>
+            <ul>
+              <li>Creative velocity</li>
+              <li>Modern product building</li>
+              <li>AI-assisted development</li>
+              <li>Experimentation with intent</li>
+              <li>Shipping useful things, quickly</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section style="padding: 48px 0;">
+    <div class="wrap">
+      <div class="section-head reveal" style="margin-bottom:32px;">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px;">04 — What We Believe</div>
+          <h2>Five beliefs the lab runs on.</h2>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="values reveal">
+        <div class="value">
+          <span class="vn">v.01</span>
+          <h4>Build with purpose.</h4>
+          <p>Every build should answer a real question for a real person.</p>
+        </div>
+        <div class="value">
+          <span class="vn">v.02</span>
+          <h4>Learn fast.</h4>
+          <p>Each shipped thing teaches the next thing. Compound interest.</p>
+        </div>
+        <div class="value">
+          <span class="vn">v.03</span>
+          <h4>Ship often.</h4>
+          <p>Imperfect and public beats perfect and private. Always.</p>
+        </div>
+        <div class="value">
+          <span class="vn">v.04</span>
+          <h4>Stay useful.</h4>
+          <p>If no one misses it when it's gone, it didn't earn its spot.</p>
+        </div>
+        <div class="value">
+          <span class="vn">v.05</span>
+          <h4>Keep evolving.</h4>
+          <p>Tools change. Models change. The taste for shipping doesn't.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toward -->
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px;">05 — What We're Building Toward</div>
+          <h2>A studio that<br/>outgrows the page.</h2>
+        </div>
+        <p>The site you're on is Phase 1. The lab is meant to grow into a real product engine — services today, software tomorrow, community in between.</p>
+      </div>
+
+      <div class="toward">
+        <div class="toward-card panel reveal">
+          <span class="stage">PHASE 01 · NOW</span>
+          <h4>Services that ship</h4>
+          <p>Websites, AI workflows, internal tools. The current engine — paying the lab's bills, sharpening our reps.</p>
+          <div class="bar"><span style="width:92%"></span></div>
+        </div>
+        <div class="toward-card panel reveal">
+          <span class="stage">PHASE 02 · NEXT</span>
+          <h4>Products that scale</h4>
+          <p>Templates, micro-SaaS, and small tools born from client work. Things we'd want to use ourselves.</p>
+          <div class="bar"><span style="width:38%"></span></div>
+        </div>
+        <div class="toward-card panel reveal">
+          <span class="stage">PHASE 03 · LATER</span>
+          <h4>Community &amp; education</h4>
+          <p>Build logs, resources, a small circle of builders. Not a course empire — a place that teaches by doing.</p>
+          <div class="bar"><span style="width:12%"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px;">06 — Receipts</div>
+          <h2>The lab so far.</h2>
+        </div>
+        <p>A short, honest log. No milestones we haven't hit, no outcomes we're padding.</p>
+      </div>
+
+      <div class="timeline-wrap reveal" style="max-width:720px;">
+        <div class="t-item done">
+          <div class="when">WEEK 14 · NOW</div>
+          <h4>Website v1 — the one you're reading</h4>
+          <p>Shipped the first public face of the lab. Dark, signal-driven, built-in-public.</p>
+        </div>
+        <div class="t-item done">
+          <div class="when">WEEK 11</div>
+          <h4>Micro Tool Foundry passes 10 shipped</h4>
+          <p>Chrome extensions, CLIs, Raycast scripts. Small utilities, real usage.</p>
+        </div>
+        <div class="t-item done">
+          <div class="when">WEEK 08</div>
+          <h4>Command Dash prototype — internal</h4>
+          <p>First dogfooded ops dashboard. Routes work by workload, not role.</p>
+        </div>
+        <div class="t-item done">
+          <div class="when">WEEK 05</div>
+          <h4>AI Workflow Forge — first client run</h4>
+          <p>Retrieval + prompt library + automation for a small ops team. Measured time saved.</p>
+        </div>
+        <div class="t-item done">
+          <div class="when">WEEK 01</div>
+          <h4>Lab opens</h4>
+          <p>One whiteboard. Two builders. A shared doc titled "things we keep saying we'll make."</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="contact">
+    <div class="wrap">
+      <div class="panel reveal" style="padding: 64px; display:grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center;">
+        <div>
+          <div class="eyebrow" style="margin-bottom: 16px;">07 — Work With Us</div>
+          <h2 style="font-size: clamp(32px, 4vw, 48px); line-height:1.05; letter-spacing:-0.025em; font-weight:500; margin-bottom: 16px;">Have something worth shipping?</h2>
+          <p style="font-size:15px; color: var(--ink-3); max-width:440px;">
+            If you're a founder, small team, or operator with a real problem to solve, we'd rather hear from you than pitch ourselves here any longer.
+          </p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; align-items:flex-start;">
+          <a href="mailto:hello@uncneph.build" class="btn btn-primary">Start a Conversation <span class="arrow">→</span></a>
+          <a href="projects.html" class="btn btn-ghost">See the Projects</a>
+          <div class="mono" style="color:var(--ink-3); font-size: 11px; margin-top: 12px;">usually replies within 24h · pst</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="nav-logo" style="margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <circle cx="18" cy="18" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <circle cx="6" cy="6" r="1" fill="var(--accent)"/>
+          <circle cx="18" cy="18" r="1" fill="var(--accent)"/>
+          <path d="M8 8 L16 16" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        Unc &amp; Neph
+      </div>
+      <p style="font-size:13px; color:var(--ink-3); max-width:320px;">A family-powered digital build lab. Websites, AI workflows, internal tools, and small, useful products.</p>
+    </div>
+    <div>
+      <h4>Site</h4>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="index.html#lab">Lab</a>
+    </div>
+    <div>
+      <h4>Work</h4>
+      <a href="index.html#services">Services</a>
+      <a href="#">Shop</a>
+      <a href="#">Journal</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div>
+      <h4>Elsewhere</h4>
+      <a href="#">GitHub</a>
+      <a href="#">X / Twitter</a>
+      <a href="#">YouTube</a>
+      <a href="#">Newsletter</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Unc &amp; Neph Vibe Coding. Built in public.</div>
+    <div class="mono">v0.3.0 · shipped from the lab</div>
+  </div>
+</footer>
+
+<div id="tweaks-panel" class="tweaks"></div>
+<script src="assets/site.js"></script>
+<script>
+// Keep the Spline badge removed — walks shadow DOMs too, since the viewer nests it
+(function(){
+  function stripIn(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll('a#logo, a[href*="spline.design"]').forEach(el => el.remove());
+    root.querySelectorAll('*').forEach(el => {
+      if (el.shadowRoot) stripIn(el.shadowRoot);
+    });
+  }
+  function strip() { stripIn(document); }
+  strip();
+  // Repeat aggressively — viewer re-injects asynchronously
+  const iv = setInterval(strip, 250);
+  setTimeout(() => { clearInterval(iv); /* slow down after settle */
+    setInterval(strip, 1500);
+  }, 8000);
+  const mo = new MutationObserver(strip);
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+</body>
+</html>

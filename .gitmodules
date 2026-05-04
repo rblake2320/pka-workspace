@@ -1,0 +1,18 @@
+[submodule "selfconnect"]
+	path = selfconnect
+	url = https://github.com/rblake2320/selfconnect.git
+[submodule "omni-swarm"]
+	path = omni-swarm
+	url = https://github.com/rblake2320/omni-swarm.git
+[submodule "airgap-sop"]
+	path = airgap-sop
+	url = https://github.com/rblake2320/airgap-sop.git
+[submodule "a-site-to-remember"]
+	path = a-site-to-remember
+	url = https://github.com/UncNeph/a-site-to-remember.git
+[submodule "patent-portfolio"]
+	path = patent-portfolio
+	url = https://github.com/rblake2320/patent-portfolio.git
+[submodule "VidIntel"]
+	path = VidIntel
+	url = https://github.com/rblake2320/vidintel.git

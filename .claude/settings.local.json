@@ -2,20 +2,13 @@
   "env": {
     "WORKSPACE": "PKA Testing",
     "OWNER_INBOX": "Owner's Inbox",
-    "TEAM_INBOX": "Team Inbox"
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash|Write|Edit|MultiEdit|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "C:/Python312/python.exe \"C:/Users/techai/PKA testing/scripts/pka_post_tool_hook.py\""
-          }
-        ]
-      }
-    ]
+    "TEAM_INBOX": "Team Inbox",
+    "SELFCONNECT_DIR": "C:/Users/techai/PKA testing/selfconnect",
+    "DATASHIELD_DIR": "C:/Users/techai/DataShield",
+    "SPARK1_HOST": "192.168.12.132",
+    "SPARK2_HOST": "10.0.0.2",
+    "HUB_URL": "http://192.168.12.132:8765",
+    "ANTIGRAVITY_SCRIPT": "C:/Users/techai/PKA testing/selfconnect/antigravity_controller.py"
   },
   "permissions": {
     "allow": [
@@ -47,11 +40,37 @@
       "mcp__memoryweb__search_memories",
       "mcp__memoryweb__get_memories_by_tag",
       "mcp__memoryweb__get_recent_memories",
-      "mcp__memoryweb__get_memory_stats"
+      "mcp__memoryweb__get_memory_stats",
+      "Skill(impeccable)",
+      "Skill(gh-cli)",
+      "Skill(frontend-design)",
+      "Skill(ultra-backend)",
+      "Skill(devops-cicd)",
+      "Skill(code-review-agent)",
+      "Bash(git:*)",
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(gh:*)",
+      "Bash(ssh:*)"
     ],
     "deny": [
       "Bash(rm:*)",
       "Bash(rmdir:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Python312/python.exe \"C:/Users/techai/PKA testing/scripts/pka_post_tool_hook.py\""
+          }
+        ]
+      }
     ]
   }
 }

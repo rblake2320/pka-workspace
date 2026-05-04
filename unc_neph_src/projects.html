@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Projects — Unc & Neph Vibe Coding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css" />
+<style>
+.page-hero { padding: 80px 0 32px; }
+.page-hero .eyebrow { margin-bottom: 24px; }
+.page-hero h1 {
+  font-size: clamp(48px, 6.5vw, 88px);
+  line-height: 0.98; letter-spacing: -0.035em; font-weight: 500;
+  max-width: 960px; margin-bottom: 28px;
+}
+.page-hero h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+.page-hero .lede { font-size: 18px; color: var(--ink-2); max-width: 680px; }
+
+/* Stats strip */
+.stats-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; margin-top: 48px;
+  background: var(--panel);
+}
+.stat {
+  padding: 28px 28px; border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.stat:last-child { border-right: none; }
+.stat .num { font-family: 'Space Grotesk', sans-serif; font-size: 44px; font-weight: 500; letter-spacing: -0.04em; color: var(--ink); line-height: 1; }
+.stat .num em { color: var(--accent); font-style: normal; }
+.stat .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* Filter bar */
+.filter-bar {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+  padding: 20px 0; margin-top: 20px;
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 65px; z-index: 20;
+  background: color-mix(in oklab, var(--bg) 90%, transparent);
+  backdrop-filter: blur(14px);
+}
+.filter-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase;
+  margin-right: 8px;
+}
+.filter-chip {
+  padding: 8px 14px; font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; border: 1px solid var(--line-2); border-radius: 999px;
+  color: var(--ink-2); cursor: pointer; background: transparent;
+  transition: all .15s;
+}
+.filter-chip:hover { border-color: var(--ink-3); color: var(--ink); }
+.filter-chip.active { background: var(--accent); color: #0a0b0d; border-color: var(--accent); }
+.filter-count {
+  font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-3);
+  margin-left: 4px; opacity: .7;
+}
+.filter-chip.active .filter-count { color: #0a0b0d; opacity: .7; }
+.view-switch { margin-left: auto; display: flex; gap: 4px; border: 1px solid var(--line-2); border-radius: 999px; padding: 3px; }
+.view-btn {
+  padding: 5px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: transparent; color: var(--ink-3); border: none; border-radius: 999px;
+  cursor: pointer; transition: all .15s;
+}
+.view-btn.active { background: var(--panel-2); color: var(--ink); }
+
+/* Grid view */
+.projects-list {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+  margin: 40px 0;
+}
+
+.pj {
+  padding: 28px; position: relative;
+  display: flex; flex-direction: column; gap: 16px;
+  min-height: 320px;
+  transition: border-color .25s, transform .25s;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+.pj:hover { border-color: var(--line-2); transform: translateY(-2px); }
+.pj-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.pj-meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.pj-name { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-top: 6px; }
+.pj-blurb { font-size: 14px; color: var(--ink-3); }
+.pj-foot {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; margin-top: auto;
+}
+.pj-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.pj-tags span {
+  font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-2);
+  padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px;
+}
+.pj-outcome {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3);
+  padding: 12px 14px; border: 1px dashed var(--line-2); border-radius: 8px;
+  background: color-mix(in oklab, var(--bg-2) 60%, transparent);
+}
+.pj-outcome strong { color: var(--accent); font-weight: 500; }
+.pj-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Space Grotesk', sans-serif; font-size: 13px;
+  color: var(--ink-2); transition: all .2s;
+}
+.pj:hover .pj-cta { color: var(--accent); }
+.pj:hover .pj-cta svg { transform: translate(3px, -3px); }
+.pj-cta svg { transition: transform .25s; }
+
+/* Visualization slot — each project gets a distinct mini visual */
+.pj-viz {
+  height: 100px; border-radius: 8px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  position: relative; overflow: hidden;
+}
+.viz-chart { display: flex; align-items: flex-end; padding: 12px; gap: 4px; height: 100%; }
+.viz-chart span { flex: 1; background: color-mix(in oklab, var(--accent) 45%, var(--line)); border-radius: 1.5px; min-height: 5px; }
+.viz-chart span.hi { background: var(--accent); }
+
+.viz-browser { padding: 10px; height: 100%; display: flex; flex-direction: column; gap: 8px; }
+.viz-browser .tab-row { display: flex; gap: 4px; }
+.viz-browser .tab-row span { width: 6px; height: 6px; border-radius: 50%; background: var(--line-2); }
+.viz-browser .tab-row span:nth-child(1) { background: #ff6b6b; }
+.viz-browser .tab-row span:nth-child(2) { background: var(--warn); }
+.viz-browser .tab-row span:nth-child(3) { background: var(--accent); }
+.viz-browser .url { height: 4px; flex: 1; background: var(--line); border-radius: 2px; margin-left: 10px; }
+.viz-browser .blocks { display: flex; gap: 8px; flex: 1; }
+.viz-browser .blocks > div { background: var(--line); border-radius: 3px; }
+.viz-browser .blocks .b1 { flex: 1; }
+.viz-browser .blocks .b2 { flex: 2; }
+.viz-browser .hl { background: var(--accent) !important; opacity: .5; }
+
+.viz-dash { padding: 12px; height: 100%; display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+.viz-dash .tile { background: var(--line); border-radius: 3px; position: relative; }
+.viz-dash .tile.bright { background: color-mix(in oklab, var(--accent) 30%, var(--line)); }
+.viz-dash .col { display: flex; flex-direction: column; gap: 6px; }
+
+.viz-grid { padding: 12px; height: 100%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 6px; }
+.viz-grid div { background: var(--line); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-3); }
+.viz-grid div.active { background: color-mix(in oklab, var(--accent) 30%, var(--line)); color: var(--accent); }
+
+/* Hidden */
+.pj.hidden { display: none; }
+
+/* List view */
+.projects-list.list-view {
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+}
+.projects-list.list-view .pj {
+  min-height: 0; padding: 24px 28px; border-radius: 0;
+  border: none; border-bottom: 1px solid var(--line);
+  flex-direction: row; align-items: center; gap: 24px;
+  background: var(--panel); transform: none;
+}
+.projects-list.list-view .pj:last-child { border-bottom: none; }
+.projects-list.list-view .pj:hover { background: color-mix(in oklab, var(--panel) 70%, var(--bg-2)); transform: none; }
+.projects-list.list-view .pj-top { flex: 1; flex-direction: column; align-items: flex-start; gap: 4px; }
+.projects-list.list-view .pj-viz,
+.projects-list.list-view .pj-outcome { display: none; }
+.projects-list.list-view .pj-blurb { display: none; }
+.projects-list.list-view .pj-name { font-size: 20px; margin-top: 0; }
+.projects-list.list-view .pj-foot { flex-direction: row; margin: 0; }
+.projects-list.list-view .pj-tags { display: none; }
+
+/* Lab teaser at bottom */
+.bottom-cta {
+  padding: 64px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in oklab, var(--accent-2) 15%, transparent) 0, transparent 50%),
+    var(--panel);
+  display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center;
+}
+.bottom-cta h2 { font-size: clamp(32px, 4vw, 48px); line-height: 1.05; letter-spacing: -0.02em; font-weight: 500; margin-bottom: 14px; }
+.bottom-cta p { font-size: 15px; color: var(--ink-3); max-width: 440px; }
+.bottom-cta .side { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+@media (max-width: 980px) {
+  .stats-strip { grid-template-columns: 1fr 1fr; }
+  .stat:nth-child(2) { border-right: none; }
+  .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .projects-list { grid-template-columns: 1fr; }
+  .bottom-cta { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <circle cx="18" cy="18" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <circle cx="6" cy="6" r="1" fill="var(--accent)"/>
+        <circle cx="18" cy="18" r="1" fill="var(--accent)"/>
+        <path d="M8 8 L16 16" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+      Unc &amp; Neph
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html" class="active">Projects</a>
+      <a href="index.html#lab">Lab</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#journal">Journal</a>
+    </div>
+    <a href="index.html#contact" class="nav-cta">Start a Project →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow reveal">Projects — The Proof Page</div>
+      <h1 class="reveal">Projects, prototypes,<br/>and products <em>in motion.</em></h1>
+      <p class="lede reveal">Every entry here either ships, teaches, or earns its spot. Filter by what you care about. The stack's listed because it usually matters.</p>
+
+      <div class="stats-strip reveal">
+        <div class="stat"><div class="num"><em>11</em></div><div class="label">shipped to date</div></div>
+        <div class="stat"><div class="num">04</div><div class="label">active projects</div></div>
+        <div class="stat"><div class="num">03</div><div class="label">categories</div></div>
+        <div class="stat"><div class="num">14w</div><div class="label">lab uptime</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:24px; padding-bottom: 64px;">
+    <div class="wrap">
+      <div class="filter-bar">
+        <span class="filter-label">Filter</span>
+        <button class="filter-chip active" data-filter="all">All <span class="filter-count">07</span></button>
+        <button class="filter-chip" data-filter="ai">AI <span class="filter-count">02</span></button>
+        <button class="filter-chip" data-filter="site">Websites <span class="filter-count">02</span></button>
+        <button class="filter-chip" data-filter="tool">Tools <span class="filter-count">02</span></button>
+        <button class="filter-chip" data-filter="automation">Automation <span class="filter-count">01</span></button>
+        <div class="view-switch">
+          <button class="view-btn active" data-view="grid">Grid</button>
+          <button class="view-btn" data-view="list">List</button>
+        </div>
+      </div>
+
+      <div class="projects-list" id="projectsList">
+
+        <article class="pj reveal" data-cat="ai">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P01 · AI &amp; AUTOMATION</div>
+              <div class="pj-name">AI Workflow Forge</div>
+            </div>
+            <span class="pill progress">in progress</span>
+          </div>
+          <p class="pj-blurb">AI-assisted workflows, internal tools, and automation experiments for real-world ops — not demo-ware.</p>
+          <div class="pj-viz">
+            <div class="viz-dash">
+              <div class="tile bright"></div>
+              <div class="col"><div class="tile" style="flex:1"></div><div class="tile bright" style="flex:2"></div></div>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · Cut a 3-person ops loop from 45min → 8min per cycle. Now deployed across two teams.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>claude</span><span>rag</span><span>typescript</span><span>postgres</span></div>
+            <a href="#" class="pj-cta">Case study <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+        <article class="pj reveal" data-cat="site">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P02 · WEBSITES &amp; MVPs</div>
+              <div class="pj-name">Rapid Site Lab</div>
+            </div>
+            <span class="pill progress">in progress</span>
+          </div>
+          <p class="pj-blurb">Fast-launch websites and landing pages built to validate ideas and sharpen product execution.</p>
+          <div class="pj-viz">
+            <div class="viz-browser">
+              <div class="tab-row"><span></span><span></span><span></span><div class="url"></div></div>
+              <div class="blocks"><div class="b1"></div><div class="b2 hl"></div></div>
+              <div class="blocks"><div class="b2"></div><div class="b1"></div></div>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · Five client sites shipped in 14 weeks. Average concept-to-live: 6 days.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>next</span><span>tailwind</span><span>vercel</span><span>motion</span></div>
+            <a href="#" class="pj-cta">View work <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+        <article class="pj reveal" data-cat="tool">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P03 · INTERNAL TOOLS</div>
+              <div class="pj-name">Command Dash</div>
+            </div>
+            <span class="pill proto">prototype</span>
+          </div>
+          <p class="pj-blurb">Ops dashboard concept for status visibility, task routing, and automation triggers. Dogfooded weekly inside the lab.</p>
+          <div class="pj-viz">
+            <div class="viz-chart">
+              <span style="height:30%"></span><span style="height:55%" class="hi"></span>
+              <span style="height:42%"></span><span style="height:70%" class="hi"></span>
+              <span style="height:60%"></span><span style="height:88%" class="hi"></span>
+              <span style="height:50%"></span><span style="height:72%" class="hi"></span>
+              <span style="height:65%"></span><span style="height:92%" class="hi"></span>
+              <span style="height:48%"></span><span style="height:78%" class="hi"></span>
+              <span style="height:70%"></span><span style="height:95%" class="hi"></span>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · Routes tasks by current workload, not role. Internal use only, external beta Q3.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>react</span><span>supabase</span><span>webhooks</span></div>
+            <a href="#" class="pj-cta">Walkthrough <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+        <article class="pj reveal" data-cat="tool">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P04 · DIGITAL PRODUCTS</div>
+              <div class="pj-name">Micro Tool Foundry</div>
+            </div>
+            <span class="pill live">ongoing</span>
+          </div>
+          <p class="pj-blurb">Small useful apps, utilities, and experiments built from real pain points. One shipped every week or two.</p>
+          <div class="pj-viz">
+            <div class="viz-grid">
+              <div class="active">⌘K</div><div>⇧</div><div class="active">↵</div><div>⌥</div>
+              <div>⎋</div><div class="active">↓</div><div>/</div><div class="active">+</div>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · 11 tools shipped, 3 in active daily use by strangers. Tab-harvester is the hit.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>chrome-ext</span><span>cli</span><span>raycast</span><span>swift</span></div>
+            <a href="#" class="pj-cta">Browse tools <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+        <article class="pj reveal" data-cat="ai">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P05 · AI · EXPERIMENT</div>
+              <div class="pj-name">Context Keeper</div>
+            </div>
+            <span class="pill proto">testing</span>
+          </div>
+          <p class="pj-blurb">A quiet retrieval layer that keeps LLM chats tethered to your actual docs. No vendor lock, no "please upload" dance.</p>
+          <div class="pj-viz">
+            <div class="viz-chart">
+              <span style="height:20%"></span><span style="height:25%"></span>
+              <span style="height:35%"></span><span style="height:50%"></span>
+              <span style="height:62%"></span><span style="height:78%" class="hi"></span>
+              <span style="height:88%" class="hi"></span><span style="height:92%" class="hi"></span>
+              <span style="height:85%" class="hi"></span><span style="height:78%"></span>
+              <span style="height:90%" class="hi"></span><span style="height:95%" class="hi"></span>
+              <span style="height:88%" class="hi"></span><span style="height:96%" class="hi"></span>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · 3 private beta teams. Looking for 10 more to stress-test scale.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>embeddings</span><span>pgvector</span><span>api</span></div>
+            <a href="#" class="pj-cta">Join beta <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+        <article class="pj reveal" data-cat="automation">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P06 · AUTOMATION</div>
+              <div class="pj-name">Signal Pipes</div>
+            </div>
+            <span class="pill live">live</span>
+          </div>
+          <p class="pj-blurb">Pre-wired automation templates for solo founders — intake forms, CRM nudges, invoice chasers. The boring, profitable stuff.</p>
+          <div class="pj-viz">
+            <div class="viz-dash">
+              <div class="col"><div class="tile" style="flex:1"></div><div class="tile bright" style="flex:1"></div><div class="tile" style="flex:2"></div></div>
+              <div class="tile bright"></div>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · 17 solo ops running on starter templates. Average setup time: 22 min.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>n8n</span><span>zapier</span><span>make</span><span>slack</span></div>
+            <a href="#" class="pj-cta">Templates <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+        <article class="pj reveal" data-cat="site">
+          <div class="pj-top">
+            <div>
+              <div class="pj-meta">P07 · MVP</div>
+              <div class="pj-name">Shelf Notes</div>
+            </div>
+            <span class="pill idea">idea</span>
+          </div>
+          <p class="pj-blurb">A read-it-later that remembers why you saved the thing. Early sketch. Probably a weekend MVP before it earns more.</p>
+          <div class="pj-viz">
+            <div class="viz-browser">
+              <div class="tab-row"><span></span><span></span><span></span><div class="url"></div></div>
+              <div class="blocks"><div class="b1 hl"></div><div class="b2"></div></div>
+              <div class="blocks"><div class="b1"></div><div class="b1"></div><div class="b1"></div></div>
+            </div>
+          </div>
+          <div class="pj-outcome">
+            <strong>→ outcome</strong> · Hypothesis stage. Weekend build goes up in 2 weeks; we'll post the result either way.
+          </div>
+          <div class="pj-foot">
+            <div class="pj-tags"><span>svelte</span><span>sqlite</span><span>pwa</span></div>
+            <a href="#" class="pj-cta">Follow build <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.2"/></svg></a>
+          </div>
+        </article>
+
+      </div>
+
+      <div id="empty-state" style="display:none; text-align:center; padding: 80px 0; color: var(--ink-3); font-family:'JetBrains Mono', monospace; font-size: 13px;">
+        → no matches in this category yet. keep checking — we ship weekly.
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section>
+    <div class="wrap">
+      <div class="bottom-cta reveal">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px;">Work With Us</div>
+          <h2>See something you'd want for yourself?</h2>
+          <p>Most projects here started as something a client or team needed. If any of them feel adjacent to your problem, we probably already have a head start.</p>
+        </div>
+        <div class="side">
+          <a href="index.html#contact" class="btn btn-primary">Start a Conversation <span class="arrow">→</span></a>
+          <a href="about.html" class="btn btn-ghost">About the Lab</a>
+          <div class="mono" style="color:var(--ink-3); font-size: 11px; margin-top: 8px;">builds-in-public · receipts on request</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="nav-logo" style="margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <circle cx="18" cy="18" r="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <circle cx="6" cy="6" r="1" fill="var(--accent)"/>
+          <circle cx="18" cy="18" r="1" fill="var(--accent)"/>
+          <path d="M8 8 L16 16" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        Unc &amp; Neph
+      </div>
+      <p style="font-size:13px; color:var(--ink-3); max-width:320px;">A family-powered digital build lab. Websites, AI workflows, internal tools, and small, useful products.</p>
+    </div>
+    <div>
+      <h4>Site</h4>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="index.html#lab">Lab</a>
+    </div>
+    <div>
+      <h4>Work</h4>
+      <a href="index.html#services">Services</a>
+      <a href="#">Shop</a>
+      <a href="#">Journal</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <div>
+      <h4>Elsewhere</h4>
+      <a href="#">GitHub</a>
+      <a href="#">X / Twitter</a>
+      <a href="#">YouTube</a>
+      <a href="#">Newsletter</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Unc &amp; Neph Vibe Coding. Built in public.</div>
+    <div class="mono">v0.3.0 · shipped from the lab</div>
+  </div>
+</footer>
+
+<div id="tweaks-panel" class="tweaks"></div>
+<script src="assets/site.js"></script>
+<script>
+// Filter + view switching
+(function(){
+  const chips = document.querySelectorAll('.filter-chip');
+  const items = document.querySelectorAll('#projectsList .pj');
+  const empty = document.getElementById('empty-state');
+  const list = document.getElementById('projectsList');
+  const viewBtns = document.querySelectorAll('.view-btn');
+
+  chips.forEach(c => c.addEventListener('click', () => {
+    chips.forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    const f = c.dataset.filter;
+    let visible = 0;
+    items.forEach(el => {
+      const match = f === 'all' || el.dataset.cat === f;
+      el.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    empty.style.display = visible === 0 ? 'block' : 'none';
+  }));
+
+  viewBtns.forEach(b => b.addEventListener('click', () => {
+    viewBtns.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    list.classList.toggle('list-view', b.dataset.view === 'list');
+  }));
+})();
+</script>
+</body>
+</html>
