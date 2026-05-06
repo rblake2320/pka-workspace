@@ -16,3 +16,18 @@
 [submodule "VidIntel"]
 	path = VidIntel
 	url = https://github.com/rblake2320/vidintel.git
+[submodule "agentforge"]
+	path = agentforge
+	url = https://github.com/rblake2320/agentforge.git
+[submodule "claudego-standalone"]
+	path = claudego-standalone
+	url = https://github.com/rblake2320/claudego.git
+[submodule "testforge"]
+	path = testforge
+	url = https://github.com/rblake2320/testforge.git
+[submodule "ultra-computer"]
+	path = ultra-computer
+	url = https://github.com/rblake2320/ultra-computer.git
+[submodule "acq-copilot"]
+	path = acq-copilot
+	url = https://github.com/rblake2320/acq-copilot.git
