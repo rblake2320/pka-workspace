@@ -1,0 +1,54 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "arena-platform",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server/index.js"],
+      "port": 3000,
+      "cwd": "C:/Users/techai/arena-platform"
+    },
+    {
+      "name": "aaiaas-website",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "C:/Users/techai/aaiaas-website"
+    },
+    {
+      "name": "pay2knowme",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 8001,
+      "cwd": "C:/Users/techai/pay2knowme"
+    },
+    {
+      "name": "aihangout-app",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "dev"],
+      "port": 8787,
+      "cwd": "C:/Users/techai/aihangout-app"
+    },
+    {
+      "name": "pro-designs-system",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "C:/Users/techai/pro-designs-system"
+    },
+    {
+      "name": "tshirt-store",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "C:/Users/techai/tshirt-store"
+    },
+    {
+      "name": "travel-ai-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "C:/Users/techai/travel-ai-frontend"
+    }
+  ]
+}

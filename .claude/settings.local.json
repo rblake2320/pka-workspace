@@ -4,19 +4,6 @@
     "OWNER_INBOX": "Owner's Inbox",
     "TEAM_INBOX": "Team Inbox"
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash|Write|Edit|MultiEdit|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "C:/Python312/python.exe \"C:/Users/techai/PKA testing/scripts/pka_post_tool_hook.py\""
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Read",
@@ -47,11 +34,25 @@
       "mcp__memoryweb__search_memories",
       "mcp__memoryweb__get_memories_by_tag",
       "mcp__memoryweb__get_recent_memories",
-      "mcp__memoryweb__get_memory_stats"
+      "mcp__memoryweb__get_memory_stats",
+      "mcp__Claude_Preview__preview_start"
     ],
     "deny": [
       "Bash(rm:*)",
       "Bash(rmdir:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Python312/python.exe \"C:/Users/techai/PKA testing/scripts/pka_post_tool_hook.py\""
+          }
+        ]
+      }
     ]
   }
 }
