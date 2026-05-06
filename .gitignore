@@ -17,10 +17,12 @@ logs/
 
 # Temp and generated artifacts
 tmp_extract/
+__design_extract__/
 tmp_*.png
 tmp_*.py
 problems_*.png
 flowboard_test.png
+*.spec.ts
 
 # Playwright / browser state
 .playwright-mcp/

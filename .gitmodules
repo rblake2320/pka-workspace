@@ -31,3 +31,12 @@
 [submodule "acq-copilot"]
 	path = acq-copilot
 	url = https://github.com/rblake2320/acq-copilot.git
+[submodule "QuoteHub"]
+	path = QuoteHub
+	url = https://github.com/rblake2320/quotehub.git
+[submodule "FlowBoard"]
+	path = FlowBoard
+	url = https://github.com/rblake2320/flowboard.git
+[submodule "unc_neph_src"]
+	path = unc_neph_src
+	url = https://github.com/rblake2320/unc-neph-site.git
