@@ -43,3 +43,6 @@
 [submodule "selfconnect-enterprise"]
 	path = selfconnect-enterprise
 	url = https://github.com/rblake2320/selfconnect-enterprise.git
+[submodule "agent-wire"]
+	path = agent-wire
+	url = ./agent-wire
