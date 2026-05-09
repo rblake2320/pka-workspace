@@ -40,3 +40,6 @@
 [submodule "unc_neph_src"]
 	path = unc_neph_src
 	url = https://github.com/rblake2320/unc-neph-site.git
+[submodule "selfconnect-enterprise"]
+	path = selfconnect-enterprise
+	url = https://github.com/rblake2320/selfconnect-enterprise.git
