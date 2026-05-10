@@ -46,3 +46,6 @@
 [submodule "agent-wire"]
 	path = agent-wire
 	url = ./agent-wire
+[submodule "agent-trigger"]
+	path = agent-trigger
+	url = https://github.com/rblake2320/agent-trigger.git
