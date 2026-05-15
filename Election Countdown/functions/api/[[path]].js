@@ -4,6 +4,7 @@ const MIN_PUBLIC_BREAKDOWN = 50000;
 const MIN_SEGMENT_BREAKDOWN = 50;
 const MAX_JSON_BYTES = 32 * 1024;
 const MIN_PROD_SECRET_LENGTH = 32;
+const PASSWORD_HASH_ITERATIONS = 100000;
 const INTENTS = new Set(["red", "blue", "independent", "undecided"]);
 let schemaReady = false;
 const STATES = new Set([
@@ -681,7 +682,7 @@ async function hashPassword(password, salt) {
     ["deriveBits"]
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt: new TextEncoder().encode(salt), iterations: 120000, hash: "SHA-256" },
+    { name: "PBKDF2", salt: new TextEncoder().encode(salt), iterations: PASSWORD_HASH_ITERATIONS, hash: "SHA-256" },
     material,
     256
   );

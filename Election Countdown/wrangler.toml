@@ -5,4 +5,4 @@ compatibility_date = "2026-05-14"
 [[d1_databases]]
 binding = "DB"
 database_name = "election-countdown"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "47185562-ab95-41e9-a184-418ec3b0c1d0"
