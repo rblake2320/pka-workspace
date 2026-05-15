@@ -9,6 +9,10 @@
 - **Session outcome**: Cloudflare Pages + D1 launch baseline delivered
 
 ## What Was Accomplished
+- Codex/FORGE: Election Countdown live production deploy + QA | Result: GO public countdown/data-capture launch; HOLD real identity verification provider | Output: `Owner's Inbox/Election-Countdown-live-production-QA-2026-05-15.md`
+- Live URL `https://election-countdown-38g.pages.dev` is deployed on Cloudflare Pages with D1 database `47185562-ab95-41e9-a184-418ec3b0c1d0`; `/api/health` returns `ok:true` with database/admin secret/IP hash secret/production mode green.
+- Fixed Cloudflare PBKDF2 production failure by reducing password hash iterations to the Worker-supported 100000 limit, then fixed `/api/account` to include current intent and history aliases.
+- Live QA passed for synthetic registration, auth session, vote intent save/update, change history, profile/account API, verification fail-closed behavior, batch/share tracking, stats, unauthenticated admin rejection, and account deletion. Synthetic QA accounts were removed and production stats returned to 0.
 - Codex/FORGE: Election Countdown authenticated E2E Round 2 follow-up | Result: GO local patch / HOLD verification feature until provider wiring | Output: `Election Countdown/functions/api/[[path]].js`, `Election Countdown/index.html`
 - Fixed critical verification bug: `/api/verify/*` now returns 503 with `verification_provider_not_configured` instead of fake 200 success; `/api/verify/status` reports `providerConfigured:false`; Verify Identity is hidden in the UI until real provider wiring exists.
 - Added `/api/account` and `/api/intent/history`; profile page now receives an account/details/history panel via launch shim.
@@ -59,7 +63,7 @@
 - LEGAL: PKA audit trail patent provisional filing | Route: AXIOM -> LEGAL | Result: GO (conditional) | Output: `Owner's Inbox/LEGAL-pka-audit-trail-patent-assessment.md`
 
 ## What Is Pending
-- Election Countdown: create production Cloudflare D1 database, replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml`, apply `schema.sql` remotely, set `ADMIN_SECRET`, deploy Pages, verify live analytics/export, and set absolute OG image URL after domain is known.
+- Election Countdown: wire real email/SMS verification provider before claiming verified identity; test admin analytics/export with `ADMIN_SECRET`; set absolute OG image URL if a custom domain replaces the Pages URL.
 - Route or implement DataShield production hardening if Ron wants fixes, starting with fresh Docker migration application and tenant-bound auth.
 - Route or implement SelfConnect Enterprise production hardening if Ron wants fixes, starting with profile enforcement.
 - Replace/fix the cloud API key before cloud LLM execution.

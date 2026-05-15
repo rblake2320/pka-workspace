@@ -235,14 +235,58 @@
           });
         }
 
-        function hideUnavailableVerification() {
-          Array.from(document.querySelectorAll("button, [role='menuitem'], div, span")).forEach(function(element) {
-            if (labelOf(element) === "Verify Identity") {
-              var row = element.closest("[role='menuitem']") || element.closest("button") || element;
-              row.style.display = "none";
-              row.setAttribute("aria-hidden", "true");
+        function showVerificationUnavailableNotice() {
+          if (document.querySelector("[data-launch-verification-notice]")) return;
+          closeTopDialog();
+          var backdrop = document.createElement("div");
+          backdrop.dataset.launchVerificationNotice = "1";
+          backdrop.setAttribute("role", "dialog");
+          backdrop.setAttribute("aria-modal", "true");
+          backdrop.setAttribute("aria-label", "Verification status");
+          backdrop.style.cssText = "position:fixed;inset:0;z-index:120;background:rgba(15,23,42,.42);display:grid;place-items:center;padding:20px;";
+          backdrop.innerHTML = [
+            "<section style='width:min(440px,100%);border-radius:8px;background:#fff;padding:22px;box-shadow:0 24px 70px rgba(15,23,42,.28);font-family:Inter,system-ui,sans-serif;color:#0f172a'>",
+            "<div style='display:flex;align-items:start;justify-content:space-between;gap:14px'><div><h2 style='margin:0;font-size:20px;line-height:1.2;font-weight:800'>Verification coming soon</h2><p style='margin:8px 0 0;color:#475569;font-size:14px;line-height:1.45'>Email and phone verification are not enabled yet. Your account and vote-plan data still save normally.</p></div><button type='button' aria-label='Close' data-launch-close-verification style='border:0;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:#334155'>&times;</button></div>",
+            "<button type='button' data-launch-close-verification style='margin-top:18px;width:100%;border:0;border-radius:8px;background:#1d4ed8;color:#fff;padding:10px 14px;font-weight:800;cursor:pointer'>Got it</button>",
+            "</section>"
+          ].join("");
+          backdrop.addEventListener("click", function(event) {
+            if (event.target === backdrop || event.target.closest("[data-launch-close-verification]")) {
+              backdrop.remove();
+              hardResetDriftSoon();
             }
           });
+          document.body.appendChild(backdrop);
+          if (nativeFetch) nativeFetch("/api/verify/status", { credentials: "include" }).catch(function() {});
+        }
+
+        function exposeVerificationNotice() {
+          Array.from(document.querySelectorAll("button, [role='menuitem']")).forEach(function(element) {
+            if (labelOf(element) === "Verify Identity" && element.dataset.launchVerifyNotice !== "1") {
+              element.dataset.launchVerifyNotice = "1";
+              element.style.display = "";
+              element.removeAttribute("aria-hidden");
+            }
+          });
+        }
+
+        function showRegisteredConfirmation() {
+          var candidates = Array.from(document.querySelectorAll("section, article, div")).filter(function(element) {
+            var text = element.innerText || "";
+            return text.indexOf("Are You Registered to Vote?") !== -1 && text.indexOf("I'm already registered") !== -1;
+          });
+          var card = candidates.reduce(function(best, element) {
+            if (!best) return element;
+            return (element.innerText || "").length < (best.innerText || "").length ? element : best;
+          }, null);
+          if (!card) return;
+          card.innerHTML = [
+            "<div style='display:grid;gap:10px;text-align:center'>",
+            "<h2 style='margin:0;color:#0f172a;font:800 20px/1.2 Inter,system-ui,sans-serif'>You're all set!</h2>",
+            "<p style='margin:0;color:#475569;font:14px/1.45 Inter,system-ui,sans-serif'>Your registration status is saved on this device.</p>",
+            "<button type='button' data-launch-reset-registration='1' style='justify-self:center;margin-top:4px;color:#1d4ed8;background:transparent;border:0;padding:0;font:700 13px Inter,system-ui,sans-serif;text-decoration:underline;cursor:pointer'>Update registration status</button>",
+            "</div>"
+          ].join("");
         }
 
         function ensureRequiredVotingHints() {
@@ -289,7 +333,7 @@
               "<dl style='display:grid;grid-template-columns:130px 1fr;gap:8px 12px;margin:0;font:14px Inter,system-ui,sans-serif'><dt style='color:#64748b'>Name</dt><dd style='margin:0'>" + [user.firstName, user.lastName].filter(Boolean).join(" ") + "</dd><dt style='color:#64748b'>Email</dt><dd style='margin:0'>" + user.email + "</dd><dt style='color:#64748b'>EC-ID</dt><dd style='margin:0;font-family:monospace'>" + user.ecId + "</dd><dt style='color:#64748b'>Joined</dt><dd style='margin:0'>" + formatDate(user.createdAt) + "</dd><dt style='color:#64748b'>Trust score</dt><dd style='margin:0'>" + (verification.trustScore || 0) + "</dd></dl>",
               "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Current Vote Intent</h3><p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>" + (intent ? [intent.intent, intent.state, intent.city].filter(Boolean).join(" / ") : "No vote intent submitted yet.") + "</p></div>",
               "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Recent Intent History</h3>" + (history.length ? "<ul style='margin:0;padding-left:18px;color:#475569;font:14px Inter,system-ui,sans-serif'>" + history.map(function(item) { return "<li>" + formatDate(item.changedAt) + ": " + (item.previousIntent || "none") + " -> " + item.newIntent + " (" + (item.previousState || "none") + " -> " + item.newState + ")</li>"; }).join("") + "</ul>" : "<p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>No change history yet.</p>") + "</div>",
-              "<p style='margin:0;color:#64748b;font:12px Inter,system-ui,sans-serif'>Account deletion is available through the authenticated API endpoint <code>DELETE /api/account</code>.</p>"
+              "<div style='display:flex;gap:10px;flex-wrap:wrap'><button type='button' data-launch-profile-share style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button><button type='button' data-launch-profile-logout style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button></div>"
             ].join("");
             main.appendChild(panel);
           });
@@ -308,7 +352,33 @@
           if (label === "Verify Identity") {
             event.preventDefault();
             event.stopPropagation();
-            closeTopDialog();
+            showVerificationUnavailableNotice();
+            return;
+          }
+          if (target && target.dataset && target.dataset.launchProfileShare === "1") {
+            event.preventDefault();
+            if (navigator.share) {
+              navigator.share({ title: "Election Countdown", url: location.origin }).catch(function() {});
+            } else if (navigator.clipboard) {
+              navigator.clipboard.writeText(location.origin).then(function() { showCopyFeedback(target); }).catch(function() {});
+            }
+            return;
+          }
+          if (target && target.dataset && target.dataset.launchProfileLogout === "1") {
+            event.preventDefault();
+            if (nativeFetch) {
+              nativeFetch("/api/logout", { method: "POST", credentials: "include" }).finally(function() {
+                location.href = "/";
+              });
+            } else {
+              location.href = "/";
+            }
+            return;
+          }
+          if (target && target.dataset && target.dataset.launchResetRegistration === "1") {
+            event.preventDefault();
+            try { localStorage.removeItem("ec_voter_registered"); } catch (error) {}
+            location.reload();
             return;
           }
           if (label === "Close" || label.indexOf("Sign In") !== -1 || label.indexOf("Share") !== -1 || label.indexOf("Log out") !== -1 || label.indexOf("Verify") !== -1) {
@@ -316,6 +386,9 @@
           }
           if (label === "Copy Link") {
             setTimeout(function() { showCopyFeedback(target); }, 50);
+          }
+          if (label.indexOf("already registered") !== -1) {
+            setTimeout(showRegisteredConfirmation, 80);
           }
         }, true);
 
@@ -326,7 +399,7 @@
             ensureRegisteredUndo();
             ensureRequiredVotingHints();
             ensureProfileDetails();
-            hideUnavailableVerification();
+            exposeVerificationNotice();
             document.querySelectorAll('input[type="email"]').forEach(hardenAuthEmail);
             document.querySelectorAll('input[type="tel"]').forEach(hardenPhoneInput);
           });

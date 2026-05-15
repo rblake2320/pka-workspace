@@ -33,15 +33,16 @@ export async function onRequest(context) {
     }
 
     if (path === "/health" && request.method === "GET") return health(request, env);
-    if (path === "/auth/user" && request.method === "GET") return json(user);
+    if ((path === "/auth/user" || path === "/auth/me" || path === "/auth/session" || path === "/me") && request.method === "GET") return json(user);
     if (path === "/auth/register" && request.method === "POST") return register(request, env);
-    if (path === "/login" && request.method === "POST") return login(request, env);
-    if (path === "/logout" && request.method === "POST") return logout(request, env);
+    if ((path === "/login" || path === "/auth/login") && request.method === "POST") return login(request, env);
+    if ((path === "/logout" || path === "/auth/logout" || path === "/auth/signout") && request.method === "POST") return logout(request, env);
     if (path === "/account" && request.method === "GET") return account(user, env);
     if (path === "/account" && request.method === "DELETE") return deleteAccount(user, env);
     if (path === "/intent" && request.method === "GET") return getIntent(user, env);
     if (path === "/intent" && request.method === "POST") return saveIntent(request, user, env);
     if (path === "/intent/history" && request.method === "GET") return intentHistory(user, env);
+    if (path === "/intent/aggregate" && request.method === "GET") return stats(env);
     if (path === "/stats" && request.method === "GET") return stats(env);
     if (path === "/donations" && request.method === "GET") return donations(user, env);
     if (path === "/donor/analytics" && request.method === "GET") return donorAnalytics(user, env);
