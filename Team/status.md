@@ -21,7 +21,7 @@
 |------|------------|--------|-------|
 | SelfConnect Enterprise v1.2.1 residual hardening | FORGE/SENTINEL | Pending | Push ruff fixes; require exact CNG identity; bind observer verifier to ledger path; fix CI extras |
 | DataShield production hardening | FORGE/SENTINEL | Pending | Fix fresh Docker migrations, tenant-bound auth, prod secret gates, billing auth, pip-audit CI, CLI API-key support, webhook hardening |
-| Election Countdown production deploy | Codex/FORGE | Complete | Live at `https://election-countdown-38g.pages.dev`; `/api/health` green; registration/auth/intent/history/account/tracking/delete live QA passed; admin export still needs ADMIN_SECRET test |
+| Election Countdown production deploy | Codex/FORGE | Complete | Live at `https://election-countdown-38g.pages.dev`; `/api/health` green; registration/auth/intent/history/account/tracking/delete live QA passed; auth aliases and CSRF checks verified; admin export still needs ADMIN_SECRET test |
 | Election Countdown real verification provider | FORGE | Pending | Wire email/SMS provider before exposing Verify Identity; current endpoints intentionally fail closed with 503 |
 
 ## Session-Start Checklist

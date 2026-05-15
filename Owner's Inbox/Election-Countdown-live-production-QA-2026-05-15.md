@@ -36,6 +36,11 @@ HOLD only for real identity verification claims until an email/SMS provider is w
 - Replaced developer-facing profile deletion API copy with user-facing Share and Log out controls in the profile details panel.
 - Changed Verify Identity from hidden/dead UI to a friendly "Verification coming soon" notice backed by `/api/verify/status`.
 - Added a reactive client-side confirmation for the "I'm already registered" action.
+- Added same-origin CSRF protection for session/account/intent state changes: vote-intent POST, logout aliases, and account deletion now reject foreign `Origin`/`Referer`.
+- Added a persistent logged-in homepage action panel so registration status and vote-plan actions stay visible even when an intent already exists.
+- Standardized injected profile intent display to user-facing labels such as `Republican` instead of raw values such as `red`.
+- Rewrote injected profile history entries into prose.
+- Added Home, Share, and Log out actions to the profile header area.
 
 ## Follow-Up Production Checks Passed
 - `/api/auth/login`: 200 with synthetic account.
@@ -46,13 +51,17 @@ HOLD only for real identity verification claims until an email/SMS provider is w
 - `/admin`: 302 to `/#/admin`.
 - `/profile`: 302 to `/#/profile`.
 - Synthetic alias QA account was deleted after the test.
+- Bad credentials on `/api/auth/login` return 401 with generic `Invalid email or password`.
+- Foreign-origin `/api/intent`, `/api/auth/logout`, and `/api/account` state changes return 403.
+- Same-origin `/api/intent`, `/api/auth/logout`, and `/api/account` state changes succeed.
 
 ## Not Fully Verified
 - Admin analytics/export with the real `ADMIN_SECRET` was not tested because the secret was not available in the workspace.
 - In-app browser automation was blocked by a local Node REPL startup issue; the live URL was opened in the system browser and public pages were smoke-checked by HTTP.
-- A stats total of 1 was observed during follow-up checks. The endpoint counts rows in `vote_intents`; no synthetic QA intent remains from Codex cleanup. This may be a real tester row unless admin export proves otherwise.
+- A stats total of 1 remains after Codex cleanup. Direct D1 inspection showed it belongs to `rblake2320@me.com` with intent `red`, state `AL`, city `Montgomery`.
 
 ## Cleanup
 - Removed synthetic QA account `codex-live-qa-1778829676@example.com`.
 - Removed leftover synthetic QA account `codex-live-qa-1778829505@example.com`.
-- Production stats total after cleanup: 0.
+- Removed leftover synthetic CSRF QA accounts, including `codex-final-qa-1778831348@example.com` and `codex-csrf-qa-1778831259@example.com`.
+- Production stats total after Codex cleanup: 1, belonging to Ron's account.
