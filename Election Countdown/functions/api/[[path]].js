@@ -36,11 +36,11 @@ export async function onRequest(context) {
     if ((path === "/auth/user" || path === "/auth/me" || path === "/auth/session" || path === "/me") && request.method === "GET") return json(user);
     if (path === "/auth/register" && request.method === "POST") return register(request, env);
     if ((path === "/login" || path === "/auth/login") && request.method === "POST") return login(request, env);
-    if ((path === "/logout" || path === "/auth/logout" || path === "/auth/signout") && request.method === "POST") return logout(request, env);
+    if ((path === "/logout" || path === "/auth/logout" || path === "/auth/signout") && request.method === "POST") return csrfProtected(request, () => logout(request, env));
     if (path === "/account" && request.method === "GET") return account(user, env);
-    if (path === "/account" && request.method === "DELETE") return deleteAccount(user, env);
+    if (path === "/account" && request.method === "DELETE") return csrfProtected(request, () => deleteAccount(user, env));
     if (path === "/intent" && request.method === "GET") return getIntent(user, env);
-    if (path === "/intent" && request.method === "POST") return saveIntent(request, user, env);
+    if (path === "/intent" && request.method === "POST") return csrfProtected(request, () => saveIntent(request, user, env));
     if (path === "/intent/history" && request.method === "GET") return intentHistory(user, env);
     if (path === "/intent/aggregate" && request.method === "GET") return stats(env);
     if (path === "/stats" && request.method === "GET") return stats(env);
@@ -55,6 +55,27 @@ export async function onRequest(context) {
     return json({ message: "Not found" }, 404);
   } catch (error) {
     return json({ message: "Server error" }, 500);
+  }
+}
+
+function csrfProtected(request, action) {
+  if (!isTrustedStateChange(request)) {
+    return json({ message: "Same-origin request required" }, 403);
+  }
+  return action();
+}
+
+function isTrustedStateChange(request) {
+  const url = new URL(request.url);
+  const origin = request.headers.get("origin");
+  if (origin) return origin === url.origin;
+
+  const referer = request.headers.get("referer");
+  if (!referer) return false;
+  try {
+    return new URL(referer).origin === url.origin;
+  } catch {
+    return false;
   }
 }
 

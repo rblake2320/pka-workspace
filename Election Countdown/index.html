@@ -310,6 +310,88 @@
           try { return new Date(value).toLocaleString(); } catch (error) { return value; }
         }
 
+        function intentLabel(value) {
+          var labels = {
+            red: "Republican",
+            blue: "Democrat",
+            independent: "Independent",
+            undecided: "Undecided"
+          };
+          return labels[value] || value || "Not submitted";
+        }
+
+        function stateName(value) {
+          var states = {
+            AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
+            CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho",
+            IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky", LA: "Louisiana",
+            ME: "Maine", MD: "Maryland", MA: "Massachusetts", MI: "Michigan", MN: "Minnesota",
+            MS: "Mississippi", MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada",
+            NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico", NY: "New York",
+            NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon",
+            PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota",
+            TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia",
+            WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming", DC: "Washington, DC"
+          };
+          return states[value] || value || "";
+        }
+
+        function formatIntentSummary(intent) {
+          if (!intent) return "No vote intent submitted yet.";
+          return [intentLabel(intent.intent), stateName(intent.state), intent.city].filter(Boolean).join(" / ");
+        }
+
+        function formatHistoryItem(item) {
+          var when = formatDate(item.changedAt);
+          var next = intentLabel(item.newIntent);
+          var nextState = stateName(item.newState);
+          if (!item.previousIntent) {
+            return when + " - Set to " + next + (nextState ? " in " + nextState : "");
+          }
+          return when + " - Changed from " + intentLabel(item.previousIntent) + (item.previousState ? " (" + stateName(item.previousState) + ")" : "") + " to " + next + (nextState ? " (" + nextState + ")" : "");
+        }
+
+        function ensureProfileHeaderActions() {
+          if (location.hash !== "#/profile" || document.querySelector("[data-launch-profile-header-actions]")) return;
+          var headerInner = document.querySelector("header > div") || document.querySelector("header");
+          if (!headerInner) return;
+          var actions = document.createElement("nav");
+          actions.dataset.launchProfileHeaderActions = "1";
+          actions.style.cssText = "margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
+          actions.innerHTML = [
+            "<a href='/' style='border:1px solid rgba(15,23,42,.16);border-radius:8px;background:#fff;color:#0f172a;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;text-decoration:none'>Home</a>",
+            "<button type='button' data-launch-profile-share style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button>",
+            "<button type='button' data-launch-profile-logout style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button>"
+          ].join("");
+          headerInner.appendChild(actions);
+        }
+
+        function ensureHomeActionPanel() {
+          if (location.hash && location.hash !== "#/" || document.querySelector("[data-launch-home-actions]")) return;
+          var main = document.querySelector("main");
+          if (!main || (document.body.innerText || "").indexOf("Election Countdown") === -1) return;
+          Promise.all([
+            nativeFetch ? nativeFetch("/api/auth/user", { credentials: "include" }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }) : Promise.resolve(null),
+            nativeFetch ? nativeFetch("/api/intent", { credentials: "include" }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }) : Promise.resolve(null)
+          ]).then(function(results) {
+            if (document.querySelector("[data-launch-home-actions]")) return;
+            var user = results[0];
+            var intent = results[1];
+            if (!user) return;
+            var panel = document.createElement("section");
+            panel.dataset.launchHomeActions = "1";
+            panel.style.cssText = "width:min(760px,calc(100% - 32px));margin:22px auto 0;border:1px solid rgba(15,23,42,.14);border-radius:8px;background:rgba(255,255,255,.94);padding:18px;display:grid;gap:14px;font-family:Inter,system-ui,sans-serif;color:#0f172a;";
+            panel.innerHTML = [
+              "<div style='display:grid;gap:6px'><h2 style='margin:0;font-size:18px;line-height:1.25;font-weight:800'>Voter Actions</h2><p style='margin:0;color:#475569;font-size:14px'>Keep your registration status and vote plan up to date.</p></div>",
+              "<div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px'>",
+              "<article style='border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:14px;background:#fff'><h3 style='margin:0 0 6px;font-size:15px;font-weight:800'>Registration Status</h3><p style='margin:0 0 10px;color:#475569;font-size:13px'>" + (localStorage.getItem("ec_voter_registered") === "true" ? "You're marked as registered on this device." : "Confirm or update your registration status.") + "</p><button type='button' data-launch-home-registration style='border:0;border-radius:8px;background:#1d4ed8;color:#fff;padding:9px 12px;font-weight:800;cursor:pointer'>" + (localStorage.getItem("ec_voter_registered") === "true" ? "Update Registration Status" : "I'm already registered") + "</button></article>",
+              "<article style='border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:14px;background:#fff'><h3 style='margin:0 0 6px;font-size:15px;font-weight:800'>Vote Plan</h3><p style='margin:0 0 10px;color:#475569;font-size:13px'>" + (intent ? "Current plan: " + formatIntentSummary(intent) : "No vote plan submitted yet.") + "</p><a href='/#/profile' style='display:inline-block;border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:9px 12px;font-weight:800;text-decoration:none'>" + (intent ? "Update Vote Plan" : "Share Your Vote Plan") + "</a></article>",
+              "</div>"
+            ].join("");
+            main.appendChild(panel);
+          });
+        }
+
         function ensureProfileDetails() {
           if (location.hash !== "#/profile" || document.querySelector("[data-launch-profile-details]")) return;
           var main = document.querySelector("main");
@@ -320,7 +402,7 @@
           ]).then(function(results) {
             if (document.querySelector("[data-launch-profile-details]")) return;
             var account = results[0];
-            var intent = results[1];
+            var intent = results[1] || account && account.intent;
             if (!account || !account.user) return;
             var user = account.user;
             var verification = account.verification || {};
@@ -331,8 +413,8 @@
             panel.innerHTML = [
               "<div style='display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap'><h2 style='font:700 18px Inter,system-ui,sans-serif;margin:0;color:#0f172a'>Account Details</h2><span style='font:700 12px Inter,system-ui,sans-serif;color:" + (verification.isFullyVerified ? "#15803d" : "#b45309") + "'>" + (verification.isFullyVerified ? "Verified" : "Unverified") + "</span></div>",
               "<dl style='display:grid;grid-template-columns:130px 1fr;gap:8px 12px;margin:0;font:14px Inter,system-ui,sans-serif'><dt style='color:#64748b'>Name</dt><dd style='margin:0'>" + [user.firstName, user.lastName].filter(Boolean).join(" ") + "</dd><dt style='color:#64748b'>Email</dt><dd style='margin:0'>" + user.email + "</dd><dt style='color:#64748b'>EC-ID</dt><dd style='margin:0;font-family:monospace'>" + user.ecId + "</dd><dt style='color:#64748b'>Joined</dt><dd style='margin:0'>" + formatDate(user.createdAt) + "</dd><dt style='color:#64748b'>Trust score</dt><dd style='margin:0'>" + (verification.trustScore || 0) + "</dd></dl>",
-              "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Current Vote Intent</h3><p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>" + (intent ? [intent.intent, intent.state, intent.city].filter(Boolean).join(" / ") : "No vote intent submitted yet.") + "</p></div>",
-              "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Recent Intent History</h3>" + (history.length ? "<ul style='margin:0;padding-left:18px;color:#475569;font:14px Inter,system-ui,sans-serif'>" + history.map(function(item) { return "<li>" + formatDate(item.changedAt) + ": " + (item.previousIntent || "none") + " -> " + item.newIntent + " (" + (item.previousState || "none") + " -> " + item.newState + ")</li>"; }).join("") + "</ul>" : "<p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>No change history yet.</p>") + "</div>",
+              "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Current Vote Intent</h3><p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>" + formatIntentSummary(intent) + "</p></div>",
+              "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Recent Intent History</h3>" + (history.length ? "<ul style='margin:0;padding-left:18px;color:#475569;font:14px Inter,system-ui,sans-serif'>" + history.map(function(item) { return "<li>" + formatHistoryItem(item) + "</li>"; }).join("") + "</ul>" : "<p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>No change history yet.</p>") + "</div>",
               "<div style='display:flex;gap:10px;flex-wrap:wrap'><button type='button' data-launch-profile-share style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button><button type='button' data-launch-profile-logout style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button></div>"
             ].join("");
             main.appendChild(panel);
@@ -381,6 +463,21 @@
             location.reload();
             return;
           }
+          if (target && target.dataset && target.dataset.launchHomeRegistration === "1") {
+            event.preventDefault();
+            var alreadyRegistered = false;
+            try { alreadyRegistered = localStorage.getItem("ec_voter_registered") === "true"; } catch (error) {}
+            if (alreadyRegistered) {
+              try { localStorage.removeItem("ec_voter_registered"); } catch (error) {}
+              target.textContent = "I'm already registered";
+            } else {
+              try { localStorage.setItem("ec_voter_registered", "true"); } catch (error) {}
+              target.textContent = "Update Registration Status";
+            }
+            var text = target.parentElement && target.parentElement.querySelector("p");
+            if (text) text.textContent = alreadyRegistered ? "Confirm or update your registration status." : "You're marked as registered on this device.";
+            return;
+          }
           if (label === "Close" || label.indexOf("Sign In") !== -1 || label.indexOf("Share") !== -1 || label.indexOf("Log out") !== -1 || label.indexOf("Verify") !== -1) {
             hardResetDriftSoon();
           }
@@ -398,6 +495,8 @@
             hardResetDriftSoon();
             ensureRegisteredUndo();
             ensureRequiredVotingHints();
+            ensureHomeActionPanel();
+            ensureProfileHeaderActions();
             ensureProfileDetails();
             exposeVerificationNotice();
             document.querySelectorAll('input[type="email"]').forEach(hardenAuthEmail);
@@ -407,6 +506,8 @@
         });
         window.addEventListener("hashchange", function() {
           hardResetDriftSoon();
+          setTimeout(ensureHomeActionPanel, 100);
+          setTimeout(ensureProfileHeaderActions, 100);
           setTimeout(ensureProfileDetails, 100);
         });
         setInterval(function() {
