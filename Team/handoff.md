@@ -9,6 +9,11 @@
 - **Session outcome**: Cloudflare Pages + D1 launch baseline delivered
 
 ## What Was Accomplished
+- Codex/FORGE: Election Countdown authenticated E2E Round 2 follow-up | Result: GO local patch / HOLD verification feature until provider wiring | Output: `Election Countdown/functions/api/[[path]].js`, `Election Countdown/index.html`
+- Fixed critical verification bug: `/api/verify/*` now returns 503 with `verification_provider_not_configured` instead of fake 200 success; `/api/verify/status` reports `providerConfigured:false`; Verify Identity is hidden in the UI until real provider wiring exists.
+- Added `/api/account` and `/api/intent/history`; profile page now receives an account/details/history panel via launch shim.
+- Added required-field helper text to vote-plan dialog, phone input normalization, broader modal/logout scroll reset, and queued/batched tracking via `/api/track/batch`.
+- Authenticated local regression passed for menu visibility, profile details, vote-plan hint, modal/logout scroll reset, logout state, API verification 503, account/history, intent change history, and batch tracking. Playwright still records navigation-aborted tracking requests under forced route changes, but Wrangler logs show successful 200s and request volume is materially reduced.
 - Codex/FORGE: Election Countdown E2E report follow-up | Result: GO local patch | Output: `Election Countdown/index.html`, `Election Countdown/assets/index-DMSdeDRP.js`, `Election Countdown/privacy.html`
 - Fixed/tested report items: modal close no longer leaves horizontal scroll drift; Escape closes the Share dialog; Show quote restores a quote; Copy Link shows feedback; dark theme storage is removed; direct `/admin` redirects into the SPA admin route; Privacy/Terms links are canonical; first visible election content appears from a static fallback in under 500 ms locally; registration status can be reset from the confirmed panel.
 - Removed the remaining `ec_vote_intent` localStorage fallback in the compiled bundle.

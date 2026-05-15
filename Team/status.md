@@ -10,7 +10,7 @@
 ## Last Session Summary
 - **Date**: 2026-05-15
 - **Workspace version**: 0.9.0 (PKA Gap-Fill upgrade completed this session)
-- **Tasks completed**: Election Countdown launch hardening: Cloudflare Pages Functions backend, D1 schema, behavior capture, vote intent history, admin analytics/export, launch docs, Replit/prototype fallback removal, and E2E report follow-up fixes; PKA Gap-Fill v0.9.0; complete reviews of SelfConnect Enterprise and DataShield
+- **Tasks completed**: Election Countdown launch hardening: Cloudflare Pages Functions backend, D1 schema, behavior capture, vote intent history, admin analytics/export, launch docs, Replit/prototype fallback removal, E2E report follow-up fixes, and authenticated Round 2 fixes; PKA Gap-Fill v0.9.0; complete reviews of SelfConnect Enterprise and DataShield
 - **Deliverables to Owner's Inbox**: `Election-Countdown-data-capture-hardening-2026-05-15.md`; `gap-fill-verification-2026-05-14.md`; `SENTINEL-selfconnect-enterprise-review-2026-05-14.md`; `SENTINEL-selfconnect-enterprise-v121-followup-2026-05-14.md`; `SENTINEL-datashield-github-review-2026-05-14.md`
 - **New this session**: WRAITH (14th agent) is now active on all Build mode tasks. Build route is now FORGE → CRUCIBLE → WRAITH → SENTINEL. A SENTINEL GO on a Build without WRAITH review is invalid.
 - **Pending/blocked**: SelfConnect production classified deployment should wait on remaining v1.2.1 issues; DataShield production/customer PII should wait on migration deployment, tenant isolation, secret validation, billing auth, CI enforcement, CLI auth support, and webhook hardening
@@ -22,6 +22,7 @@
 | SelfConnect Enterprise v1.2.1 residual hardening | FORGE/SENTINEL | Pending | Push ruff fixes; require exact CNG identity; bind observer verifier to ledger path; fix CI extras |
 | DataShield production hardening | FORGE/SENTINEL | Pending | Fix fresh Docker migrations, tenant-bound auth, prod secret gates, billing auth, pip-audit CI, CLI API-key support, webhook hardening |
 | Election Countdown production deploy | FORGE/SENTINEL | Pending | Create Cloudflare D1 DB, replace `wrangler.toml` database_id, set `ADMIN_SECRET` and `IP_HASH_SECRET`, deploy Pages, verify `/api/health` is ok, then verify live capture/export |
+| Election Countdown real verification provider | FORGE | Pending | Wire email/SMS provider before exposing Verify Identity; current endpoints intentionally fail closed with 503 |
 
 ## Session-Start Checklist
 - [ ] `Team Inbox/` reviewed

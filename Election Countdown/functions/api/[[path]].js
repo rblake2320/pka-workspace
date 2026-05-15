@@ -36,9 +36,11 @@ export async function onRequest(context) {
     if (path === "/auth/register" && request.method === "POST") return register(request, env);
     if (path === "/login" && request.method === "POST") return login(request, env);
     if (path === "/logout" && request.method === "POST") return logout(request, env);
+    if (path === "/account" && request.method === "GET") return account(user, env);
     if (path === "/account" && request.method === "DELETE") return deleteAccount(user, env);
     if (path === "/intent" && request.method === "GET") return getIntent(user, env);
     if (path === "/intent" && request.method === "POST") return saveIntent(request, user, env);
+    if (path === "/intent/history" && request.method === "GET") return intentHistory(user, env);
     if (path === "/stats" && request.method === "GET") return stats(env);
     if (path === "/donations" && request.method === "GET") return donations(user, env);
     if (path === "/donor/analytics" && request.method === "GET") return donorAnalytics(user, env);
@@ -237,10 +239,36 @@ async function deleteAccount(user, env) {
   return response;
 }
 
+async function account(user, env) {
+  if (!user) return json({ message: "Sign in required" }, 401);
+  return json({
+    user,
+    verification: verificationPayload(user),
+    intentHistory: await readIntentHistory(user, env)
+  });
+}
+
 async function getIntent(user, env) {
   if (!user) return json(null, 401);
   const row = await env.DB.prepare("SELECT * FROM vote_intents WHERE user_id = ?").bind(user.id).first();
   return json(row ? publicIntent(row) : null);
+}
+
+async function intentHistory(user, env) {
+  if (!user) return json({ message: "Sign in required" }, 401);
+  return json(await readIntentHistory(user, env));
+}
+
+async function readIntentHistory(user, env) {
+  const rows = await env.DB.prepare(
+    `SELECT id, previous_intent AS previousIntent, new_intent AS newIntent,
+            previous_state AS previousState, new_state AS newState, changed_at AS changedAt
+     FROM vote_intent_history
+     WHERE user_id = ?
+     ORDER BY changed_at DESC
+     LIMIT 25`
+  ).bind(user.id).all();
+  return rows.results || [];
 }
 
 async function saveIntent(request, user, env) {
@@ -423,18 +451,32 @@ async function exportVotes(request, env) {
 async function track(type, request, user, env) {
   const cleanType = type.replace(/[^a-z0-9_-]/gi, "").slice(0, 40);
   const payload = await safeJson(request);
+  if (cleanType === "batch" && Array.isArray(payload.events)) {
+    const events = payload.events.slice(0, 50);
+    for (const event of events) {
+      const eventType = String(event.type || event.eventType || "event").replace(/[^a-z0-9_-]/gi, "").slice(0, 40) || "event";
+      await writeEvent(env, request, user, eventType, trimPayload(event.payload || event));
+    }
+    return json({ ok: true, stored: events.length });
+  }
   await writeEvent(env, request, user, cleanType || "event", trimPayload(payload));
   return json({ ok: true });
 }
 
 function verifyStatus(user) {
   if (!user) return json({ message: "Sign in required" }, 401);
-  return json({
+  return json(verificationPayload(user));
+}
+
+function verificationPayload(user) {
+  return {
     emailVerified: !!user.emailVerified,
     phoneVerified: !!user.phoneVerified,
     isFullyVerified: !!user.isFullyVerified,
-    trustScore: user.trustScore || 0
-  });
+    trustScore: user.trustScore || 0,
+    providerConfigured: false,
+    message: "Verification provider is not configured yet"
+  };
 }
 
 async function verificationStub(path, user, env) {
@@ -448,7 +490,11 @@ async function verificationStub(path, user, env) {
     path.endsWith("/send") ? "send" : "confirm",
     new Date().toISOString()
   ).run();
-  return json({ ok: true, message: "Verification provider is not configured yet" });
+  return json({
+    ok: false,
+    code: "verification_provider_not_configured",
+    message: "Verification is not enabled yet"
+  }, 503);
 }
 
 async function currentUser(request, env) {

@@ -41,6 +41,7 @@ GO for Cloudflare Pages + D1 launch baseline after production D1 database creati
 - Final hardening smoke passed: `/api/health`, homepage, privacy page, terms page, registration, initial intent, changed intent, tracking, admin analytics, CSV export, and account deletion all passed locally.
 - Desktop and mobile browser pass had no console errors or failed requests.
 - E2E report follow-up fixed: dialog close horizontal drift, Escape close fallback, quote restore, Copy Link feedback fallback, dark-theme persistence removal, canonical privacy/terms links, direct `/admin` route handoff to `/#/admin`, static first-paint fallback, mobile registration undo link, and remaining local vote-intent browser fallback removal.
+- Authenticated Round 2 follow-up fixed: verification endpoints now fail closed with 503 while provider is unavailable; Verify Identity is hidden in the UI until real provider wiring exists; `/api/account` and `/api/intent/history` now expose profile/account and change-history data; profile page gets an account/details/history panel; vote-plan dialog gets required-field helper text; phone inputs are constrained; modal/logout scroll drift is reset globally; regular tracking events are queued and flushed through `/api/track/batch`.
 
 ## Launch Requirements
 - Create real Cloudflare D1 database.
@@ -49,4 +50,5 @@ GO for Cloudflare Pages + D1 launch baseline after production D1 database creati
 - Set `ADMIN_SECRET` as a Cloudflare Pages secret.
 - Set `IP_HASH_SECRET` as a Cloudflare Pages secret.
 - Confirm `/api/health` returns `"ok":true` on the production domain.
+- Do not enable the Verify Identity menu until a real email/SMS provider is configured and the confirm endpoints update `email_verified` / `phone_verified`.
 - After public domain is known, replace relative OpenGraph image URLs with absolute production URLs.

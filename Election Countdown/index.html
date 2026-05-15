@@ -68,23 +68,69 @@
     <script>
       (function launchInteractionFixes() {
         var nativeFetch = window.fetch ? window.fetch.bind(window) : null;
+        var trackQueue = [];
+        var trackFlushTimer = null;
+
+        function flushTrackingQueue(beacon) {
+          if (!trackQueue.length) return;
+          var events = trackQueue.splice(0, 50);
+          var body = JSON.stringify({ events: events, flushedAt: new Date().toISOString() });
+          if (beacon && navigator.sendBeacon) {
+            try {
+              if (navigator.sendBeacon("/api/track/batch", new Blob([body], { type: "application/json" }))) {
+                return;
+              }
+            } catch (error) {}
+          }
+          if (!beacon && nativeFetch) {
+            nativeFetch("/api/track/batch", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              credentials: "include",
+              body: body,
+              keepalive: true
+            }).catch(function() {});
+          }
+        }
+
+        function queueTracking(url, init) {
+          var type = "event";
+          try {
+            type = String(url).split("/api/track/")[1].split(/[?#]/)[0] || "event";
+          } catch (error) {}
+          var payload = {};
+          try {
+            payload = init && init.body ? JSON.parse(init.body) : {};
+          } catch (error) {
+            payload = { raw: String(init && init.body || "").slice(0, 500) };
+          }
+          trackQueue.push({ type: type, payload: payload, queuedAt: new Date().toISOString() });
+          if (trackQueue.length >= 25) {
+            flushTrackingQueue(false);
+          } else if (!trackFlushTimer) {
+            trackFlushTimer = setTimeout(function() {
+              trackFlushTimer = null;
+              flushTrackingQueue(false);
+            }, 8000);
+          }
+        }
+
         if (nativeFetch && navigator.sendBeacon) {
           window.fetch = function(input, init) {
             var url = typeof input === "string" ? input : input && input.url;
             if (url && url.indexOf("/api/track/") !== -1 && init && String(init.method || "GET").toUpperCase() === "POST") {
-              try {
-                var body = init.body || "{}";
-                var sent = navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
-                if (sent) {
-                  return Promise.resolve(new Response(JSON.stringify({ ok: true }), {
-                    status: 200,
-                    headers: { "content-type": "application/json" }
-                  }));
-                }
-              } catch (error) {}
+              queueTracking(url, init);
+              return Promise.resolve(new Response(JSON.stringify({ ok: true, queued: true }), {
+                status: 200,
+                headers: { "content-type": "application/json" }
+              }));
             }
             return nativeFetch(input, init);
           };
+          window.addEventListener("pagehide", function() { flushTrackingQueue(true); });
+          document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === "hidden") flushTrackingQueue(true);
+          });
         }
 
         function labelOf(element) {
@@ -101,6 +147,14 @@
           });
         }
 
+        function hardResetDriftSoon() {
+          resetHorizontalDrift();
+          requestAnimationFrame(resetHorizontalDrift);
+          setTimeout(resetHorizontalDrift, 80);
+          setTimeout(resetHorizontalDrift, 250);
+          setTimeout(resetHorizontalDrift, 600);
+        }
+
         function closeTopDialog() {
           var dialogs = Array.from(document.querySelectorAll('[role="dialog"]'));
           var dialog = dialogs[dialogs.length - 1];
@@ -110,8 +164,7 @@
           });
           if (closeButton) {
             closeButton.click();
-            setTimeout(resetHorizontalDrift, 0);
-            setTimeout(resetHorizontalDrift, 120);
+            hardResetDriftSoon();
             return true;
           }
           return false;
@@ -169,6 +222,79 @@
           });
         }
 
+        function hardenPhoneInput(input) {
+          if (!input || input.dataset.launchPhoneHardened === "1") return;
+          input.dataset.launchPhoneHardened = "1";
+          input.addEventListener("focus", function() {
+            input.select();
+          });
+          input.addEventListener("input", function() {
+            var value = input.value.replace(/[^\d+]/g, "");
+            if (value.indexOf("+") > 0) value = value.replace(/\+/g, "");
+            if (value !== input.value) input.value = value;
+          });
+        }
+
+        function hideUnavailableVerification() {
+          Array.from(document.querySelectorAll("button, [role='menuitem'], div, span")).forEach(function(element) {
+            if (labelOf(element) === "Verify Identity") {
+              var row = element.closest("[role='menuitem']") || element.closest("button") || element;
+              row.style.display = "none";
+              row.setAttribute("aria-hidden", "true");
+            }
+          });
+        }
+
+        function ensureRequiredVotingHints() {
+          var dialog = Array.from(document.querySelectorAll('[role="dialog"]')).find(function(element) {
+            return (element.innerText || "").indexOf("Your Voting Plan") !== -1;
+          });
+          if (!dialog || dialog.querySelector("[data-launch-vote-hint]")) return;
+          var submit = Array.from(dialog.querySelectorAll("button")).find(function(button) {
+            return /Submit My Intent|Update My Intent/.test(labelOf(button));
+          });
+          if (!submit) return;
+          var hint = document.createElement("p");
+          hint.dataset.launchVoteHint = "1";
+          hint.textContent = "Pick a vote choice and a state to submit.";
+          hint.style.cssText = "margin:10px 0 0;color:#475569;font-size:13px;text-align:center;";
+          submit.parentElement.insertBefore(hint, submit);
+        }
+
+        function formatDate(value) {
+          if (!value) return "Not available";
+          try { return new Date(value).toLocaleString(); } catch (error) { return value; }
+        }
+
+        function ensureProfileDetails() {
+          if (location.hash !== "#/profile" || document.querySelector("[data-launch-profile-details]")) return;
+          var main = document.querySelector("main");
+          if (!main) return;
+          Promise.all([
+            nativeFetch ? nativeFetch("/api/account", { credentials: "include" }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }) : Promise.resolve(null),
+            nativeFetch ? nativeFetch("/api/intent", { credentials: "include" }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }) : Promise.resolve(null)
+          ]).then(function(results) {
+            if (document.querySelector("[data-launch-profile-details]")) return;
+            var account = results[0];
+            var intent = results[1];
+            if (!account || !account.user) return;
+            var user = account.user;
+            var verification = account.verification || {};
+            var history = account.intentHistory || [];
+            var panel = document.createElement("section");
+            panel.dataset.launchProfileDetails = "1";
+            panel.style.cssText = "border:1px solid rgba(15,23,42,.14);border-radius:8px;background:rgba(255,255,255,.94);padding:18px;display:grid;gap:14px;";
+            panel.innerHTML = [
+              "<div style='display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap'><h2 style='font:700 18px Inter,system-ui,sans-serif;margin:0;color:#0f172a'>Account Details</h2><span style='font:700 12px Inter,system-ui,sans-serif;color:" + (verification.isFullyVerified ? "#15803d" : "#b45309") + "'>" + (verification.isFullyVerified ? "Verified" : "Unverified") + "</span></div>",
+              "<dl style='display:grid;grid-template-columns:130px 1fr;gap:8px 12px;margin:0;font:14px Inter,system-ui,sans-serif'><dt style='color:#64748b'>Name</dt><dd style='margin:0'>" + [user.firstName, user.lastName].filter(Boolean).join(" ") + "</dd><dt style='color:#64748b'>Email</dt><dd style='margin:0'>" + user.email + "</dd><dt style='color:#64748b'>EC-ID</dt><dd style='margin:0;font-family:monospace'>" + user.ecId + "</dd><dt style='color:#64748b'>Joined</dt><dd style='margin:0'>" + formatDate(user.createdAt) + "</dd><dt style='color:#64748b'>Trust score</dt><dd style='margin:0'>" + (verification.trustScore || 0) + "</dd></dl>",
+              "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Current Vote Intent</h3><p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>" + (intent ? [intent.intent, intent.state, intent.city].filter(Boolean).join(" / ") : "No vote intent submitted yet.") + "</p></div>",
+              "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Recent Intent History</h3>" + (history.length ? "<ul style='margin:0;padding-left:18px;color:#475569;font:14px Inter,system-ui,sans-serif'>" + history.map(function(item) { return "<li>" + formatDate(item.changedAt) + ": " + (item.previousIntent || "none") + " -> " + item.newIntent + " (" + (item.previousState || "none") + " -> " + item.newState + ")</li>"; }).join("") + "</ul>" : "<p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>No change history yet.</p>") + "</div>",
+              "<p style='margin:0;color:#64748b;font:12px Inter,system-ui,sans-serif'>Account deletion is available through the authenticated API endpoint <code>DELETE /api/account</code>.</p>"
+            ].join("");
+            main.appendChild(panel);
+          });
+        }
+
         document.addEventListener("keydown", function(event) {
           if (event.key === "Escape" && closeTopDialog()) {
             event.preventDefault();
@@ -179,10 +305,14 @@
         document.addEventListener("click", function(event) {
           var target = event.target && event.target.closest && event.target.closest("a,button,[role='button']");
           var label = labelOf(target);
-          if (label === "Close" || label.indexOf("Sign In") !== -1 || label.indexOf("Share") !== -1) {
-            setTimeout(resetHorizontalDrift, 0);
-            setTimeout(resetHorizontalDrift, 150);
-            setTimeout(resetHorizontalDrift, 450);
+          if (label === "Verify Identity") {
+            event.preventDefault();
+            event.stopPropagation();
+            closeTopDialog();
+            return;
+          }
+          if (label === "Close" || label.indexOf("Sign In") !== -1 || label.indexOf("Share") !== -1 || label.indexOf("Log out") !== -1 || label.indexOf("Verify") !== -1) {
+            hardResetDriftSoon();
           }
           if (label === "Copy Link") {
             setTimeout(function() { showCopyFeedback(target); }, 50);
@@ -192,12 +322,23 @@
         document.addEventListener("DOMContentLoaded", function() {
           resetHorizontalDrift();
           var observer = new MutationObserver(function() {
-            resetHorizontalDrift();
+            hardResetDriftSoon();
             ensureRegisteredUndo();
+            ensureRequiredVotingHints();
+            ensureProfileDetails();
+            hideUnavailableVerification();
             document.querySelectorAll('input[type="email"]').forEach(hardenAuthEmail);
+            document.querySelectorAll('input[type="tel"]').forEach(hardenPhoneInput);
           });
           observer.observe(document.body, { childList: true, subtree: true });
         });
+        window.addEventListener("hashchange", function() {
+          hardResetDriftSoon();
+          setTimeout(ensureProfileDetails, 100);
+        });
+        setInterval(function() {
+          if (!document.querySelector('[role="dialog"]')) resetHorizontalDrift();
+        }, 1000);
       })();
     </script>
     <script>
