@@ -307,7 +307,12 @@
 
         function formatDate(value) {
           if (!value) return "Not available";
-          try { return new Date(value).toLocaleString(); } catch (error) { return value; }
+          try {
+            return new Date(value).toLocaleString("en-US", {
+              year: "numeric", month: "long", day: "numeric",
+              hour: "numeric", minute: "2-digit"
+            });
+          } catch (error) { return value; }
         }
 
         function intentLabel(value) {
@@ -346,22 +351,42 @@
           var next = intentLabel(item.newIntent);
           var nextState = stateName(item.newState);
           if (!item.previousIntent) {
-            return when + " - Set to " + next + (nextState ? " in " + nextState : "");
+            return when + " — Set to" + next + (nextState ? " in " + nextState : "");
           }
-          return when + " - Changed from " + intentLabel(item.previousIntent) + (item.previousState ? " (" + stateName(item.previousState) + ")" : "") + " to " + next + (nextState ? " (" + nextState + ")" : "");
+          return when + " — Changed from " + intentLabel(item.previousIntent) + (item.previousState ? " (" + stateName(item.previousState) + ")" : "") + " to " + next + (nextState ? " (" + nextState + ")" : "");
         }
 
         function ensureProfileHeaderActions() {
           if (location.hash !== "#/profile" || document.querySelector("[data-launch-profile-header-actions]")) return;
           var headerInner = document.querySelector("header > div") || document.querySelector("header");
-          if (!headerInner) return;
+          if (!headerInner) {
+            // No header rendered — create a sticky nav bar with logo
+            var bar = document.createElement("nav");
+            bar.dataset.launchProfileHeaderActions = "1";
+            bar.setAttribute("aria-label", "Profile page navigation");
+            bar.style.cssText = "position:sticky;top:0;z-index:50;background:rgba(255,255,255,.97);backdrop-filter:blur(6px);border-bottom:1px solid rgba(15,23,42,.1);padding:10px 16px;display:flex;align-items:center;gap:12px;font-family:Inter,system-ui,sans-serif;";
+            bar.innerHTML = [
+              "<a href='/#/' aria-label='Election Countdown home' style='display:flex;align-items:center;gap:8px;text-decoration:none;color:#0f172a'>",
+              "<img src='/favicon.png' alt='' aria-hidden='true' style='width:22px;height:22px;border-radius:4px'>",
+              "<span style='font-weight:800;font-size:14px'>Election Countdown</span>",
+              "</a>",
+              "<div style='margin-left:auto;display:flex;gap:8px;align-items:center'>",
+              "<button type='button' data-launch-profile-share='1' style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:7px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button>",
+              "<button type='button' data-launch-profile-logout='1' style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:7px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button>",
+              "</div>"
+            ].join("");
+            var main = document.querySelector("main") || document.body.firstElementChild;
+            if (main && main.parentNode) main.parentNode.insertBefore(bar, main);
+            else document.body.prepend(bar);
+            return;
+          }
           var actions = document.createElement("nav");
           actions.dataset.launchProfileHeaderActions = "1";
           actions.style.cssText = "margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
           actions.innerHTML = [
-            "<a href='/' style='border:1px solid rgba(15,23,42,.16);border-radius:8px;background:#fff;color:#0f172a;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;text-decoration:none'>Home</a>",
-            "<button type='button' data-launch-profile-share style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button>",
-            "<button type='button' data-launch-profile-logout style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button>"
+            "<a href='/#/' style='border:1px solid rgba(15,23,42,.16);border-radius:8px;background:#fff;color:#0f172a;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;text-decoration:none'>Home</a>",
+            "<button type='button' data-launch-profile-share='1' style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button>",
+            "<button type='button' data-launch-profile-logout='1' style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:8px 11px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button>"
           ].join("");
           headerInner.appendChild(actions);
         }
@@ -384,7 +409,7 @@
             panel.innerHTML = [
               "<div style='display:grid;gap:6px'><h2 style='margin:0;font-size:18px;line-height:1.25;font-weight:800'>Voter Actions</h2><p style='margin:0;color:#475569;font-size:14px'>Keep your registration status and vote plan up to date.</p></div>",
               "<div style='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px'>",
-              "<article style='border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:14px;background:#fff'><h3 style='margin:0 0 6px;font-size:15px;font-weight:800'>Registration Status</h3><p style='margin:0 0 10px;color:#475569;font-size:13px'>" + (localStorage.getItem("ec_voter_registered") === "true" ? "You're marked as registered on this device." : "Confirm or update your registration status.") + "</p><button type='button' data-launch-home-registration style='border:0;border-radius:8px;background:#1d4ed8;color:#fff;padding:9px 12px;font-weight:800;cursor:pointer'>" + (localStorage.getItem("ec_voter_registered") === "true" ? "Update Registration Status" : "I'm already registered") + "</button></article>",
+              "<article style='border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:14px;background:#fff'><h3 style='margin:0 0 6px;font-size:15px;font-weight:800'>Registration Status</h3><p style='margin:0 0 10px;color:#475569;font-size:13px'>" + (localStorage.getItem("ec_voter_registered") === "true" ? "You're marked as registered on this device." : "Confirm or update your registration status.") + "</p><button type='button' data-launch-home-registration='1' style='border:0;border-radius:8px;background:#1d4ed8;color:#fff;padding:9px 12px;font-weight:800;cursor:pointer'>" + (localStorage.getItem("ec_voter_registered") === "true" ? "Update Registration Status" : "I'm already registered") + "</button></article>",
               "<article style='border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:14px;background:#fff'><h3 style='margin:0 0 6px;font-size:15px;font-weight:800'>Vote Plan</h3><p style='margin:0 0 10px;color:#475569;font-size:13px'>" + (intent ? "Current plan: " + formatIntentSummary(intent) : "No vote plan submitted yet.") + "</p><a href='/#/profile' style='display:inline-block;border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:9px 12px;font-weight:800;text-decoration:none'>" + (intent ? "Update Vote Plan" : "Share Your Vote Plan") + "</a></article>",
               "</div>"
             ].join("");
@@ -415,7 +440,7 @@
               "<dl style='display:grid;grid-template-columns:130px 1fr;gap:8px 12px;margin:0;font:14px Inter,system-ui,sans-serif'><dt style='color:#64748b'>Name</dt><dd style='margin:0'>" + [user.firstName, user.lastName].filter(Boolean).join(" ") + "</dd><dt style='color:#64748b'>Email</dt><dd style='margin:0'>" + user.email + "</dd><dt style='color:#64748b'>EC-ID</dt><dd style='margin:0;font-family:monospace'>" + user.ecId + "</dd><dt style='color:#64748b'>Joined</dt><dd style='margin:0'>" + formatDate(user.createdAt) + "</dd><dt style='color:#64748b'>Trust score</dt><dd style='margin:0'>" + (verification.trustScore || 0) + "</dd></dl>",
               "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Current Vote Intent</h3><p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>" + formatIntentSummary(intent) + "</p></div>",
               "<div><h3 style='font:700 15px Inter,system-ui,sans-serif;margin:0 0 8px;color:#0f172a'>Recent Intent History</h3>" + (history.length ? "<ul style='margin:0;padding-left:18px;color:#475569;font:14px Inter,system-ui,sans-serif'>" + history.map(function(item) { return "<li>" + formatHistoryItem(item) + "</li>"; }).join("") + "</ul>" : "<p style='margin:0;color:#475569;font:14px Inter,system-ui,sans-serif'>No change history yet.</p>") + "</div>",
-              "<div style='display:flex;gap:10px;flex-wrap:wrap'><button type='button' data-launch-profile-share style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button><button type='button' data-launch-profile-logout style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button></div>"
+              "<div style='display:flex;gap:10px;flex-wrap:wrap'><button type='button' data-launch-profile-share='1' style='border:1px solid rgba(29,78,216,.28);border-radius:8px;background:#eff6ff;color:#1d4ed8;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Share</button><button type='button' data-launch-profile-logout='1' style='border:1px solid rgba(15,23,42,.18);border-radius:8px;background:#fff;color:#334155;padding:9px 12px;font:800 13px Inter,system-ui,sans-serif;cursor:pointer'>Log out</button></div>"
             ].join("");
             main.appendChild(panel);
           });
