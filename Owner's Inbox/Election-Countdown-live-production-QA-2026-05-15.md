@@ -1,14 +1,14 @@
 # Election Countdown Live Production QA - 2026-05-15
 
 ## Verdict
-GO for public countdown, account creation, vote-intent capture, vote-intent change history, profile/account API, stats, and event tracking on Cloudflare Pages + D1.
+GO for public countdown, account creation, vote-intent capture, vote-intent change history, profile/account API, stats, event tracking, security headers, and launch-page presentation on Cloudflare Pages + D1.
 
 HOLD only for real identity verification claims until an email/SMS provider is wired. The UI currently hides Verify Identity and the API fails closed with HTTP 503, so it does not falsely verify users.
 
 ## Production Target
 - Live URL: https://election-countdown-38g.pages.dev
-- Latest pushed commit: `6faed72 Include intent in account profile API`
-- Manual Pages deployment after commit: `https://268ef3d8.election-countdown-38g.pages.dev`
+- Latest verified live commit: `903fad1 Harden security headers, fix cookie/history bugs, polish pre-render`
+- OG image: `https://election-countdown-38g.pages.dev/opengraph.jpg`
 
 ## Live Checks Passed
 - `/api/health`: `ok:true`, `database:true`, `adminSecret:true`, `ipHashSecret:true`, `mode:"production"`.
@@ -54,6 +54,18 @@ HOLD only for real identity verification claims until an email/SMS provider is w
 - Bad credentials on `/api/auth/login` return 401 with generic `Invalid email or password`.
 - Foreign-origin `/api/intent`, `/api/auth/logout`, and `/api/account` state changes return 403.
 - Same-origin `/api/intent`, `/api/auth/logout`, and `/api/account` state changes succeed.
+- `/api/health`: `ok:true` with all checks green.
+- All 7 security headers present on API responses.
+- CSP is present with the expected self/inline policy for the static launch bundle.
+- HSTS is present: `max-age=31536000; includeSubDomains`.
+- Email enumeration no longer leaks 409; duplicate registration returns a generic 200 path.
+- Absolute OG image URL is live.
+- Pre-render placeholder displays `--- / -- / -- / --`.
+- Profile history spacing is correct: `Set to Republican`.
+- Account deletion cookie uses the `Secure` flag on HTTPS.
+- Duplicate profile history field was removed.
+- Expired session pruning runs on cold start.
+- Stub `avgSessionDurationSeconds` was removed.
 
 ## Not Fully Verified
 - Admin analytics/export with the real `ADMIN_SECRET` was not tested because the secret was not available in the workspace.
