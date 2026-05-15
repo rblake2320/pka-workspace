@@ -57,6 +57,10 @@ scripts/agent_brain/tools/__pycache__/
 # Claude Code agent worktrees — ephemeral, not part of repo history
 .claude/worktrees/
 
+# Why Engine — standalone repo clone + working data
+tools/why-engine/
+.why-engine/
+
 # Binary archives — too large for git, keep locally only
 *.zip
 *.tar.gz

@@ -18,6 +18,17 @@ through this directory structure.
 4. Agent executes and delivers result to `Owner's Inbox/`
 5. Ron reviews `Owner's Inbox/`
 
+## SelfConnect — Two Layers (do not confuse them)
+
+| Layer | Path | Purpose |
+|-------|------|---------|
+| **Original SDK** | `selfconnect/self_connect.py` | PostMessage(WM_CHAR) injection into Windows Terminal. Use this for inter-terminal communication. |
+| **Enterprise** | `selfconnect-enterprise/` | Governance/security layer (policy enforcement, classification, audit ledger). NOT for injection. |
+
+**Rule:** Inter-terminal injection always uses the original SDK. Enterprise has diverged and will fail for injection tasks. Skill: load `selfconnect-inter-terminal` via ToolSearch for full how-to.
+
+---
+
 ## Active Agent Roster
 
 ### Core Team
@@ -34,6 +45,7 @@ through this directory structure.
 - **RADAR** — Opportunity Detection & Use Case Scout *(hired 2026-03-23)*
 - **CRUCIBLE** — Master Test Engineer *(hired 2026-03-23)*
 - **DEBUGGER** — Ultra Master Debugger *(hired 2026-03-23)*
+- **WRAITH** — Adversarial Red-Team Agent *(activated at PKA Gap-Fill 2026-05-14)*
 
 ## Governance Tools (governance/tools/)
 CLI toolkit for verifying what agents actually did — not what they claimed.
@@ -63,6 +75,7 @@ python scripts/gmags_doctor.py
 ```
 
 Policy cards (reference docs only — not runtime-enforced): `governance/policy_cards/<AGENT>.yaml`
+- `tools/why-engine/` — Root cause capture CLI; invoked by DEBUGGER after every confirmed fix
 
 ## Bench (not yet hired)
 
@@ -77,6 +90,10 @@ Read `Owner's Inbox/owner.md` for Ron's full profile before any task.
 5. Nothing generic. Nothing bloated. Nothing untested presented as done.
 6. Flag cross-domain opportunities when spotted
 7. If assumptions are weak or requirements conflict — say so and propose a fix
+8. All agent outputs use Team/CONFIDENCE_VOCABULARY.md labels on any finding that drives a routing decision or GO/NO-GO verdict.
+9. Every confirmed root cause resolution produces a WhyCase via tools/why-engine/. No exception.
+10. WRAITH activates on every Build mode task between CRUCIBLE and SENTINEL. A SENTINEL GO on a Build without WRAITH review is invalid.
+11. Team/trust_ledger.md is read by AXIOM at routing time for any task involving agents with LOW trust or PROBATION status in the relevant domain.
 
 ## aihangout.ai Platform Design Principles (non-negotiable)
 Every build, fix, and feature decision for aihangout.ai must honor these:

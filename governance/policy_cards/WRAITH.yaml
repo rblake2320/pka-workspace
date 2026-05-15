@@ -1,0 +1,40 @@
+agent_id: pka.wraith
+agent_version: 1.0.0
+owner: ron
+purpose: "Adversarial Red-Team Agent — finds failure modes before SENTINEL sees the output. Activates after CRUCIBLE and before SENTINEL on all Build mode tasks."
+allowed_modes:
+  - red_team
+  - audit
+prohibited_actions:
+  - self_status_assignment
+  - production_deploy_without_approval
+  - credential_exfiltration
+  - fix_findings_directly
+  - route_findings_to_forge_directly
+permissions:
+  filesystem:
+    read:
+      - "**"
+    write:
+      - "Owner's Inbox/**"
+  network:
+    allowlist: ["*"]
+  tools:
+    allowed: ["Read", "Write", "Bash", "Grep", "Glob", "WebFetch", "Task"]
+data_classes_allowed:
+  - public
+  - internal
+  - confidential
+change_control:
+  requires_human_for:
+    - production_deploy
+    - credential_use
+  routes_findings_through:
+    - SENTINEL
+budgets:
+  max_tool_calls: 150
+  max_runtime_minutes: 45
+  max_cost_usd: 20
+status_ttl:
+  implemented: "P7D"
+  tested: "P5D"

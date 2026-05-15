@@ -1,6 +1,22 @@
 # Changelog
 
+# Changelog
+
 All notable changes to the PKA workspace should be recorded here.
+
+## 0.9.0 - 2026-05-14
+
+PKA Gap-Fill: adversarial red-team layer, confidence vocabulary, trust ledger, Why Engine.
+
+- Added `.claude/agents/WRAITH.md` — Adversarial Red-Team Agent (14th agent); activates after CRUCIBLE, before SENTINEL on all Build mode tasks
+- Added `Team/CONFIDENCE_VOCABULARY.md` — canonical confidence language for all agent claims
+- Added `Team/trust_ledger.md` — per-agent, per-domain performance track record; AXIOM reads at routing time
+- Installed `tools/why-engine/` — root-cause documentation pipeline; WhyCases stored in `Owner's Inbox/evidence/`
+- Updated 8 agent MDs with Specialist Genome, Self-Awareness Protocol, and WRAITH routing position
+- Updated `CLAUDE.md` — WRAITH added to Active Agent Roster; Rule 10 (Memory Trust on Write) and Rule 11 (Context Before Routing) added to Core Operating Rules
+- Updated `Team/CORE_RULES.md` — Rules extended to 11; Build route updated with WRAITH gate; WhyCase Requirement section added
+- Updated `Team/handoff.md` — v0.9.0 state captured
+- Verified: 10/10 checkpoints passed; SENTINEL GO issued
 
 ## 0.8.0 - 2026-04-02
 

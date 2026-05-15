@@ -134,7 +134,7 @@ Do not assume Ron will connect the dots himself.
 | Decision support (non-technical) | NOVA → SENTINEL |
 | Decision support (technical) | NOVA → FORGE → SENTINEL |
 | Architecture / design | FORGE |
-| Build / code | FORGE → CRUCIBLE (functional + Layer 3.5 security) → SENTINEL |
+| Build / code | FORGE → CRUCIBLE (functional + Layer 3.5 security) → WRAITH (adversarial red-team) → SENTINEL |
 | Risk / audit | SENTINEL |
 | Troubleshooting | SENTINEL → DEBUGGER → FORGE |
 | Bug diagnosis (unknown cause) | DEBUGGER → FORGE → CRUCIBLE → SENTINEL |
@@ -149,3 +149,83 @@ Do not assume Ron will connect the dots himself.
 | Opportunity detection | RADAR |
 | Documentation / skill writing | SCRIBE |
 | Complex / multi-step | HELM coordinates — SENTINEL required as final step |
+
+---
+
+## Frustration Proxy — Anti-Loop Protocol
+
+When an agent encounters a blocker, it follows the Fix Escalation Ladder.
+Repeating the same approach is not escalation — it is a loop.
+
+### Tier Definitions
+
+| Tier | Strategy | Max Attempts | Trigger for Next |
+|------|----------|-------------|-----------------|
+| T1 | Direct fix — apply the obvious solution, retest | 2 | T1 fails twice |
+| T2 | Variant fix — different approach, same scope | 2 | T2 exhausted |
+| T3 | Research — current docs, GitHub issues, changelogs, dated web search | 1 session | No actionable lead |
+| T4 | Deep reasoning — extended chain-of-thought, reconsider all assumptions | 1 session | No new hypothesis |
+| T5 | Model/agent switch — route to a different model or agent with full context | 1 attempt per model | Still blocked |
+| T6 | Human escalation OR BLOCKED quarantine | — | Always final tier |
+
+### Loop Detection Rule
+A new attempt must differ from the previous in at least one substantive way:
+different file, different strategy, different reasoning path, different tool.
+If the delta cannot be named, the attempt is a loop — advance the tier.
+
+### Fingerprint Rule
+HELM/AXIOM track approach fingerprints per task. If the same fingerprint
+appears twice: mandatory tier advancement. No exceptions.
+
+### BLOCKED Quarantine
+When T6 fires and human is unavailable:
+- Mark the item `STATUS: BLOCKED` in the task record
+- Write a BLOCKED entry to `Owner's Inbox/` with: error, all attempts, T1-T5 log,
+  what information would unblock this, retry trigger condition
+- Continue to other work — do not halt the session
+- BLOCKED is not surrender. It is quarantine. The item stays in open loops
+  until the retry trigger fires.
+
+### Reset Protocol
+After any T4 or higher escalation, before resuming:
+1. Re-read `CLAUDE.md` and `Owner's Inbox/owner.md`
+2. Clear all working assumptions about the problem
+3. Start fresh context as if seeing the problem for the first time
+This is the functional reset. It prevents assumption compounding.
+
+---
+
+## Definition of Done — Non-Negotiable
+
+A task is NOT done until all of the following are true:
+
+- [ ] All tests pass (zero failures, zero skips that mask failures)
+- [ ] All outputs exist on disk and are verified to be non-empty
+- [ ] CRUCIBLE has run and issued a test sweep report
+- [ ] SENTINEL has issued a GO verdict
+- [ ] No known open blockers or BLOCKED items related to this task
+- [ ] Deliverable is in `Owner's Inbox/`
+
+**A fail is never done.** A test failure is an open loop. It stays open until
+it passes or is explicitly quarantined as BLOCKED with full documentation.
+
+Asking "should I fix the fails?" is not a valid agent behavior.
+A fail is always fixed — the only variable is which path to take when
+multiple valid fix strategies exist with meaningfully different tradeoffs.
+
+---
+
+## WhyCase Requirement
+
+Every confirmed root cause resolution produces a WhyCase via the Why Engine.
+
+This applies to:
+- DEBUGGER after any root-cause diagnosis + fix + passing retest
+- FORGE after any silent failure is discovered and fixed
+- CRUCIBLE after any test suite gap is discovered and closed
+
+A fix without a WhyCase is institutional memory lost.
+
+WhyCases are stored in `Owner's Inbox/evidence/` and the Why Engine outbox.
+SCRIBE scans new WhyCases weekly for recurring patterns → skill creation triggers.
+NOVA reads `whyNotCaught` fields monthly to update SENTINEL and CRUCIBLE coverage.

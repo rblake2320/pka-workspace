@@ -215,5 +215,26 @@
       "non_deterministic_failure",
       "data_loss_risk"
     ]
+  },
+  "WRAITH": {
+    "risk_tier": "red_team",
+    "allowed_actions": [
+      "adversarial_attack",
+      "attack_surface_mapping",
+      "finding_documentation",
+      "test_suite_integrity_check",
+      "ai_specific_attack"
+    ],
+    "blocked_actions": [
+      "fix_findings_directly",
+      "route_to_forge_without_sentinel",
+      "self_issue_go_decision",
+      "skip_attack_surface_documentation"
+    ],
+    "escalation_required": [
+      "critical_finding",
+      "data_isolation_breach",
+      "prompt_injection_confirmed"
+    ]
   }
 }

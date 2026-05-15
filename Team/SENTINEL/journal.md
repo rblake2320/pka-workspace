@@ -24,6 +24,27 @@
 - **Worked with**: [which agents were involved]
 -->
 
+### 2026-05-14 — DataShield GitHub full review
+- **Task**: Review `rblake2320/DataShield` at commit `f1ee431` for production readiness, security posture, test health, CI, and architecture.
+- **Verdict**: HOLD production/customer PII; GO prototype/security-hardening baseline.
+- **Defects found**: Docker applies only migration 001 while ORM/API require later tenant/webhook schema; tenant isolation is caller-controlled; dev/null secrets are accepted; pip-audit CI likely false-passes; CLI harness lacks API-key support; billing routes are unauthenticated; webhook registration accepts insecure URLs and plaintext secrets.
+- **Learned**: Passing playbook tests do not prove deployment readiness; privacy products need fresh-DB smoke tests and cross-tenant negative tests as release gates.
+- **Worked with**: Codex,SENTINEL
+
+### 2026-05-14 — SelfConnect Enterprise v1.2.1 follow-up
+- **Task**: Verify claimed closure of five SENTINEL blockers at commit `fa0d426`.
+- **Verdict**: HOLD remains.
+- **Defects found**: Clean pushed commit is not ruff clean; CNG-required profile accepts omitted/unknown `identity_type`; `LedgerObserver` verifier can be unrelated to `ledger_path`; CI installs undefined `[full]` extra and misses explicit Hypothesis dependency.
+- **Learned**: Verify against a clean worktree because local unstaged fixes can make a pushed commit look cleaner than it is.
+- **Worked with**: Codex,SENTINEL
+
+### 2026-05-14 — SelfConnect Enterprise complete review
+- **Task**: Review `rblake2320/selfconnect-enterprise` for production readiness, security posture, and code quality.
+- **Verdict**: HOLD production classified / GO research hardening baseline.
+- **Defects found**: Profile flags not fully enforced by `PolicyEnforcer`; `LedgerObserver` extracts unverified JSONL; identity path traversal via `agent_name`; WM_COPYDATA size limit not enforced; lint/CI posture overstated.
+- **Learned**: The repo has strong adversarial tests, but security claims need to be tied to enforced defaults, not optional operator discipline.
+- **Worked with**: Codex,SENTINEL
+
 ### 2026-04-02 — SENTINEL: PKA v0.5.0 GO/NO-GO Verdict
 - **Task**: TASK-20260402-007 — SENTINEL: PKA v0.5.0 GO/NO-GO Verdict
 - **Verdict**: HOLD→GO (scorecard fixed to 94/100 post-evidence-population)

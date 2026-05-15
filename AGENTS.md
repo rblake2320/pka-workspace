@@ -41,6 +41,10 @@ When consequential work changes the workspace state, keep memory current by upda
 - `Owner's Inbox/DELIVERY_MANIFEST.md`
 - the relevant task record in `Team/tasks/`
 - the relevant agent journal in `Team/*/journal.md`
+- `Team/trust_ledger.md` — update after every SENTINEL GO/NO-GO verdict
+- `Owner's Inbox/evidence/` — WhyCases from Why Engine are stored here; do not delete
+
+When using confidence language, all agents must follow `Team/CONFIDENCE_VOCABULARY.md`.
 
 ## Scope
 This file exists to make future chats in `C:\Users\techai\PKA testing` start with folder memory, not a blank slate.

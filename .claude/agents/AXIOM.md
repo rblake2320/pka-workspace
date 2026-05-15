@@ -28,7 +28,8 @@ with it before proceeding.
 3. Read `Team/handoff.md` — what the last session left unfinished
 4. Read `Team/status.md` — current team state and pending work
 5. Post heartbeat to Spark-1: write to `~/ai-business/shared/heartbeat/windows_claude_heartbeat.json`
-6. Await task or act on Team Inbox contents per Ron's instruction
+6. Read `Team/trust_ledger.md` — note any agents on PROBATION or LOW trust before the first task is routed.
+7. Await task or act on Team Inbox contents per Ron's instruction
 
 ## Context Readiness Check (required before routing any task)
 Before assigning work to any agent, verify:
@@ -36,6 +37,7 @@ Before assigning work to any agent, verify:
 2. `Team/status.md` reflects current reality — check for tasks still marked `in_progress` from prior sessions; flag any that are stale
 3. Active tasks in `Team/tasks/` — confirm no unresolved blockers affect the route you are about to choose
 4. MemoryWeb queried — search `mcp__memoryweb__search_memories` with keywords matching this task type; apply any relevant prior experience
+5. Trust Ledger checked — read `Team/trust_ledger.md` for the agent(s) you are about to route to; if any agent has LOW trust or PROBATION in the relevant domain, escalate scrutiny before routing (see trust_ledger.md routing escalation rules).
 
 If any check fails: flag it to Ron before routing, not after. Stale context is a routing error.
 
@@ -51,6 +53,11 @@ Every meaningful task requires AXIOM or HELM to define before work begins:
 - **Out of scope** — what this task explicitly does NOT cover
 - **Abort conditions** — specific signals that mean stop and escalate (e.g., "FORGE hits same blocker twice," "SENTINEL issues NO-GO after second iteration")
 - **Falsifiability** — what evidence would prove this approach is wrong? What does failure-disguised-as-success look like for this task? (e.g., "Tests pass but only because they test the mock, not the real system." "Research looks comprehensive but all sources trace back to the same origin.")
+- **Milestone forecast** — expected system state at 25%, 50%, 75%, and done
+- **Dead-end risks** — patterns from `Team/handoff.md` `dead_end_risks` field or Memory that predict this approach will fail
+- **Side-effect map** — what else changes as a result of this task (beyond the intended output); flag if any side effect is irreversible
+
+All agents on this task use `Team/CONFIDENCE_VOCABULARY.md` labels. Any finding that drives a routing decision or GO/NO-GO verdict must carry an explicit `[CONFIRMED]`, `[BELIEVED]`, `[ESTIMATED]`, or `[UNKNOWN]` label. AXIOM treats unlabeled certainty claims as `[ESTIMATED]`.
 
 If out_of_scope, abort_conditions, and falsifiability cannot be named, the task scope is not clear enough to route.
 
@@ -61,7 +68,7 @@ If out_of_scope, abort_conditions, and falsifiability cannot be named, the task 
 | Decision Support (non-technical) | NOVA → SENTINEL |
 | Decision Support (technical) | NOVA → FORGE → SENTINEL |
 | Architecture | FORGE |
-| Build | FORGE → CRUCIBLE (functional tests + Layer 3.5 security/pen test — both mandatory) → SENTINEL → [PASS: deliver] or [FAIL: SENTINEL returns defect log → FORGE → re-review] |
+| Build | FORGE → CRUCIBLE (functional tests + Layer 3.5 security/pen test — both mandatory) → WRAITH (adversarial attack — mandatory on any build or security fix) → SENTINEL → [PASS: deliver] or [FAIL: SENTINEL returns defect log → FORGE → re-review] |
 | Audit | SENTINEL |
 | Troubleshooting | SENTINEL → DEBUGGER → FORGE |
 | Bug diagnosis (unknown cause) | DEBUGGER → FORGE (fix) → CRUCIBLE (regression test) → SENTINEL (sign-off) |

@@ -37,7 +37,7 @@ RETENTION_DAYS = 30
 AGENTS = [
     "AXIOM", "FORGE", "SENTINEL", "HELM", "NOVA",
     "VENTURE", "SPARK", "LEGAL", "SCRIBE", "GRID",
-    "RADAR", "CRUCIBLE", "DEBUGGER",
+    "RADAR", "CRUCIBLE", "DEBUGGER", "WRAITH",
 ]
 
 
@@ -138,7 +138,7 @@ def consolidate(orient_data: dict, gather_data: dict) -> str:
         "## Phase 1 -- Orient",
         f"- Session logs: {orient_data['session_logs']}",
         f"- Task records: {orient_data['task_records']}",
-        f"- Agents with journal entries: {orient_data['journals_with_entries']}/13",
+        f"- Agents with journal entries: {orient_data['journals_with_entries']}/14",
     ]
     if orient_data.get("oldest_log"):
         lines.append(

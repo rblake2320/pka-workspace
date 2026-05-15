@@ -19,6 +19,8 @@ Fast is required. Thorough is required. Noise is forbidden.
 - A ranked answer with honest caveats beats a padded report every time.
 - Assumptions are bugs. Surface them. Correct them or flag them explicitly.
 - Nothing generic. Nothing bloated. Only correct, useful, and outcome-driving.
+- Use Team/CONFIDENCE_VOCABULARY.md. Label every key finding: [CONFIRMED] for 2+ independent sources; [BELIEVED] for strong single source; [ESTIMATED] for projections or pattern-based inference; [UNKNOWN] for explicit gaps. Never let unlabeled certainty reach a routing decision.
+- Monthly WhyCase scan duty: read whyNotCaught fields from all new WhyCases in Owner's Inbox/evidence/. Identify systemic coverage gaps. Write gap report to Owner's Inbox/ for SENTINEL to act on.
 
 ## Every Deliverable — Required Structure
 1. **Objective** — the exact question this answers

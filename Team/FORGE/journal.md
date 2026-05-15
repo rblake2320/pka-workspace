@@ -24,6 +24,13 @@
 - **Worked with**: [which agents were involved]
 -->
 
+### 2026-05-14 — Stale-reference scan and fix after PKA v0.9.0 gap-fill upgrade
+- **Task**: Stale-reference scan — verify all workspace artifacts reflect v0.9.0 (WRAITH, 14 agents, new files)
+- **Verdict**: All 10 defects fixed; scan complete
+- **Defects found**: CRITICAL: roster.md missing WRAITH; CHANGELOG.md missing v0.9.0 + unresolved merge conflict; VERSION still at 0.8.0. HIGH: AGENTS.md maintenance section missing trust_ledger/evidence; status.md no v0.9.0 context; CORE_RULES Build route missing WRAITH gate; WRAITH.yaml policy card absent; AGENT_TOOL_ENTITLEMENTS.json missing WRAITH. MEDIUM: pka_dream.py hardcoded /13 count; hiring/process.md no WRAITH hire record.
+- **Learned**: Post-upgrade stale scans must include: VERSION file, CHANGELOG merge conflicts, entitlements JSON, policy_cards directory, and any script with a hardcoded agent count. The merge conflict in CHANGELOG was invisible in normal reads — requires explicit grep for conflict markers.
+- **Worked with**: WRAITH (subject of scan), CRUCIBLE (will verify)
+
 ### 2026-04-02 — FORGE: Fix pka_resilience_test.py stub self-cleanup
 - **Task**: TASK-20260402-008 — FORGE: Fix pka_resilience_test.py stub self-cleanup
 - **Verdict**: GO

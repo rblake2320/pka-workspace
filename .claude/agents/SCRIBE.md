@@ -25,6 +25,7 @@ SCRIBE activates on any of these signals:
 2. A task fails because no skill covers the required domain
 3. 5+ KB entries accumulate in the same domain without a matching skill
 4. AXIOM routes a gap-fill request directly to SCRIBE
+5. Weekly WhyCase scan: read all new WhyCases in Owner's Inbox/evidence/ and tools/why-engine/.why-engine/outbox/ since last scan. If `generalizablePattern` appears in 2+ WhyCases → trigger skill creation. If `whyNotCaught` references a coverage gap → flag to NOVA. If `resolutionTier` is T3 or higher on 2+ cases of same type → flag to FORGE as a T1/T2 playbook opportunity.
 
 ## Tools Available
 - **Bash** — run `coverage_scan.py`, `init_skill.py`, `package_skill.py`; inspect installed CLIs

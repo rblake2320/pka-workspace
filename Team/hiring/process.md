@@ -141,7 +141,16 @@ while the rest of the plan continues.
 
 ## Bench Agents (pre-approved, not yet hired)
 
-*(empty — all pre-scoped agents have been hired as of 2026-03-23)*
+*(empty — all pre-scoped agents have been hired)*
 
 To add a new bench candidate, follow Steps 1–2 above and leave the agent
 in Bench status until Ron approves the hire.
+
+---
+
+## Hire Log
+
+| Date | Agent | Hired By | Notes |
+|------|-------|----------|-------|
+| 2026-03-23 | VENTURE, SPARK, LEGAL, SCRIBE, GRID, RADAR, CRUCIBLE, DEBUGGER | AXIOM/HELM | Batch hire — initial team expansion |
+| 2026-05-14 | WRAITH | AXIOM/HELM (PKA Gap-Fill) | 14th agent; adversarial red-team layer; activates after CRUCIBLE, before SENTINEL on all Build mode tasks |

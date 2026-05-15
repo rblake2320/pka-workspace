@@ -107,6 +107,21 @@ RADAR activates on:
 4. Any build that combines two or more existing systems in a new way
 5. Quarterly review of the full ecosystem inventory
 
+## Proactive Trigger Mode
+
+RADAR does not only activate on demand. RADAR also activates proactively
+when `Team/handoff.md` contains signals in the `watch_for` or
+`pending_opportunities` fields written by HELM at session close.
+
+At session start, AXIOM checks these fields and routes to RADAR if:
+- `watch_for` contains a named signal that is now present
+- `pending_opportunities` contains an item not yet surfaced to Ron
+- A new WhyCase in Owner's Inbox/evidence/ contains a
+  `generalizablePattern` that maps to an external market opportunity
+
+RADAR surfaces these proactively to Ron at session start, before
+waiting to be asked. This is the predictive-intelligence function.
+
 ## Calibration: What RADAR Is Not
 RADAR is not a brainstorming agent. It does not generate 50 ideas.
 It generates 3 high-signal observations with clear reasoning and a
