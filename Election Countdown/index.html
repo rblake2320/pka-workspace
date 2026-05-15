@@ -10,7 +10,7 @@
     <meta property="og:title" content="Election Countdown — Every Second Counts" />
     <meta property="og:description" content="Live countdown to the 2026 Midterms & 2028 Presidential Election. Are you registered to vote?" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="./opengraph.jpg" />
+    <meta property="og:image" content="https://election-countdown-38g.pages.dev/opengraph.jpg" />
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="720" />
     <meta property="og:image:alt" content="Election Countdown timer for upcoming U.S. elections" />
@@ -18,7 +18,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Election Countdown — Every Second Counts" />
     <meta name="twitter:description" content="Live countdown to the 2026 Midterms & 2028 Presidential Election. Are you registered to vote?" />
-    <meta name="twitter:image" content="./opengraph.jpg" />
+    <meta name="twitter:image" content="https://election-countdown-38g.pages.dev/opengraph.jpg" />
     <meta name="twitter:image:alt" content="Election Countdown timer for upcoming U.S. elections" />
 
     <meta name="theme-color" content="#1e40af" />
@@ -351,7 +351,7 @@
           var next = intentLabel(item.newIntent);
           var nextState = stateName(item.newState);
           if (!item.previousIntent) {
-            return when + " — Set to" + next + (nextState ? " in " + nextState : "");
+            return when + " — Set to " + next + (nextState ? " in " + nextState : "");
           }
           return when + " — Changed from " + intentLabel(item.previousIntent) + (item.previousState ? " (" + stateName(item.previousState) + ")" : "") + " to " + next + (nextState ? " (" + nextState + ")" : "");
         }
@@ -394,7 +394,7 @@
         function ensureHomeActionPanel() {
           if (location.hash && location.hash !== "#/" || document.querySelector("[data-launch-home-actions]")) return;
           var main = document.querySelector("main");
-          if (!main || (document.body.innerText || "").indexOf("Election Countdown") === -1) return;
+          if (!main) return;
           Promise.all([
             nativeFetch ? nativeFetch("/api/auth/user", { credentials: "include" }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }) : Promise.resolve(null),
             nativeFetch ? nativeFetch("/api/intent", { credentials: "include" }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }) : Promise.resolve(null)
@@ -808,10 +808,10 @@
           <div class="launch-prerender__eyebrow">Upcoming Election</div>
           <h1 class="launch-prerender__title">2026 Midterm Elections</h1>
           <div class="launch-prerender__grid" aria-hidden="true">
-            <div class="launch-prerender__unit"><div class="launch-prerender__num">171</div><div class="launch-prerender__label">DAYS</div></div>
-            <div class="launch-prerender__unit"><div class="launch-prerender__num">23</div><div class="launch-prerender__label">HOURS</div></div>
-            <div class="launch-prerender__unit"><div class="launch-prerender__num">00</div><div class="launch-prerender__label">MIN</div></div>
-            <div class="launch-prerender__unit"><div class="launch-prerender__num">00</div><div class="launch-prerender__label">SEC</div></div>
+            <div class="launch-prerender__unit"><div class="launch-prerender__num">---</div><div class="launch-prerender__label">DAYS</div></div>
+            <div class="launch-prerender__unit"><div class="launch-prerender__num">--</div><div class="launch-prerender__label">HOURS</div></div>
+            <div class="launch-prerender__unit"><div class="launch-prerender__num">--</div><div class="launch-prerender__label">MIN</div></div>
+            <div class="launch-prerender__unit"><div class="launch-prerender__num">--</div><div class="launch-prerender__label">SEC</div></div>
           </div>
         </section>
       </main>

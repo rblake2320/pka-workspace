@@ -38,7 +38,7 @@ export async function onRequest(context) {
     if ((path === "/login" || path === "/auth/login") && request.method === "POST") return login(request, env);
     if ((path === "/logout" || path === "/auth/logout" || path === "/auth/signout") && request.method === "POST") return csrfProtected(request, () => logout(request, env));
     if (path === "/account" && request.method === "GET") return account(user, env);
-    if (path === "/account" && request.method === "DELETE") return csrfProtected(request, () => deleteAccount(user, env));
+    if (path === "/account" && request.method === "DELETE") return csrfProtected(request, () => deleteAccount(request, user, env));
     if (path === "/intent" && request.method === "GET") return getIntent(user, env);
     if (path === "/intent" && request.method === "POST") return csrfProtected(request, () => saveIntent(request, user, env));
     if (path === "/intent/history" && request.method === "GET") return intentHistory(user, env);
@@ -179,6 +179,7 @@ async function ensureSchema(env) {
     "CREATE INDEX IF NOT EXISTS idx_tracking_events_type_created ON tracking_events(event_type, created_at)"
   ];
   await env.DB.batch(statements.map((statement) => env.DB.prepare(statement)));
+  await env.DB.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run();
   schemaReady = true;
 }
 
@@ -190,7 +191,7 @@ async function register(request, env) {
   }
 
   const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
-  if (existing) return json({ message: "An account with that email already exists" }, 409);
+  if (existing) return json({ message: "If this email is available, your account has been created. Check your inbox." }, 200);
 
   const now = new Date().toISOString();
   const salt = randomToken(24);
@@ -246,7 +247,7 @@ async function logout(request, env) {
   return response;
 }
 
-async function deleteAccount(user, env) {
+async function deleteAccount(request, user, env) {
   if (!user) return json({ message: "Sign in required" }, 401);
   await env.DB.batch([
     env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(user.id),
@@ -258,7 +259,8 @@ async function deleteAccount(user, env) {
     env.DB.prepare("DELETE FROM users WHERE id = ?").bind(user.id)
   ]);
   const response = json({ ok: true });
-  response.headers.append("Set-Cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  const secure = new URL(request.url).protocol === "https:" ? " Secure;" : "";
+  response.headers.append("Set-Cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure} SameSite=Lax; Max-Age=0`);
   return response;
 }
 
@@ -271,8 +273,7 @@ async function account(user, env) {
     user,
     verification: verificationPayload(user),
     intent,
-    intentHistory,
-    history: intentHistory
+    intentHistory
   });
 }
 
@@ -441,8 +442,7 @@ async function adminAnalytics(request, env) {
   return json({
     sessionStats: {
       totalLogins: await scalar(env, "SELECT COUNT(*) FROM tracking_events WHERE event_type = 'login'"),
-      uniqueActiveUsersToday: await scalar(env, "SELECT COUNT(DISTINCT user_id) FROM tracking_events WHERE created_at >= date('now') AND user_id IS NOT NULL"),
-      avgSessionDurationSeconds: 0
+      uniqueActiveUsersToday: await scalar(env, "SELECT COUNT(DISTINCT user_id) FROM tracking_events WHERE created_at >= date('now') AND user_id IS NOT NULL")
     },
     votesByIntent: {
       red: byIntent.red || 0,
@@ -778,7 +778,12 @@ function json(data, status = 200) {
 function securityHeaders() {
   return {
     "x-content-type-options": "nosniff",
-    "referrer-policy": "strict-origin-when-cross-origin"
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "x-frame-options": "DENY",
+    "permissions-policy": "camera=(), microphone=(), geolocation=()",
+    "cross-origin-opener-policy": "same-origin",
+    "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'",
+    "strict-transport-security": "max-age=31536000; includeSubDomains"
   };
 }
 
