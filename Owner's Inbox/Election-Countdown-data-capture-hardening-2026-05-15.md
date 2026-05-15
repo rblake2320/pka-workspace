@@ -40,6 +40,7 @@ GO for Cloudflare Pages + D1 launch baseline after production D1 database creati
 - Replit/prototype cleanup verification passed: no Replit markers found, no old `ec_users` / `ec_vote_intent` browser fallback keys found, frontend bundle syntax check passed, and Cloudflare Pages smoke test still passed.
 - Final hardening smoke passed: `/api/health`, homepage, privacy page, terms page, registration, initial intent, changed intent, tracking, admin analytics, CSV export, and account deletion all passed locally.
 - Desktop and mobile browser pass had no console errors or failed requests.
+- E2E report follow-up fixed: dialog close horizontal drift, Escape close fallback, quote restore, Copy Link feedback fallback, dark-theme persistence removal, canonical privacy/terms links, direct `/admin` route handoff to `/#/admin`, static first-paint fallback, mobile registration undo link, and remaining local vote-intent browser fallback removal.
 
 ## Launch Requirements
 - Create real Cloudflare D1 database.

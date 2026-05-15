@@ -9,6 +9,10 @@
 - **Session outcome**: Cloudflare Pages + D1 launch baseline delivered
 
 ## What Was Accomplished
+- Codex/FORGE: Election Countdown E2E report follow-up | Result: GO local patch | Output: `Election Countdown/index.html`, `Election Countdown/assets/index-DMSdeDRP.js`, `Election Countdown/privacy.html`
+- Fixed/tested report items: modal close no longer leaves horizontal scroll drift; Escape closes the Share dialog; Show quote restores a quote; Copy Link shows feedback; dark theme storage is removed; direct `/admin` redirects into the SPA admin route; Privacy/Terms links are canonical; first visible election content appears from a static fallback in under 500 ms locally; registration status can be reset from the confirmed panel.
+- Removed the remaining `ec_vote_intent` localStorage fallback in the compiled bundle.
+- Focused Playwright regression passed for those UI behaviors. Playwright still reports aborted `/api/track/event` during forced navigation, but Wrangler logs show tracking responses returning 200 OK.
 - Codex/FORGE: Election Countdown launch-grade hardening | Result: GO local hardening / HOLD public launch until production Cloudflare setup and live verification | Output: `Election Countdown/privacy.html`, `Election Countdown/terms.html`, `Election Countdown/functions/api/[[path]].js`
 - Added privacy and terms pages linked from the app shell.
 - Added `/api/health`, `/api/account` deletion, bounded JSON bodies, salted IP hashing via `IP_HASH_SECRET`, stricter production admin-secret validation, safer production error responses, and mobile padding for legal links.
