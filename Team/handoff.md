@@ -3,12 +3,26 @@
 *This file is OVERWRITTEN each session — only the most recent handoff matters.*
 
 ## Last Session
-- **Date**: 2026-05-14
-- **Duration**: Focused review session
-- **Ron's focus**: Complete reviews of `selfconnect-enterprise` and `rblake2320/DataShield`
-- **Session outcome**: review delivered
+- **Date**: 2026-05-15
+- **Duration**: Focused launch-hardening session
+- **Ron's focus**: Make `Election Countdown` launch-ready and able to capture high-value behavioral/support data
+- **Session outcome**: Cloudflare Pages + D1 launch baseline delivered
 
 ## What Was Accomplished
+- Codex/FORGE: Election Countdown launch-grade hardening | Result: GO local hardening / HOLD public launch until production Cloudflare setup and live verification | Output: `Election Countdown/privacy.html`, `Election Countdown/terms.html`, `Election Countdown/functions/api/[[path]].js`
+- Added privacy and terms pages linked from the app shell.
+- Added `/api/health`, `/api/account` deletion, bounded JSON bodies, salted IP hashing via `IP_HASH_SECRET`, stricter production admin-secret validation, safer production error responses, and mobile padding for legal links.
+- Removed the remaining compiled local auth fallback code from `assets/index-DMSdeDRP.js`; targeted search for Replit/local fallback keys is clean.
+- Verified locally: frontend/backend syntax checks passed; API smoke passed for health/home/privacy/terms/register/intent save/intent change/track/admin/export/delete; desktop and mobile browser pass had no console errors or failed requests.
+- Codex/FORGE: Election Countdown Replit/prototype cleanup | Result: GO | Output: `Election Countdown/assets/index-DMSdeDRP.js`
+- Confirmed no literal Replit/Repl markers remain in `Election Countdown`.
+- Removed compiled frontend fallbacks that could bypass the backend by storing auth/vote intent in browser-only localStorage; launch behavior now requires the Cloudflare Pages API for registration, login, and vote intent persistence.
+- Verified after cleanup: frontend bundle syntax check passed, backend syntax check passed, Cloudflare Pages runtime smoke passed for homepage, register, intent save, intent change, countdown tracking, admin analytics, and CSV export; browser pass had no console errors or failed requests.
+- Codex/FORGE: Election Countdown data capture hardening | Result: GO launch baseline after production D1 + secret setup | Output: `Owner's Inbox/Election-Countdown-data-capture-hardening-2026-05-15.md`
+- Added `Election Countdown/functions/api/[[path]].js` Cloudflare Pages Functions backend covering auth, vote intent, support-change history, stats, donor/admin analytics, CSV export, verification stubs, and tracking.
+- Added `Election Countdown/schema.sql`, `_headers`, `wrangler.toml`, and `LAUNCH.md`.
+- Added browser-side behavioral capture: page view, countdown dwell, countdown changes, heartbeat, visibility, page exit, CTA clicks, Vote.gov clicks, already-registered clicks.
+- Verified locally: JS syntax check passed, D1 schema applied locally, API smoke test passed for register/intent save/intent change/track/stats/admin/export, browser pass against Pages runtime had no console errors, failed requests, or 4xx/5xx responses.
 - Codex/SENTINEL: DataShield GitHub full review | Result: HOLD production/customer PII / GO prototype hardening baseline | Output: `Owner's Inbox/SENTINEL-datashield-github-review-2026-05-14.md`
 - Verified DataShield commit: `f1ee431a00fe604db1041a675f38881a08002ec0` on `main`.
 - Ran DataShield checks: `src` pytest passes (`399 passed, 27 skipped`), compileall passes, `agent-harness` pytest fails (`12 failed, 44 passed, 6 skipped`), ruff fails with 215 issues, bandit reports low-only findings, pip-audit reports 34 known vulnerabilities.
@@ -36,6 +50,7 @@
 - LEGAL: PKA audit trail patent provisional filing | Route: AXIOM -> LEGAL | Result: GO (conditional) | Output: `Owner's Inbox/LEGAL-pka-audit-trail-patent-assessment.md`
 
 ## What Is Pending
+- Election Countdown: create production Cloudflare D1 database, replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml`, apply `schema.sql` remotely, set `ADMIN_SECRET`, deploy Pages, verify live analytics/export, and set absolute OG image URL after domain is known.
 - Route or implement DataShield production hardening if Ron wants fixes, starting with fresh Docker migration application and tenant-bound auth.
 - Route or implement SelfConnect Enterprise production hardening if Ron wants fixes, starting with profile enforcement.
 - Replace/fix the cloud API key before cloud LLM execution.

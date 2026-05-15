@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+    <title>Election Countdown — Every Second Counts</title>
+    <meta name="description" content="Live countdown to the 2026 Midterm Elections & 2028 Presidential Election. Track every day, hour, minute, and second. Register to vote and make your voice heard." />
+    
+    <meta property="og:title" content="Election Countdown — Every Second Counts" />
+    <meta property="og:description" content="Live countdown to the 2026 Midterms & 2028 Presidential Election. Are you registered to vote?" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./opengraph.jpg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="720" />
+    <meta property="og:image:alt" content="Election Countdown timer for upcoming U.S. elections" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Election Countdown — Every Second Counts" />
+    <meta name="twitter:description" content="Live countdown to the 2026 Midterms & 2028 Presidential Election. Are you registered to vote?" />
+    <meta name="twitter:image" content="./opengraph.jpg" />
+    <meta name="twitter:image:alt" content="Election Countdown timer for upcoming U.S. elections" />
+
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="robots" content="index,follow" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="keywords" content="election countdown, 2026 midterms, 2028 presidential election, voter registration, vote" />
+
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&display=swap" rel="stylesheet">
+    <script>
+      (function hardenLaunchTheme() {
+        try {
+          localStorage.setItem("theme", "light");
+        } catch (error) {}
+
+        function cleanThemeToggle() {
+          document.documentElement.classList.remove("dark");
+
+          var buttons = document.querySelectorAll("button");
+          buttons.forEach(function(button) {
+            var label = (button.textContent || button.getAttribute("aria-label") || "").trim();
+            if (label === "Toggle theme") {
+              button.remove();
+            }
+          });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+          cleanThemeToggle();
+          new MutationObserver(cleanThemeToggle).observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+        });
+      })();
+    </script>
+    <script>
+      (function captureLaunchIntelligence() {
+        var visitorKey = "ec_visitor_id";
+        var visitorId = "";
+        try {
+          visitorId = localStorage.getItem(visitorKey);
+          if (!visitorId) {
+            visitorId = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+            localStorage.setItem(visitorKey, visitorId);
+          }
+        } catch (error) {
+          visitorId = "v_anon";
+        }
+
+        var currentCountdown = null;
+        var currentStartedAt = Date.now();
+        var pageStartedAt = Date.now();
+        var lastHeartbeatAt = 0;
+
+        function countdownFromText() {
+          var text = document.body ? document.body.innerText || "" : "";
+          if (text.indexOf("2026 Midterm Elections") !== -1) return "2026_midterms";
+          if (text.indexOf("2028 Presidential Election") !== -1) return "2028_presidential";
+          if (text.indexOf("2029 Inauguration Day") !== -1) return "2029_inauguration";
+          return "unknown";
+        }
+
+        function basePayload(extra) {
+          return Object.assign({
+            visitorId: visitorId,
+            path: location.pathname,
+            title: document.title,
+            referrer: document.referrer || "",
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+            viewport: {
+              width: window.innerWidth,
+              height: window.innerHeight
+            },
+            currentCountdown: currentCountdown || countdownFromText(),
+            pageElapsedMs: Date.now() - pageStartedAt
+          }, extra || {});
+        }
+
+        function send(type, payload, beacon) {
+          var body = JSON.stringify(basePayload(payload));
+          var url = "/api/track/" + encodeURIComponent(type);
+          if (beacon && navigator.sendBeacon) {
+            try {
+              navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
+              return;
+            } catch (error) {}
+          }
+          try {
+            fetch(url, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: body,
+              keepalive: !!beacon,
+              credentials: "include"
+            }).catch(function() {});
+          } catch (error) {}
+        }
+
+        function updateCountdown(reason) {
+          var next = countdownFromText();
+          if (!currentCountdown) {
+            currentCountdown = next;
+            currentStartedAt = Date.now();
+            send("event", { eventName: "countdown_view", countdown: next, reason: reason || "initial" });
+            return;
+          }
+          if (next !== currentCountdown) {
+            var previous = currentCountdown;
+            var durationMs = Date.now() - currentStartedAt;
+            send("flip", {
+              eventName: "countdown_change",
+              fromCountdown: previous,
+              toCountdown: next,
+              durationMs: durationMs,
+              reason: reason || "detected"
+            });
+            currentCountdown = next;
+            currentStartedAt = Date.now();
+          }
+        }
+
+        function clickLabel(element) {
+          return ((element.innerText || element.getAttribute("aria-label") || element.title || "").trim()).slice(0, 120);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+          updateCountdown("dom_ready");
+          send("event", {
+            eventName: "page_view",
+            userAgent: navigator.userAgent,
+            language: navigator.language || "",
+            screen: { width: screen.width, height: screen.height }
+          });
+
+          new MutationObserver(function() {
+            updateCountdown("dom_mutation");
+          }).observe(document.body, { childList: true, subtree: true, characterData: true });
+        });
+
+        document.addEventListener("click", function(event) {
+          var target = event.target && event.target.closest && event.target.closest("a,button,[role='button']");
+          if (!target) return;
+          var label = clickLabel(target);
+          send("event", {
+            eventName: "cta_click",
+            label: label,
+            href: target.href || "",
+            testId: target.getAttribute("data-testid") || "",
+            role: target.getAttribute("role") || target.tagName.toLowerCase()
+          });
+          if ((target.href || "").indexOf("vote.gov") !== -1 || label.indexOf("Vote.gov") !== -1) {
+            send("event", { eventName: "vote_gov_click", label: label, href: target.href || "" });
+          }
+          if (label.indexOf("already registered") !== -1) {
+            send("event", { eventName: "already_registered_click" });
+          }
+        }, true);
+
+        document.addEventListener("visibilitychange", function() {
+          if (document.visibilityState === "hidden") {
+            send("event", {
+              eventName: "visibility_hidden",
+              countdownDurationMs: Date.now() - currentStartedAt
+            }, true);
+          } else {
+            currentStartedAt = Date.now();
+            send("event", { eventName: "visibility_visible" });
+          }
+        });
+
+        window.addEventListener("beforeunload", function() {
+          send("event", {
+            eventName: "page_exit",
+            totalDurationMs: Date.now() - pageStartedAt,
+            countdownDurationMs: Date.now() - currentStartedAt
+          }, true);
+        });
+
+        setInterval(function() {
+          var now = Date.now();
+          if (document.visibilityState === "hidden" || now - lastHeartbeatAt < 14000) return;
+          lastHeartbeatAt = now;
+          updateCountdown("heartbeat");
+          send("event", {
+            eventName: "heartbeat",
+            countdownDurationMs: now - currentStartedAt
+          });
+        }, 15000);
+      })();
+    </script>
+    <style>
+      .launch-legal-links {
+        position: fixed;
+        right: 12px;
+        bottom: 10px;
+        z-index: 60;
+        display: flex;
+        gap: 10px;
+        padding: 7px 10px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+        font: 600 12px/1.2 Inter, system-ui, sans-serif;
+      }
+      .launch-legal-links a {
+        color: #1e3a8a;
+        text-decoration: none;
+      }
+      .launch-legal-links a:focus,
+      .launch-legal-links a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 520px) {
+        body {
+          padding-bottom: 56px;
+        }
+        .launch-legal-links {
+          left: 10px;
+          right: 10px;
+          bottom: 8px;
+          justify-content: center;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-DMSdeDRP.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-12VABIXr.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <nav class="launch-legal-links" aria-label="Legal links">
+      <a href="./privacy.html">Privacy</a>
+      <a href="./terms.html">Terms</a>
+    </nav>
+  </body>
+</html>
