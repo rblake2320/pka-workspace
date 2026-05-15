@@ -242,10 +242,15 @@ async function deleteAccount(user, env) {
 
 async function account(user, env) {
   if (!user) return json({ message: "Sign in required" }, 401);
+  const intentRow = await env.DB.prepare("SELECT * FROM vote_intents WHERE user_id = ?").bind(user.id).first();
+  const intent = intentRow ? publicIntent(intentRow) : null;
+  const intentHistory = await readIntentHistory(user, env);
   return json({
     user,
     verification: verificationPayload(user),
-    intentHistory: await readIntentHistory(user, env)
+    intent,
+    intentHistory,
+    history: intentHistory
   });
 }
 
