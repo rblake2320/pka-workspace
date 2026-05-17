@@ -1,0 +1,64 @@
+# selfconnect-audio default configuration
+# Copy and modify this file for your environment.
+
+# Connection mode: "auto" | "sdk" | "enterprise"
+# auto = try enterprise first, fall back to SDK
+connector: auto
+
+# Target terminal window (0 = auto-discover via list_windows)
+target_hwnd: 0
+target_title: ""   # discover by window title substring (e.g. "PKA testing")
+
+# ── Audio capture ──────────────────────────────────────────────────────────────
+capture:
+  enabled: true
+  device: default        # WASAPI device name or "default" (system output loopback)
+  sample_rate: 16000
+  channels: 1
+  chunk_ms: 30
+
+  tone_detection:
+    enabled: true
+    # Path to fingerprints YAML. Relative paths are resolved from this config file.
+    fingerprints: capture/fingerprints.yaml
+    # Minimum FFT correlation score to fire a ToneDetected event
+    min_confidence: 0.85
+
+# ── Speech-to-text ─────────────────────────────────────────────────────────────
+stt:
+  enabled: false              # Enable in Phase 2
+  provider: whisper_local     # "whisper_local" | "openai_realtime"
+  whisper_local:
+    model: large-v3
+    device: cuda              # "cuda" | "cpu"
+    compute_type: float16     # "float16" | "int8"
+    language: en
+    beam_size: 5
+
+# ── Text-to-speech ─────────────────────────────────────────────────────────────
+tts:
+  enabled: false              # Enable in Phase 3
+  provider: elevenlabs        # "elevenlabs" | "realtime_tts" | "coqui_local"
+  elevenlabs:
+    # api_key loaded from ELEVENLABS_API_KEY env var — never hardcode
+    voice_id: 21m00Tcm4TlvDq8ikWAM
+    model_id: eleven_multilingual_v2
+  # Map agent IDs to voice IDs (which voice speaks for each agent)
+  voice_map: {}
+  #   "A": "21m00Tcm4TlvDq8ikWAM"   # Agent A → Rachel
+  #   "B": "AZnzlk1XvdvUeBnXmlld"   # Agent B → Domi
+
+# ── Wake word ─────────────────────────────────────────────────────────────────
+wakeword:
+  enabled: false              # Enable in Phase 2
+  keywords:
+    - hey selfconnect
+  sensitivity: 0.7
+  # access_key loaded from PICOVOICE_ACCESS_KEY env var — never hardcode
+
+# ── Health ────────────────────────────────────────────────────────────────────
+health:
+  pipe_enabled: true          # Expose health via \\.\pipe\selfconnect-audio-health
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+log_level: INFO
