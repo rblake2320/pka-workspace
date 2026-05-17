@@ -6,6 +6,20 @@
 
 ---
 
+## v0.2 Action Items (priority order)
+
+| Priority | Item | Owner |
+|----------|------|-------|
+| **HIGH** | Move `pbp-mesh-agent` creds out of mesh messages → PKA secrets store | AXIOM |
+| MEDIUM | Fix PBP lookup: domain+intent query returns 0 matches — wire `trigger_yaml` parsing into lookup logic | aihangout-fixer |
+| MEDIUM | Add POST schema fields to PBP API: `ecosystem`, `runtime`, `package_name`, `summary` saved on submit | aihangout-fixer |
+| MEDIUM | Audio fingerprint calibration: play Codex chime, run `python -m selfconnect_audio calibrate --tone codex_ready --duration 3` | AXIOM |
+| LOW | PBP API v0.2: PATCH/promote/deprecate endpoints, `times_applied` counter | Codex + aihangout-fixer |
+| LOW | Rename `error_signature`/`error_fingerprint` → `trigger_signature`/`trigger_fingerprint` for navigation runbooks | v0.2 schema |
+| LOW | Audio Phase 2: STT via Faster-Whisper on RTX 5090, Porcupine wake word | FORGE |
+
+---
+
 ## What Was Demonstrated
 
 A live, three-terminal AI agent mesh was established and operated entirely via
