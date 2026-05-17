@@ -1,0 +1,219 @@
+pathbook_id: PBP-BESTBUY-ORDER-0001
+protocol_version: pbp-0.1
+title: Best Buy guest checkout navigation runbook
+summary: Parameterized Best Buy order flow from search through completed shipping/contact form, stopping before payment entry.
+status: draft
+trust_tier: draft
+source_type: navigation
+ecosystem: browser-commerce
+runtime: playwright-browser
+package_name: bestbuy.com
+error_fingerprint: sha256:77fb4683102b3071ce54736537895656005adee8fa5827ae1431330d70684c41
+error_signature: domain=intent navigation trigger for bestbuy.com e-commerce-order
+trigger_yaml: |
+  trigger:
+    type: domain_intent
+    domain: bestbuy.com
+    intent: e-commerce-order
+    parameters:
+      - name: search_term
+        type: string
+        required: true
+      - name: buyer_info
+        type: object
+        required: true
+        fields:
+          - first_name
+          - last_name
+          - address
+          - city
+          - state
+          - zip
+          - email
+          - phone
+      - name: item_index
+        type: integer
+        required: false
+        default: 0
+    constraints:
+      guest_checkout_only: true
+      payment_entry_allowed: false
+      stop_before_payment: true
+    environment:
+      browser_automation: playwright
+      site: https://www.bestbuy.com
+      recorded_at: "2026-05-17"
+remediation_yaml: |
+  remediation:
+    type: navigation_runbook
+    steps:
+      - id: step01_navigate_home
+        name: Navigate to Best Buy
+        action: navigate
+        url: https://www.bestbuy.com
+        wait_ms: 3000
+        verify:
+          any:
+            - page_title_contains: Best Buy
+            - selector_visible: role=searchbox
+        capture: step01_homepage.png
+
+      - id: step02_search_item
+        name: Search for item by stable URL endpoint
+        action: navigate
+        url_template: https://www.bestbuy.com/site/searchpage.jsp?st={urlencode(search_term)}
+        wait_ms: 4000
+        verify:
+          all:
+            - results_grid_visible: true
+            - selector_visible: role=button[name="Add to cart"]
+        capture: step02_search.png
+        notes:
+          - URL query parameter st is preferred over the search input because it is more stable across A/B tests.
+
+      - id: step03_add_to_cart
+        name: Add selected item to cart
+        action: click
+        selector: role=button[name="Add to cart"]
+        selector_index_param: item_index
+        wait_ms: 3000
+        verify:
+          any:
+            - text_visible: Added to cart
+            - selector_visible: text="Go to cart"
+        capture: step03_added.png
+        abort_if:
+          any:
+            - button_text: Sold Out
+            - button_text: Coming Soon
+
+      - id: step04_go_to_cart
+        name: Open cart
+        action: click_with_fallback
+        selector: text="Go to cart"
+        fallback_url: https://www.bestbuy.com/cart
+        wait_ms: 3000
+        verify:
+          all:
+            - text_visible: Your Cart
+            - selector_visible: role=button[name="Checkout"]
+        capture: step04_cart.png
+
+      - id: step05_checkout
+        name: Start checkout
+        action: click
+        selector: role=button[name="Checkout"]
+        wait_ms: 4000
+        verify:
+          any:
+            - url_contains: /identity/signin
+            - url_contains: /checkout
+            - selector_visible: role=button[name="Continue as Guest"]
+        capture: step05_checkout.png
+
+      - id: step06_continue_as_guest
+        name: Continue as guest
+        action: click
+        selector: role=button[name="Continue as Guest"]
+        wait_ms: 3000
+        verify:
+          all:
+            - url_contains: /checkout/r/fulfillment
+            - text_visible: Getting your order
+        capture: step06_guest.png
+        abort_if:
+          any:
+            - selector_missing: role=button[name="Continue as Guest"]
+
+      - id: step07_fill_shipping_contact
+        name: Fill shipping and contact information
+        action: fill_form_sequence
+        page_url_contains: /checkout/r/fulfillment
+        fields:
+          - selector: label="First Name"
+            value_param: buyer_info.first_name
+          - selector: label="Last Name"
+            value_param: buyer_info.last_name
+          - selector: label="Address"
+            value_param: buyer_info.address
+          - action: wait
+            wait_ms: 1500
+          - action: click
+            selector: text="Shipping"
+            reason: dismiss address autocomplete
+          - selector: label="City"
+            value_param: buyer_info.city
+          - selector: label="State"
+            value_param: buyer_info.state
+            input_type: select
+          - selector: label="ZIP Code"
+            value_param: buyer_info.zip
+          - selector: label="Email Address"
+            value_param: buyer_info.email
+          - selector: label="Phone Number"
+            value_param: buyer_info.phone
+            validation: exactly_10_digits
+        verify:
+          all:
+            - selector_visible: role=button[name="Continue to Payment Information"]
+            - form_fields_populated: true
+        capture: step07_shipping.png
+
+      - id: step08_stop_before_payment
+        name: Stop at payment boundary
+        action: stop
+        pre_stop_actions:
+          - scroll_to_bottom
+          - save_capture: step08_ready.png
+        boundary_selector: role=button[name="Continue to Payment Information"]
+        verify:
+          all:
+            - selector_visible: role=button[name="Continue to Payment Information"]
+            - not_clicked: role=button[name="Continue to Payment Information"]
+        stop_reason: Payment entry is out of scope unless separately authorized.
+
+    recovery:
+      - situation: Add to cart button missing
+        action: Try next search result or abort as unavailable.
+      - situation: Flyout does not appear after add
+        action: Navigate directly to https://www.bestbuy.com/cart.
+      - situation: Sign-in page has no guest option
+        action: Abort guest flow and request account-authenticated path.
+      - situation: Address autocomplete blocks City or ZIP
+        action: Click the Shipping heading, then continue filling fields.
+      - situation: Phone validation error
+        action: Normalize to exactly 10 digits with no punctuation.
+      - situation: Page timeout or blank
+        action: Refresh once, wait 5000ms, then restart from step01 if still blank.
+      - situation: CAPTCHA or bot detection
+        action: Stop automation and flag for human intervention.
+verify_yaml: |
+  verify:
+    assertions:
+      - domain_is: bestbuy.com
+      - final_url_contains: /checkout/r/fulfillment
+      - selector_visible: role=button[name="Continue to Payment Information"]
+      - payment_form_not_loaded: true
+      - payment_button_not_clicked: true
+      - required_captures:
+          - step01_homepage.png
+          - step02_search.png
+          - step03_added.png
+          - step04_cart.png
+          - step05_checkout.png
+          - step06_guest.png
+          - step07_shipping.png
+          - step08_ready.png
+failed_attempts_yaml: |
+  failedAttempts: []
+  source_trace:
+    actions: 67
+    failures: 0
+provenance:
+  source: Playwright runner hwnd=3870126
+  artifact: C:\Users\techai\PKA testing\Owner's Inbox\bestbuy-runbook\bestbuy-ps5-trace.zip
+  artifact_sha256: 77FB4683102B3071CE54736537895656005ADEE8FA5827AE1431330D70684C41
+  process_book: C:\Users\techai\PKA testing\Owner's Inbox\bestbuy-runbook\bestbuy-order-process.md
+  recorded_at: "2026-05-17"
+  actions: 67
+  failures: 0

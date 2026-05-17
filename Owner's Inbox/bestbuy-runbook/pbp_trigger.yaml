@@ -1,0 +1,47 @@
+schema_version: pbp/v0.1
+id: PBP-BESTBUY-ORDER-0001
+source_type: navigation
+domain: bestbuy.com
+intent: e-commerce-order
+parameters:
+- name: search_term
+  type: string
+  required: true
+  description: URL-encoded search query (spaces replaced with +)
+  example: playstation+5+console
+- name: item_index
+  type: integer
+  required: false
+  default: 0
+  description: Which search result to add to cart (0 = first)
+- name: first_name
+  type: string
+  required: true
+- name: last_name
+  type: string
+  required: true
+- name: address
+  type: string
+  required: true
+- name: city
+  type: string
+  required: true
+- name: state
+  type: string
+  required: true
+  description: 2-letter US state code, e.g. MN
+- name: zip
+  type: string
+  required: true
+  description: 5-digit ZIP code
+- name: email
+  type: string
+  required: true
+- name: phone
+  type: string
+  required: true
+  description: 10-digit number, no punctuation, e.g. 6125551234
+stop_condition: Shipping form filled and verified — DO NOT click Continue to Payment
+  Information
+recorded: '2026-05-17'
+site_notes: Guest checkout only. No account required.

@@ -1,0 +1,34 @@
+schema_version: pbp/v0.1
+checkpoints:
+- after_step: 1
+  check: url_contains
+  value: bestbuy.com
+- after_step: 2
+  check: element_visible
+  selector: role=button[name='Add to cart']
+- after_step: 3
+  check: element_visible
+  selector: text='Go to cart'
+- after_step: 4
+  check: element_visible
+  selector: role=button[name='Checkout']
+- after_step: 5
+  check: url_contains
+  value: identity/signin
+- after_step: 6
+  check: url_contains
+  value: checkout/r/fulfillment
+- after_step: 7
+  check: element_filled
+  labels:
+  - First Name
+  - Last Name
+  - Address
+  - City
+  - ZIP Code
+  - Email Address
+  - Phone Number
+- after_step: 8
+  check: element_visible
+  selector: role=button[name='Continue to Payment Information']
+  note: visible but NOT clicked
